@@ -19,6 +19,7 @@ import type {
   UserCredential,
   UUID
 } from './types';
+import type { AuthSession, ComplianceIssue, Facility, Incident, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
 
 export interface OrganizationRepository {
   getById(id: UUID): Promise<Organization | null>;
@@ -94,6 +95,16 @@ export interface MedicationOrderRepository {
 export interface MedicationAdministrationRepository {
   listByResident(residentId: UUID): Promise<MedicationAdministration[]>;
   save(administration: MedicationAdministration): Promise<MedicationAdministration>;
+export interface IncidentRepository {
+  getById(id: UUID): Promise<Incident | null>;
+  listByResident(residentId: UUID): Promise<Incident[]>;
+  listByFacility(organizationId: UUID, facilityId: UUID): Promise<Incident[]>;
+  save(incident: Incident): Promise<Incident>;
+}
+
+export interface ComplianceIssueRepository {
+  listByFacility(organizationId: UUID, facilityId: UUID): Promise<ComplianceIssue[]>;
+  save(issue: ComplianceIssue): Promise<ComplianceIssue>;
 }
 
 export interface AuditLogRepository {
@@ -136,6 +147,8 @@ export type BackendRepositories = {
   servicePlans: ServicePlanRepository;
   medicationOrders: MedicationOrderRepository;
   medicationAdministrations: MedicationAdministrationRepository;
+  incidents: IncidentRepository;
+  complianceIssues: ComplianceIssueRepository;
   auditLogs: AuditLogRepository;
   featureRegistry: FeatureRegistryRepository;
   authSessions: AuthSessionRepository;

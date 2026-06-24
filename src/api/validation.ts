@@ -29,6 +29,7 @@ import type {
   UpdateUserBody,
   VerifyMfaBody
 } from './handlers';
+import type { CreateComplianceIssueBody, CreateFacilityBody, CreateIncidentBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, UpdateFacilityBody, UpdateIncidentBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -254,6 +255,16 @@ export function isCreateMedicationOrderBody(body: unknown): body is CreateMedica
 
 export function isRecordMedicationAdministrationBody(body: unknown): body is RecordMedicationAdministrationBody {
   return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.medicationOrderId) && ['given', 'refused', 'held', 'resident_absent', 'not_available'].includes(String(body.action)) && optionalString(body.reason) && optionalString(body.outcome);
+export function isCreateIncidentBody(body: unknown): body is CreateIncidentBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && ['fall', 'injury', 'medication_error', 'behavioral_event', 'elopement', 'infection_event'].includes(String(body.type)) && ['info', 'warning', 'critical'].includes(String(body.severity)) && ['open', 'investigating', 'corrective_action', 'resolved'].includes(String(body.status)) && isNonEmptyString(body.summary) && isNonEmptyString(body.occurredAt);
+}
+
+export function isUpdateIncidentBody(body: unknown): body is UpdateIncidentBody {
+  return isRecord(body) && isNonEmptyString(body.incidentId) && isRecord(body.updates);
+}
+
+export function isCreateComplianceIssueBody(body: unknown): body is CreateComplianceIssueBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.issue) && ['info', 'warning', 'critical'].includes(String(body.severity)) && ['open', 'resolved'].includes(String(body.status)) && isNonEmptyString(body.resolutionLink);
 }
 
 function isRecord(body: unknown): body is Record<string, unknown> {

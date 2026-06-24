@@ -54,6 +54,11 @@ function createTestService() {
     'resident-1', 'audit-3',
     'med-order-1', 'audit-med-order',
     'med-admin-1', 'audit-med-admin',
+    'org-1', 'audit-1',
+    'facility-1', 'audit-2',
+    'resident-1', 'audit-3',
+    'incident-1', 'audit-incident', 'audit-incident-update',
+    'compliance-1', 'audit-compliance',
     'audit-4',
     'user-1', 'audit-user', 'audit-user-update',
     'feature-audit'
@@ -348,6 +353,7 @@ describe('BackendFoundationService', () => {
   });
 
   it('creates tasks, completes tasks, logs ADLs, and creates service plans with audit logs', async () => {
+  it('creates, lists, and updates incidents and compliance issues with audit logs', async () => {
     const { repositories, service } = createTestService();
     await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
     await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
@@ -357,6 +363,7 @@ describe('BackendFoundationService', () => {
     );
 
     const task = await service.createCareTask(
+    const incident = await service.createIncident(
       { user: { ...t3User, permissions: ['resident:write'] } },
       {
         organizationId: 'org-1',
@@ -377,6 +384,20 @@ describe('BackendFoundationService', () => {
 
     const adl = await service.logAdl(
       { user: { ...t3User, permissions: ['resident:write'] } },
+        type: 'fall',
+        severity: 'warning',
+        status: 'open',
+        summary: 'Resident slipped near dining room',
+        occurredAt: '2026-06-24T10:00:00.000Z'
+      }
+    );
+
+    expect(incident).toMatchObject({ type: 'fall', status: 'open' });
+    await expect(service.listIncidentsByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+    await expect(service.updateIncident({ user: { ...t3User, permissions: ['resident:write'] } }, incident.id, { status: 'resolved', resolution: 'Care plan updated' })).resolves.toMatchObject({ status: 'resolved' });
+
+    const issue = await service.createComplianceIssue(
+      { user: t3User },
       {
         organizationId: 'org-1',
         facilityId: 'facility-1',
@@ -403,6 +424,17 @@ describe('BackendFoundationService', () => {
     expect(servicePlan.service).toBe('Memory care evening support');
     await expect(service.listServicePlansByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
     await expect(repositories.auditLogs.listByEntity('CareTask', task.id)).resolves.toHaveLength(2);
+        issue: 'Missing documentation',
+        severity: 'warning',
+        status: 'open',
+        resolutionLink: 'Open documentation exceptions'
+      }
+    );
+
+    expect(issue.issue).toBe('Missing documentation');
+    await expect(service.listComplianceIssuesByFacility({ user: t3User }, 'org-1', 'facility-1')).resolves.toHaveLength(1);
+    await expect(repositories.auditLogs.listByEntity('Incident', incident.id)).resolves.toHaveLength(2);
+    await expect(repositories.auditLogs.listByEntity('ComplianceIssue', issue.id)).resolves.toHaveLength(1);
   });
 
   it('denies resident creation across facility boundaries', async () => {

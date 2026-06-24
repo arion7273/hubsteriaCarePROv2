@@ -107,6 +107,7 @@ export type WorkflowActionJobInput = {
 };
 
 export type Assessment = {
+export type Incident = {
   id: UUID;
   organizationId: UUID;
   facilityId: UUID;
@@ -190,6 +191,26 @@ export type MedicationAdministration = {
   outcome?: string;
   administeredAt: string;
   administeredBy: UUID;
+  type: 'fall' | 'injury' | 'medication_error' | 'behavioral_event' | 'elopement' | 'infection_event';
+  severity: 'info' | 'warning' | 'critical';
+  status: 'open' | 'investigating' | 'corrective_action' | 'resolved';
+  summary: string;
+  investigation?: string;
+  rootCause?: string;
+  correctiveAction?: string;
+  resolution?: string;
+  occurredAt: string;
+};
+
+export type ComplianceIssue = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId?: UUID;
+  issue: string;
+  severity: 'info' | 'warning' | 'critical';
+  status: 'open' | 'resolved';
+  resolutionLink: string;
 };
 
 export type User = {

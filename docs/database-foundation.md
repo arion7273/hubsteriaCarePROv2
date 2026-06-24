@@ -34,6 +34,9 @@ The initial database target is PostgreSQL.
 - `database/migrations/0007_emar_medications.sql`
   - medication orders
   - medication administrations
+- `database/migrations/0008_incidents_compliance.sql`
+  - incidents
+  - compliance issues
 
 Run migrations with:
 

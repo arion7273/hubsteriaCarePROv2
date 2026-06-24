@@ -79,6 +79,11 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - `GET /medication-orders`
 - `POST /medication-administrations`
 - `GET /medication-administrations`
+- `POST /incidents`
+- `GET /incidents`
+- `PATCH /incidents`
+- `POST /compliance-issues`
+- `GET /compliance-issues`
 
 ## Security requirements
 
@@ -95,6 +100,7 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - Background job processors must register handlers per job type and dead-letter jobs that cannot be handled after retries.
 - Task, ADL, and service plan APIs must enforce resident/facility scope.
 - Medication APIs must enforce resident/facility scope and medication management permission.
+- Incident and compliance APIs must enforce resident/facility scope and audit changes.
 - Invalid request bodies must return `400`.
 - Wrong methods must return `405`.
 - Unknown routes must return `404`.

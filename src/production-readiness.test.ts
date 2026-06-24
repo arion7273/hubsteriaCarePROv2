@@ -81,6 +81,12 @@ describe('production readiness workflow', () => {
     expect(api).toContain('Resident APIs must enforce organization and facility scope');
     expect(api).toContain('User APIs must enforce organization scope');
     expect(api).toContain('Medication APIs must enforce resident/facility scope');
+    expect(api).toContain('POST /incidents');
+    expect(api).toContain('POST /compliance-issues');
+    expect(api).toContain('Protected routes require a valid session');
+    expect(api).toContain('Resident APIs must enforce organization and facility scope');
+    expect(api).toContain('User APIs must enforce organization scope');
+    expect(api).toContain('Incident and compliance APIs must enforce resident/facility scope');
     expect(api).toContain('OpenAPI documentation');
     expect(api).toContain('framework-agnostic dispatcher');
     expect(api).toContain('Invalid request bodies must return `400`');

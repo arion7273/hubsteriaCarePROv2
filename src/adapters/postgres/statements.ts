@@ -19,6 +19,7 @@ import type {
   UserCredential,
   UUID
 } from '../../domain';
+import type { AuditEvent, AuthSession, ComplianceIssue, Facility, Incident, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -388,6 +389,29 @@ export const medicationAdministrationStatements = {
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
       RETURNING *
     `, values: [administration.id, administration.organizationId, administration.facilityId, administration.residentId, administration.medicationOrderId, administration.action, administration.reason ?? null, administration.outcome ?? null, administration.administeredAt, administration.administeredBy] };
+export const incidentStatements = {
+  selectById(id: UUID): SqlStatement { return { text: 'SELECT * FROM incidents WHERE id = $1', values: [id] }; },
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM incidents WHERE resident_id = $1 ORDER BY occurred_at DESC', values: [residentId] }; },
+  listByFacility(organizationId: UUID, facilityId: UUID): SqlStatement { return { text: 'SELECT * FROM incidents WHERE organization_id = $1 AND facility_id = $2 ORDER BY occurred_at DESC', values: [organizationId, facilityId] }; },
+  upsert(incident: Incident): SqlStatement {
+    return { text: `
+      INSERT INTO incidents (id, organization_id, facility_id, resident_id, type, severity, status, summary, investigation, root_cause, corrective_action, resolution, occurred_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+      ON CONFLICT (id) DO UPDATE SET severity=EXCLUDED.severity, status=EXCLUDED.status, summary=EXCLUDED.summary, investigation=EXCLUDED.investigation, root_cause=EXCLUDED.root_cause, corrective_action=EXCLUDED.corrective_action, resolution=EXCLUDED.resolution, updated_at=now()
+      RETURNING *
+    `, values: [incident.id, incident.organizationId, incident.facilityId, incident.residentId, incident.type, incident.severity, incident.status, incident.summary, incident.investigation ?? null, incident.rootCause ?? null, incident.correctiveAction ?? null, incident.resolution ?? null, incident.occurredAt] };
+  }
+};
+
+export const complianceIssueStatements = {
+  listByFacility(organizationId: UUID, facilityId: UUID): SqlStatement { return { text: 'SELECT * FROM compliance_issues WHERE organization_id = $1 AND facility_id = $2 ORDER BY severity, issue', values: [organizationId, facilityId] }; },
+  upsert(issue: ComplianceIssue): SqlStatement {
+    return { text: `
+      INSERT INTO compliance_issues (id, organization_id, facility_id, resident_id, issue, severity, status, resolution_link)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      ON CONFLICT (id) DO UPDATE SET issue=EXCLUDED.issue, severity=EXCLUDED.severity, status=EXCLUDED.status, resolution_link=EXCLUDED.resolution_link, updated_at=now()
+      RETURNING *
+    `, values: [issue.id, issue.organizationId, issue.facilityId, issue.residentId ?? null, issue.issue, issue.severity, issue.status, issue.resolutionLink] };
   }
 };
 

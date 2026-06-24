@@ -20,6 +20,7 @@ import type {
   UserCredential
 } from '../../domain/types';
 import type { AdlEntry } from '../../domain/types';
+import type { AuthSession, ComplianceIssue, Facility, Incident, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -156,6 +157,7 @@ export function mapServicePlanRow(row: PostgresRow): ServicePlanRecord {
 }
 
 export function mapMedicationOrderRow(row: PostgresRow): MedicationOrder {
+export function mapIncidentRow(row: PostgresRow): Incident {
   return {
     id: String(row.id),
     organizationId: String(row.organization_id),
@@ -171,6 +173,19 @@ export function mapMedicationOrderRow(row: PostgresRow): MedicationOrder {
 }
 
 export function mapMedicationAdministrationRow(row: PostgresRow): MedicationAdministration {
+    type: String(row.type) as Incident['type'],
+    severity: String(row.severity) as Incident['severity'],
+    status: String(row.status) as Incident['status'],
+    summary: String(row.summary),
+    investigation: row.investigation ? String(row.investigation) : undefined,
+    rootCause: row.root_cause ? String(row.root_cause) : undefined,
+    correctiveAction: row.corrective_action ? String(row.corrective_action) : undefined,
+    resolution: row.resolution ? String(row.resolution) : undefined,
+    occurredAt: String(row.occurred_at)
+  };
+}
+
+export function mapComplianceIssueRow(row: PostgresRow): ComplianceIssue {
   return {
     id: String(row.id),
     organizationId: String(row.organization_id),
@@ -182,6 +197,11 @@ export function mapMedicationAdministrationRow(row: PostgresRow): MedicationAdmi
     outcome: row.outcome ? String(row.outcome) : undefined,
     administeredAt: String(row.administered_at),
     administeredBy: String(row.administered_by)
+    residentId: row.resident_id ? String(row.resident_id) : undefined,
+    issue: String(row.issue),
+    severity: String(row.severity) as ComplianceIssue['severity'],
+    status: String(row.status) as ComplianceIssue['status'],
+    resolutionLink: String(row.resolution_link)
   };
 }
 

@@ -23,6 +23,7 @@ import {
   type UUID,
   type WorkflowActionJobInput
 } from '../domain';
+import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type ComplianceIssue, type Facility, type Incident, type Organization, type Resident, type User, type UUID } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -93,6 +94,12 @@ export type LogAdlBody = Omit<AdlEntry, 'id' | 'recordedAt' | 'recordedBy'>;
 export type CreateServicePlanBody = Omit<ServicePlanRecord, 'id'>;
 export type CreateMedicationOrderBody = Omit<MedicationOrder, 'id'>;
 export type RecordMedicationAdministrationBody = Omit<MedicationAdministration, 'id' | 'administeredAt' | 'administeredBy'>;
+export type CreateIncidentBody = Omit<Incident, 'id'>;
+export type UpdateIncidentBody = {
+  incidentId: UUID;
+  updates: Partial<Omit<Incident, 'id' | 'organizationId' | 'facilityId' | 'residentId'>>;
+};
+export type CreateComplianceIssueBody = Omit<ComplianceIssue, 'id'>;
 
 export async function loginHandler(services: ApiServices, request: ApiRequest<LoginBody>): Promise<ApiResponse> {
   return toApiResponse(async () => {
@@ -460,6 +467,43 @@ export async function listMedicationAdministrationsHandler(services: ApiServices
     const residentId = request.query?.residentId;
     if (!residentId) throw new Error('residentId is required');
     return services.backend.listMedicationAdministrationsByResident(context, residentId);
+export async function createIncidentHandler(services: ApiServices, request: ApiRequest<CreateIncidentBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.createIncident(context, request.body);
+  }, 201);
+}
+
+export async function listIncidentsHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    if (request.query?.residentId) return services.backend.listIncidentsByResident(context, request.query.residentId);
+    if (request.query?.organizationId && request.query?.facilityId) {
+      return services.backend.listIncidentsByFacility(context, request.query.organizationId, request.query.facilityId);
+    }
+    throw new Error('residentId or organizationId/facilityId is required');
+  });
+}
+
+export async function updateIncidentHandler(services: ApiServices, request: ApiRequest<UpdateIncidentBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.updateIncident(context, request.body.incidentId, request.body.updates);
+  });
+}
+
+export async function createComplianceIssueHandler(services: ApiServices, request: ApiRequest<CreateComplianceIssueBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.createComplianceIssue(context, request.body);
+  }, 201);
+}
+
+export async function listComplianceIssuesHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const organizationId = request.query?.organizationId;
+    const facilityId = request.query?.facilityId;
+    if (!organizationId || !facilityId) throw new Error('organizationId and facilityId are required');
+    return services.backend.listComplianceIssuesByFacility(context, organizationId, facilityId);
   });
 }
 
