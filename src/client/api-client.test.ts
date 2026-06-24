@@ -83,6 +83,7 @@ describe('HubsteriaApiClient', () => {
       facilityIds: ['facility-1'],
       permissions: ['resident:read']
     });
+    await client.logout('session-1');
 
     expect((fetchMock.mock.calls[0] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/auth/mfa/verify');
     expect((fetchMock.mock.calls[1] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/organizations');
@@ -98,5 +99,13 @@ describe('HubsteriaApiClient', () => {
         permissions: ['resident:read']
       })
     );
+    expect((fetchMock.mock.calls[7] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/auth/logout');
+    expect((fetchMock.mock.calls[7] as unknown as [URL, RequestInit])[1]).toMatchObject({
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-session-id': 'session-1'
+      }
+    });
   });
 });
