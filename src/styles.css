@@ -476,7 +476,8 @@ p {
 }
 
 .api-action-row,
-.api-endpoint-grid {
+.api-endpoint-grid,
+.api-workflow-log {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
@@ -509,6 +510,20 @@ p {
   font-size: 0.82rem;
   font-weight: 900;
   padding: 0.55rem 0.75rem;
+}
+
+.api-workflow-log {
+  display: grid;
+}
+
+.api-workflow-log span {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 800;
+  padding: 0.65rem 0.8rem;
 }
 
 .global-results {

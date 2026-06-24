@@ -65,4 +65,38 @@ describe('HubsteriaApiClient', () => {
       })
     });
   });
+
+  it('supports MFA organization facility and user workflow requests', async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, status: 200, data: {} }));
+    const client = new HubsteriaApiClient({ baseUrl: 'http://api.example.com', fetchImpl: fetchMock as unknown as typeof fetch });
+
+    await client.verifyMfa('session-1', 'challenge-1', '123456');
+    await client.createOrganization('session-1', 'Northstar Senior Living');
+    await client.createFacility('session-1', { organizationId: 'org-1', name: 'Cedar Grove' });
+    await client.listOrganizations('session-1');
+    await client.listFacilities('session-1', 'org-1');
+    await client.listUsers('session-1', 'org-1');
+    await client.createUser('session-1', {
+      email: 'caregiver@example.com',
+      roleTier: 'EMPLOYEE',
+      organizationId: 'org-1',
+      facilityIds: ['facility-1'],
+      permissions: ['resident:read']
+    });
+
+    expect((fetchMock.mock.calls[0] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/auth/mfa/verify');
+    expect((fetchMock.mock.calls[1] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/organizations');
+    expect((fetchMock.mock.calls[2] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/facilities');
+    expect((fetchMock.mock.calls[4] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/facilities?organizationId=org-1');
+    expect((fetchMock.mock.calls[5] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/users?organizationId=org-1');
+    expect((fetchMock.mock.calls[6] as unknown as [URL, RequestInit])[1].body).toBe(
+      JSON.stringify({
+        email: 'caregiver@example.com',
+        roleTier: 'EMPLOYEE',
+        organizationId: 'org-1',
+        facilityIds: ['facility-1'],
+        permissions: ['resident:read']
+      })
+    );
+  });
 });

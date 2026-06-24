@@ -195,9 +195,13 @@ const connectedApiEndpoints = [
   'POST /auth/login',
   'POST /auth/mfa/verify',
   'POST /organizations',
+  'GET /organizations',
+  'POST /facilities',
   'GET /facilities',
   'POST /residents',
+  'GET /residents',
   'PATCH /residents',
+  'POST /users',
   'GET /users'
 ];
 
@@ -206,6 +210,8 @@ function App() {
   const [query, setQuery] = useState('');
   const [darkMode, setDarkMode] = useState(false);
   const [apiHealthStatus, setApiHealthStatus] = useState('Not checked');
+  const [apiSessionId, setApiSessionId] = useState('');
+  const [apiWorkflowLog, setApiWorkflowLog] = useState<string[]>(['No API workflow actions run yet.']);
   const globalSearchRef = useRef<HTMLInputElement>(null);
   const apiBaseUrl = getConfiguredApiBaseUrl();
 
@@ -259,10 +265,59 @@ function App() {
     try {
       await createConfiguredApiClient().health();
       setApiHealthStatus('Connected');
+      addApiLog('Health check connected.');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown connection error';
       setApiHealthStatus(`Unavailable: ${message}`);
+      addApiLog(`Health check failed: ${message}`);
     }
+  };
+
+  const addApiLog = (message: string) => {
+    setApiWorkflowLog((current) => [message, ...current.filter((item) => item !== 'No API workflow actions run yet.')].slice(0, 6));
+  };
+
+  const runApiAction = async (label: string, action: (client: ReturnType<typeof createConfiguredApiClient>) => Promise<unknown>) => {
+    try {
+      const result = await action(createConfiguredApiClient());
+      addApiLog(`${label}: ${summarizeApiResult(result)}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      addApiLog(`${label}: failed (${message})`);
+    }
+  };
+
+  const runDemoLogin = async () => {
+    await runApiAction('Demo login', async (client) => {
+      const login = await client.login('b094650@gmail.com', 'change-me-for-local-demo-only');
+
+      if (login.ok) {
+        const data = login.data as { session?: { id?: string }; mfaChallenge?: { id?: string } };
+        const sessionId = data.session?.id;
+        const challengeId = data.mfaChallenge?.id;
+
+        if (sessionId && challengeId) {
+          const mfa = await client.verifyMfa(sessionId, challengeId, '123456');
+
+          if (mfa.ok) {
+            setApiSessionId(sessionId);
+            return { ok: true, status: 200, data: { sessionId, mfaVerified: true } };
+          }
+
+          return mfa;
+        }
+      }
+
+      return login;
+    });
+  };
+
+  const requireDemoSession = () => {
+    if (!apiSessionId) {
+      throw new Error('Run Demo login first.');
+    }
+
+    return apiSessionId;
   };
 
   return (
@@ -526,6 +581,63 @@ function App() {
             <button type="button" onClick={checkApiHealth}>
               Check API health
             </button>
+            <button type="button" onClick={runDemoLogin}>
+              Demo login + MFA
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                runApiAction('Create organization', (client) =>
+                  client.createOrganization(requireDemoSession(), 'Northstar Senior Living')
+                )
+              }
+            >
+              Create organization
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                runApiAction('Create facility', (client) =>
+                  client.createFacility(requireDemoSession(), { organizationId: 'org-1', name: 'Cedar Grove' })
+                )
+              }
+            >
+              Create facility
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                runApiAction('Create resident', (client) =>
+                  client.createResident(requireDemoSession(), {
+                    organizationId: 'org-1',
+                    facilityId: 'facility-1',
+                    firstName: 'Maria',
+                    lastName: 'Alvarez',
+                    preferredName: 'Maria',
+                    room: '214B',
+                    levelOfCare: 'Memory Care'
+                  })
+                )
+              }
+            >
+              Create resident
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                runApiAction('List residents', (client) => client.listResidents(requireDemoSession(), 'org-1', 'facility-1'))
+              }
+            >
+              List residents
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                runApiAction('List users', (client) => client.listUsers(requireDemoSession(), 'org-1'))
+              }
+            >
+              List users
+            </button>
             <a href={`${apiBaseUrl}/openapi.json`} target="_blank" rel="noreferrer">
               Open API contract
             </a>
@@ -534,6 +646,12 @@ function App() {
           <div className="api-endpoint-grid" aria-label="Connected API endpoints">
             {connectedApiEndpoints.map((endpoint) => (
               <span key={endpoint}>{endpoint}</span>
+            ))}
+          </div>
+
+          <div className="api-workflow-log" aria-label="API workflow log">
+            {apiWorkflowLog.map((item) => (
+              <span key={item}>{item}</span>
             ))}
           </div>
         </section>
@@ -3059,6 +3177,28 @@ function RoadmapGroup({ title, phases }: { title: string; phases: Phase[] }) {
       </div>
     </div>
   );
+}
+
+function summarizeApiResult(result: unknown): string {
+  if (!result || typeof result !== 'object') {
+    return 'completed';
+  }
+
+  const response = result as { ok?: boolean; status?: number; data?: unknown; error?: { message?: string } };
+
+  if (response.ok === false) {
+    return `error ${response.status ?? ''} ${response.error?.message ?? ''}`.trim();
+  }
+
+  if (Array.isArray(response.data)) {
+    return `ok ${response.status ?? 200}, ${response.data.length} records`;
+  }
+
+  if (response.data && typeof response.data === 'object' && 'sessionId' in response.data) {
+    return `ok, session ${(response.data as { sessionId: string }).sessionId}`;
+  }
+
+  return `ok ${response.status ?? 200}`;
 }
 
 export default App;

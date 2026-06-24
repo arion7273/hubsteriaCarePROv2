@@ -26,6 +26,8 @@ describe('HubsteriaCarePRO foundation', () => {
 
     const endpoints = screen.getByLabelText('Connected API endpoints');
     expect(within(endpoints).getByText('POST /auth/login')).toBeInTheDocument();
+    expect(within(endpoints).getByText('GET /organizations')).toBeInTheDocument();
+    expect(within(endpoints).getByText('POST /facilities')).toBeInTheDocument();
     expect(within(endpoints).getByText('POST /residents')).toBeInTheDocument();
     expect(within(endpoints).getByText('GET /users')).toBeInTheDocument();
   });
@@ -46,6 +48,54 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(apiStatus).not.toBeNull();
     expect(within(apiStatus as HTMLElement).getByText('Connected')).toBeInTheDocument();
     expect(globalThis.fetch).toHaveBeenCalledWith('http://localhost:3000/healthz');
+  });
+
+  it('runs first UI-to-API workflow actions from the connection center', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ok: true,
+            status: 200,
+            data: {
+              session: { id: 'session-1' },
+              mfaChallenge: { id: 'mfa-1' }
+            }
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, status: 200, data: { id: 'session-1', mfaVerified: true } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, status: 201, data: { id: 'org-1' } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      );
+
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Demo login + MFA' }));
+    expect(await screen.findByText(/Demo login: ok, session session-1/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Create organization' }));
+    expect(await screen.findByText(/Create organization: ok 201/)).toBeInTheDocument();
+
+    const loginCall = fetchMock.mock.calls[0] as unknown as [URL, RequestInit];
+    expect(loginCall[0].toString()).toBe('http://localhost:3000/auth/login');
+    const orgCall = fetchMock.mock.calls[2] as unknown as [URL, RequestInit];
+    expect(orgCall[0].toString()).toBe('http://localhost:3000/organizations');
+    expect(orgCall[1]).toMatchObject({
+      headers: {
+        'content-type': 'application/json',
+        'x-session-id': 'session-1'
+      }
+    });
   });
 
   it('switches between T1, T2, and T3 role-aware dashboards', async () => {

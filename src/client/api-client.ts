@@ -61,6 +61,49 @@ export class HubsteriaApiClient {
     });
   }
 
+  verifyMfa(sessionId: string, challengeId: string, code: string) {
+    return this.request({
+      method: 'POST',
+      path: '/auth/mfa/verify',
+      body: { sessionId, challengeId, code }
+    });
+  }
+
+  createOrganization(sessionId: string, name: string) {
+    return this.request({
+      method: 'POST',
+      path: '/organizations',
+      sessionId,
+      body: { name }
+    });
+  }
+
+  listOrganizations(sessionId: string) {
+    return this.request({
+      method: 'GET',
+      path: '/organizations',
+      sessionId
+    });
+  }
+
+  createFacility(sessionId: string, body: { organizationId: string; name: string }) {
+    return this.request({
+      method: 'POST',
+      path: '/facilities',
+      sessionId,
+      body
+    });
+  }
+
+  listFacilities(sessionId: string, organizationId: string) {
+    return this.request({
+      method: 'GET',
+      path: '/facilities',
+      sessionId,
+      query: { organizationId }
+    });
+  }
+
   createResident(sessionId: string, body: {
     organizationId: string;
     facilityId: string;
@@ -93,6 +136,21 @@ export class HubsteriaApiClient {
       path: '/users',
       sessionId,
       query: { organizationId }
+    });
+  }
+
+  createUser(sessionId: string, body: {
+    email: string;
+    roleTier: string;
+    organizationId?: string;
+    facilityIds: string[];
+    permissions: string[];
+  }) {
+    return this.request({
+      method: 'POST',
+      path: '/users',
+      sessionId,
+      body
     });
   }
 }
