@@ -1,7 +1,40 @@
 import type { RegisteredFeature } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
-import type { CompleteBackgroundJobBody, CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, EnqueueAiGenerationJobBody, EnqueueBackgroundJobBody, EnqueueDigitalRxSyncJobBody, EnqueueNotificationJobBody, EnqueuePrintJobBody, EnqueueWorkflowActionJobBody, FailBackgroundJobBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
+import type {
+  CompleteBackgroundJobBody,
+  CompleteCareTaskBody,
+  CreateAssessmentBody,
+  CreateBillingChargeBody,
+  CreateCarePlanBody,
+  CreateCareTaskBody,
+  CreateComplianceIssueBody,
+  CreateFacilityBody,
+  CreateIncidentBody,
+  CreateInvoiceBody,
+  CreateMedicationOrderBody,
+  CreateOrganizationBody,
+  CreateResidentBody,
+  CreateServicePlanBody,
+  CreateUserBody,
+  EnqueueAiGenerationJobBody,
+  EnqueueBackgroundJobBody,
+  EnqueueDigitalRxSyncJobBody,
+  EnqueueNotificationJobBody,
+  EnqueuePrintJobBody,
+  EnqueueWorkflowActionJobBody,
+  FailBackgroundJobBody,
+  LogAdlBody,
+  LoginBody,
+  RecordMedicationAdministrationBody,
+  RecordPaymentBody,
+  UpdateFacilityBody,
+  UpdateIncidentBody,
+  UpdateOrganizationBody,
+  UpdateResidentBody,
+  UpdateUserBody,
+  VerifyMfaBody
+} from './handlers';
 
 export type ValidationResult =
   | {
@@ -174,6 +207,83 @@ export function isEnqueueAiGenerationJobBody(body: unknown): body is EnqueueAiGe
 
 export function isEnqueueWorkflowActionJobBody(body: unknown): body is EnqueueWorkflowActionJobBody {
   return isRecord(body) && isNonEmptyString(body.trigger) && isNonEmptyString(body.action) && isRecord(body.payload);
+}
+
+export function isCreateAssessmentBody(body: unknown): body is CreateAssessmentBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.organizationId) &&
+    isNonEmptyString(body.facilityId) &&
+    isNonEmptyString(body.residentId) &&
+    isNonEmptyString(body.type) &&
+    ['due', 'in_progress', 'review', 'complete'].includes(String(body.status)) &&
+    (body.score === undefined || typeof body.score === 'number') &&
+    isRecord(body.answers)
+  );
+}
+
+export function isCreateCarePlanBody(body: unknown): body is CreateCarePlanBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.organizationId) &&
+    isNonEmptyString(body.facilityId) &&
+    isNonEmptyString(body.residentId) &&
+    isNonEmptyString(body.goal) &&
+    Array.isArray(body.interventions) &&
+    body.interventions.every((intervention) => typeof intervention === 'string') &&
+    isNonEmptyString(body.outcome) &&
+    isNonEmptyString(body.reviewDate) &&
+    isNonEmptyString(body.assignedStaff) &&
+    ['active', 'resolved', 'inactive'].includes(String(body.status))
+  );
+}
+
+export function isCreateCareTaskBody(body: unknown): body is CreateCareTaskBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.title) && ['one_time', 'daily', 'weekly', 'monthly', 'custom_recurring'].includes(String(body.taskType)) && isNonEmptyString(body.dueAt) && isNonEmptyString(body.assignedStaff) && ['due', 'overdue', 'complete', 'missed', 'unassigned'].includes(String(body.status));
+}
+
+export function isCompleteCareTaskBody(body: unknown): body is CompleteCareTaskBody {
+  return isRecord(body) && isNonEmptyString(body.taskId);
+}
+
+export function isLogAdlBody(body: unknown): body is LogAdlBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.category) && isNonEmptyString(body.outcome) && optionalString(body.note);
+}
+
+export function isCreateServicePlanBody(body: unknown): body is CreateServicePlanBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.service) && isNonEmptyString(body.schedule) && isNonEmptyString(body.assignedStaff) && optionalString(body.exceptions) && ['active', 'inactive'].includes(String(body.status));
+}
+
+export function isCreateMedicationOrderBody(body: unknown): body is CreateMedicationOrderBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.medication) && isNonEmptyString(body.dosage) && isNonEmptyString(body.route) && isNonEmptyString(body.schedule) && ['active', 'future', 'prn', 'discontinued', 'hold'].includes(String(body.status)) && optionalString(body.instructions);
+}
+
+export function isRecordMedicationAdministrationBody(body: unknown): body is RecordMedicationAdministrationBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.medicationOrderId) && ['given', 'refused', 'held', 'resident_absent', 'not_available'].includes(String(body.action)) && optionalString(body.reason) && optionalString(body.outcome);
+}
+
+export function isCreateIncidentBody(body: unknown): body is CreateIncidentBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && ['fall', 'injury', 'medication_error', 'behavioral_event', 'elopement', 'infection_event'].includes(String(body.type)) && ['info', 'warning', 'critical'].includes(String(body.severity)) && ['open', 'investigating', 'corrective_action', 'resolved'].includes(String(body.status)) && isNonEmptyString(body.summary) && isNonEmptyString(body.occurredAt);
+}
+
+export function isUpdateIncidentBody(body: unknown): body is UpdateIncidentBody {
+  return isRecord(body) && isNonEmptyString(body.incidentId) && isRecord(body.updates);
+}
+
+export function isCreateComplianceIssueBody(body: unknown): body is CreateComplianceIssueBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.issue) && ['info', 'warning', 'critical'].includes(String(body.severity)) && ['open', 'resolved'].includes(String(body.status)) && isNonEmptyString(body.resolutionLink);
+}
+
+export function isCreateBillingChargeBody(body: unknown): body is CreateBillingChargeBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && ['recurring', 'level_of_care', 'move_in', 'move_out', 'ancillary'].includes(String(body.type)) && isNonEmptyString(body.description) && typeof body.amountCents === 'number' && ['draft', 'posted', 'void'].includes(String(body.status));
+}
+
+export function isCreateInvoiceBody(body: unknown): body is CreateInvoiceBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.invoiceNumber) && typeof body.balanceCents === 'number' && isNonEmptyString(body.dueDate) && ['draft', 'posted', 'paid', 'overdue'].includes(String(body.status));
+}
+
+export function isRecordPaymentBody(body: unknown): body is RecordPaymentBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && (body.invoiceId === undefined || isNonEmptyString(body.invoiceId)) && ['payment', 'credit', 'refund'].includes(String(body.type)) && typeof body.amountCents === 'number' && isNonEmptyString(body.method);
 }
 
 function isRecord(body: unknown): body is Record<string, unknown> {

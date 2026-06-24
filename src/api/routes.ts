@@ -143,5 +143,119 @@ export const apiRoutes: ApiRouteDefinition[] = [
   { method: 'POST', path: '/jobs/print', authRequired: true, description: 'Enqueue print job' },
   { method: 'POST', path: '/jobs/digitalrx', authRequired: true, description: 'Enqueue DigitalRX sync job' },
   { method: 'POST', path: '/jobs/ai', authRequired: true, description: 'Enqueue AI generation job' },
-  { method: 'POST', path: '/jobs/workflow-actions', authRequired: true, description: 'Enqueue workflow action job' }
+  { method: 'POST', path: '/jobs/workflow-actions', authRequired: true, description: 'Enqueue workflow action job' },
+  {
+    method: 'POST',
+    path: '/assessments',
+    authRequired: true,
+    description: 'Create assessment'
+  },
+  {
+    method: 'GET',
+    path: '/assessments',
+    authRequired: true,
+    description: 'List assessments by resident'
+  },
+  {
+    method: 'POST',
+    path: '/care-plans',
+    authRequired: true,
+    description: 'Create care plan'
+  },
+  {
+    method: 'GET',
+    path: '/care-plans',
+    authRequired: true,
+    description: 'List care plans by resident'
+  },
+  {
+    method: 'POST',
+    path: '/medication-orders',
+    authRequired: true,
+    description: 'Create medication order'
+  },
+  {
+    method: 'GET',
+    path: '/medication-orders',
+    authRequired: true,
+    description: 'List medication orders by resident'
+  },
+  {
+    method: 'POST',
+    path: '/medication-administrations',
+    authRequired: true,
+    description: 'Record medication administration'
+  },
+  {
+    method: 'GET',
+    path: '/medication-administrations',
+    authRequired: true,
+    description: 'List medication administrations by resident'
+  },
+  {
+    method: 'POST',
+    path: '/incidents',
+    authRequired: true,
+    description: 'Create incident'
+  },
+  {
+    method: 'GET',
+    path: '/incidents',
+    authRequired: true,
+    description: 'List incidents by resident or facility'
+  },
+  {
+    method: 'PATCH',
+    path: '/incidents',
+    authRequired: true,
+    description: 'Update incident'
+  },
+  {
+    method: 'POST',
+    path: '/compliance-issues',
+    authRequired: true,
+    description: 'Create compliance issue'
+  },
+  {
+    method: 'GET',
+    path: '/compliance-issues',
+    authRequired: true,
+    description: 'List compliance issues by facility'
+  },
+  {
+    method: 'POST',
+    path: '/billing/charges',
+    authRequired: true,
+    description: 'Create billing charge'
+  },
+  {
+    method: 'GET',
+    path: '/billing/charges',
+    authRequired: true,
+    description: 'List billing charges by resident'
+  },
+  {
+    method: 'POST',
+    path: '/billing/invoices',
+    authRequired: true,
+    description: 'Create invoice'
+  },
+  {
+    method: 'GET',
+    path: '/billing/invoices',
+    authRequired: true,
+    description: 'List invoices by resident'
+  },
+  {
+    method: 'POST',
+    path: '/billing/payments',
+    authRequired: true,
+    description: 'Record payment, credit, or refund'
+  },
+  {
+    method: 'GET',
+    path: '/billing/payments',
+    authRequired: true,
+    description: 'List payments by resident'
+  }
 ];

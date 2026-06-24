@@ -214,6 +214,44 @@ export const openApiDocument = {
           '404': { description: 'User not found' }
         }
       }
+    },
+    '/assessments': {
+      get: {
+        summary: 'List assessments by resident',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'Assessment list' },
+          '403': { description: 'Insufficient permissions or tenant mismatch' }
+        }
+      },
+      post: {
+        summary: 'Create assessment',
+        security: [{ session: [] }],
+        requestBody: { required: true },
+        responses: {
+          '201': { description: 'Assessment created' },
+          '403': { description: 'Insufficient permissions or tenant mismatch' }
+        }
+      }
+    },
+    '/care-plans': {
+      get: {
+        summary: 'List care plans by resident',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'Care plan list' },
+          '403': { description: 'Insufficient permissions or tenant mismatch' }
+        }
+      },
+      post: {
+        summary: 'Create care plan',
+        security: [{ session: [] }],
+        requestBody: { required: true },
+        responses: {
+          '201': { description: 'Care plan created' },
+          '403': { description: 'Insufficient permissions or tenant mismatch' }
+        }
+      }
     }
   },
   components: {

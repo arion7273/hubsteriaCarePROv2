@@ -1,6 +1,29 @@
 import type { AuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
+import type {
+  AdlEntry,
+  Assessment,
+  AuthSession,
+  BackgroundJob,
+  BillingCharge,
+  CarePlan,
+  CareTask,
+  ComplianceIssue,
+  Facility,
+  Incident,
+  Invoice,
+  MedicationAdministration,
+  MedicationOrder,
+  MfaChallenge,
+  Organization,
+  PaymentTransaction,
+  PasswordResetRequest,
+  Resident,
+  ServicePlanRecord,
+  User,
+  UserCredential,
+  UUID
+} from './types';
 
 export interface OrganizationRepository {
   getById(id: UUID): Promise<Organization | null>;
@@ -39,6 +62,73 @@ export interface BackgroundJobRepository {
   save(job: BackgroundJob): Promise<BackgroundJob>;
 }
 
+export interface AssessmentRepository {
+  getById(id: UUID): Promise<Assessment | null>;
+  listByResident(residentId: UUID): Promise<Assessment[]>;
+  save(assessment: Assessment): Promise<Assessment>;
+}
+
+export interface CarePlanRepository {
+  getById(id: UUID): Promise<CarePlan | null>;
+  listByResident(residentId: UUID): Promise<CarePlan[]>;
+  save(carePlan: CarePlan): Promise<CarePlan>;
+}
+
+export interface CareTaskRepository {
+  getById(id: UUID): Promise<CareTask | null>;
+  listByResident(residentId: UUID): Promise<CareTask[]>;
+  save(task: CareTask): Promise<CareTask>;
+}
+
+export interface AdlEntryRepository {
+  listByResident(residentId: UUID): Promise<AdlEntry[]>;
+  save(entry: AdlEntry): Promise<AdlEntry>;
+}
+
+export interface ServicePlanRepository {
+  listByResident(residentId: UUID): Promise<ServicePlanRecord[]>;
+  save(plan: ServicePlanRecord): Promise<ServicePlanRecord>;
+}
+
+export interface MedicationOrderRepository {
+  getById(id: UUID): Promise<MedicationOrder | null>;
+  listByResident(residentId: UUID): Promise<MedicationOrder[]>;
+  save(order: MedicationOrder): Promise<MedicationOrder>;
+}
+
+export interface MedicationAdministrationRepository {
+  listByResident(residentId: UUID): Promise<MedicationAdministration[]>;
+  save(administration: MedicationAdministration): Promise<MedicationAdministration>;
+}
+
+export interface IncidentRepository {
+  getById(id: UUID): Promise<Incident | null>;
+  listByResident(residentId: UUID): Promise<Incident[]>;
+  listByFacility(organizationId: UUID, facilityId: UUID): Promise<Incident[]>;
+  save(incident: Incident): Promise<Incident>;
+}
+
+export interface ComplianceIssueRepository {
+  listByFacility(organizationId: UUID, facilityId: UUID): Promise<ComplianceIssue[]>;
+  save(issue: ComplianceIssue): Promise<ComplianceIssue>;
+}
+
+export interface BillingChargeRepository {
+  listByResident(residentId: UUID): Promise<BillingCharge[]>;
+  save(charge: BillingCharge): Promise<BillingCharge>;
+}
+
+export interface InvoiceRepository {
+  getById(id: UUID): Promise<Invoice | null>;
+  listByResident(residentId: UUID): Promise<Invoice[]>;
+  save(invoice: Invoice): Promise<Invoice>;
+}
+
+export interface PaymentTransactionRepository {
+  listByResident(residentId: UUID): Promise<PaymentTransaction[]>;
+  save(transaction: PaymentTransaction): Promise<PaymentTransaction>;
+}
+
 export interface AuditLogRepository {
   append(event: AuditEvent): Promise<void>;
   listByEntity(entityType: string, entityId: UUID): Promise<AuditEvent[]>;
@@ -72,6 +162,18 @@ export type BackendRepositories = {
   userCredentials: UserCredentialRepository;
   residents: ResidentRepository;
   backgroundJobs: BackgroundJobRepository;
+  assessments: AssessmentRepository;
+  carePlans: CarePlanRepository;
+  careTasks: CareTaskRepository;
+  adlEntries: AdlEntryRepository;
+  servicePlans: ServicePlanRepository;
+  medicationOrders: MedicationOrderRepository;
+  medicationAdministrations: MedicationAdministrationRepository;
+  incidents: IncidentRepository;
+  complianceIssues: ComplianceIssueRepository;
+  billingCharges: BillingChargeRepository;
+  invoices: InvoiceRepository;
+  paymentTransactions: PaymentTransactionRepository;
   auditLogs: AuditLogRepository;
   featureRegistry: FeatureRegistryRepository;
   authSessions: AuthSessionRepository;

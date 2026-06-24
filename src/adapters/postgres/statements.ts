@@ -1,4 +1,29 @@
-import type { AuditEvent, AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UserCredential, UUID } from '../../domain';
+import type {
+  AdlEntry,
+  Assessment,
+  AuditEvent,
+  AuthSession,
+  BackgroundJob,
+  BillingCharge,
+  CarePlan,
+  CareTask,
+  ComplianceIssue,
+  Facility,
+  Incident,
+  Invoice,
+  MedicationAdministration,
+  MedicationOrder,
+  MfaChallenge,
+  Organization,
+  PaymentTransaction,
+  PasswordResetRequest,
+  RegisteredFeature,
+  Resident,
+  ServicePlanRecord,
+  User,
+  UserCredential,
+  UUID
+} from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -202,6 +227,223 @@ export const backgroundJobStatements = {
       ON CONFLICT (id) DO UPDATE SET status=EXCLUDED.status, payload=EXCLUDED.payload, attempts=EXCLUDED.attempts, updated_at=EXCLUDED.updated_at, last_error=EXCLUDED.last_error
       RETURNING *
     `, values: [job.id, job.organizationId ?? null, job.facilityId ?? null, job.residentId ?? null, job.type, job.status, job.priority, JSON.stringify(job.payload), job.attempts, job.maxAttempts, job.availableAt, job.createdAt, job.updatedAt, job.lastError ?? null] };
+  }
+};
+
+export const assessmentStatements = {
+  selectById(id: UUID): SqlStatement {
+    return {
+      text: `
+        SELECT id, organization_id, facility_id, resident_id, type, status, score, answers
+        FROM assessments
+        WHERE id = $1
+      `,
+      values: [id]
+    };
+  },
+
+  listByResident(residentId: UUID): SqlStatement {
+    return {
+      text: `
+        SELECT id, organization_id, facility_id, resident_id, type, status, score, answers
+        FROM assessments
+        WHERE resident_id = $1
+        ORDER BY created_at DESC
+      `,
+      values: [residentId]
+    };
+  },
+
+  upsert(assessment: Assessment): SqlStatement {
+    return {
+      text: `
+        INSERT INTO assessments (id, organization_id, facility_id, resident_id, type, status, score, answers)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)
+        ON CONFLICT (id) DO UPDATE
+        SET type = EXCLUDED.type,
+            status = EXCLUDED.status,
+            score = EXCLUDED.score,
+            answers = EXCLUDED.answers,
+            updated_at = now()
+        RETURNING id, organization_id, facility_id, resident_id, type, status, score, answers
+      `,
+      values: [
+        assessment.id,
+        assessment.organizationId,
+        assessment.facilityId,
+        assessment.residentId,
+        assessment.type,
+        assessment.status,
+        assessment.score ?? null,
+        JSON.stringify(assessment.answers)
+      ]
+    };
+  }
+};
+
+export const carePlanStatements = {
+  selectById(id: UUID): SqlStatement {
+    return {
+      text: `
+        SELECT id, organization_id, facility_id, resident_id, goal, interventions, outcome, review_date, assigned_staff, status
+        FROM care_plans
+        WHERE id = $1
+      `,
+      values: [id]
+    };
+  },
+
+  listByResident(residentId: UUID): SqlStatement {
+    return {
+      text: `
+        SELECT id, organization_id, facility_id, resident_id, goal, interventions, outcome, review_date, assigned_staff, status
+        FROM care_plans
+        WHERE resident_id = $1
+        ORDER BY review_date ASC
+      `,
+      values: [residentId]
+    };
+  },
+
+  upsert(carePlan: CarePlan): SqlStatement {
+    return {
+      text: `
+        INSERT INTO care_plans (id, organization_id, facility_id, resident_id, goal, interventions, outcome, review_date, assigned_staff, status)
+        VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10)
+        ON CONFLICT (id) DO UPDATE
+        SET goal = EXCLUDED.goal,
+            interventions = EXCLUDED.interventions,
+            outcome = EXCLUDED.outcome,
+            review_date = EXCLUDED.review_date,
+            assigned_staff = EXCLUDED.assigned_staff,
+            status = EXCLUDED.status,
+            updated_at = now()
+        RETURNING id, organization_id, facility_id, resident_id, goal, interventions, outcome, review_date, assigned_staff, status
+      `,
+      values: [
+        carePlan.id,
+        carePlan.organizationId,
+        carePlan.facilityId,
+        carePlan.residentId,
+        carePlan.goal,
+        JSON.stringify(carePlan.interventions),
+        carePlan.outcome,
+        carePlan.reviewDate,
+        carePlan.assignedStaff,
+        carePlan.status
+      ]
+    };
+  }
+};
+
+export const careTaskStatements = {
+  selectById(id: UUID): SqlStatement { return { text: 'SELECT * FROM care_tasks WHERE id = $1', values: [id] }; },
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM care_tasks WHERE resident_id = $1 ORDER BY due_at ASC', values: [residentId] }; },
+  upsert(task: CareTask): SqlStatement {
+    return { text: `
+      INSERT INTO care_tasks (id, organization_id, facility_id, resident_id, title, task_type, due_at, assigned_staff, status)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      ON CONFLICT (id) DO UPDATE SET title=EXCLUDED.title, task_type=EXCLUDED.task_type, due_at=EXCLUDED.due_at, assigned_staff=EXCLUDED.assigned_staff, status=EXCLUDED.status, updated_at=now()
+      RETURNING *
+    `, values: [task.id, task.organizationId, task.facilityId, task.residentId, task.title, task.taskType, task.dueAt, task.assignedStaff, task.status] };
+  }
+};
+
+export const adlEntryStatements = {
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM adl_entries WHERE resident_id = $1 ORDER BY recorded_at DESC', values: [residentId] }; },
+  insert(entry: AdlEntry): SqlStatement {
+    return { text: `
+      INSERT INTO adl_entries (id, organization_id, facility_id, resident_id, category, outcome, note, recorded_at, recorded_by)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      RETURNING *
+    `, values: [entry.id, entry.organizationId, entry.facilityId, entry.residentId, entry.category, entry.outcome, entry.note ?? null, entry.recordedAt, entry.recordedBy] };
+  }
+};
+
+export const servicePlanStatements = {
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM service_plans WHERE resident_id = $1 ORDER BY service', values: [residentId] }; },
+  upsert(plan: ServicePlanRecord): SqlStatement {
+    return { text: `
+      INSERT INTO service_plans (id, organization_id, facility_id, resident_id, service, schedule, assigned_staff, exceptions, status)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      ON CONFLICT (id) DO UPDATE SET service=EXCLUDED.service, schedule=EXCLUDED.schedule, assigned_staff=EXCLUDED.assigned_staff, exceptions=EXCLUDED.exceptions, status=EXCLUDED.status, updated_at=now()
+      RETURNING *
+    `, values: [plan.id, plan.organizationId, plan.facilityId, plan.residentId, plan.service, plan.schedule, plan.assignedStaff, plan.exceptions ?? null, plan.status] };
+  }
+};
+
+export const medicationOrderStatements = {
+  selectById(id: UUID): SqlStatement { return { text: 'SELECT * FROM medication_orders WHERE id = $1', values: [id] }; },
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM medication_orders WHERE resident_id = $1 ORDER BY medication', values: [residentId] }; },
+  upsert(order: MedicationOrder): SqlStatement {
+    return { text: `
+      INSERT INTO medication_orders (id, organization_id, facility_id, resident_id, medication, dosage, route, schedule, status, instructions)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      ON CONFLICT (id) DO UPDATE SET medication=EXCLUDED.medication, dosage=EXCLUDED.dosage, route=EXCLUDED.route, schedule=EXCLUDED.schedule, status=EXCLUDED.status, instructions=EXCLUDED.instructions, updated_at=now()
+      RETURNING *
+    `, values: [order.id, order.organizationId, order.facilityId, order.residentId, order.medication, order.dosage, order.route, order.schedule, order.status, order.instructions ?? null] };
+  }
+};
+
+export const medicationAdministrationStatements = {
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM medication_administrations WHERE resident_id = $1 ORDER BY administered_at DESC', values: [residentId] }; },
+  insert(administration: MedicationAdministration): SqlStatement {
+    return { text: `
+      INSERT INTO medication_administrations (id, organization_id, facility_id, resident_id, medication_order_id, action, reason, outcome, administered_at, administered_by)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      RETURNING *
+    `, values: [administration.id, administration.organizationId, administration.facilityId, administration.residentId, administration.medicationOrderId, administration.action, administration.reason ?? null, administration.outcome ?? null, administration.administeredAt, administration.administeredBy] };
+  }
+};
+
+export const incidentStatements = {
+  selectById(id: UUID): SqlStatement { return { text: 'SELECT * FROM incidents WHERE id = $1', values: [id] }; },
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM incidents WHERE resident_id = $1 ORDER BY occurred_at DESC', values: [residentId] }; },
+  listByFacility(organizationId: UUID, facilityId: UUID): SqlStatement { return { text: 'SELECT * FROM incidents WHERE organization_id = $1 AND facility_id = $2 ORDER BY occurred_at DESC', values: [organizationId, facilityId] }; },
+  upsert(incident: Incident): SqlStatement {
+    return { text: `
+      INSERT INTO incidents (id, organization_id, facility_id, resident_id, type, severity, status, summary, investigation, root_cause, corrective_action, resolution, occurred_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+      ON CONFLICT (id) DO UPDATE SET severity=EXCLUDED.severity, status=EXCLUDED.status, summary=EXCLUDED.summary, investigation=EXCLUDED.investigation, root_cause=EXCLUDED.root_cause, corrective_action=EXCLUDED.corrective_action, resolution=EXCLUDED.resolution, updated_at=now()
+      RETURNING *
+    `, values: [incident.id, incident.organizationId, incident.facilityId, incident.residentId, incident.type, incident.severity, incident.status, incident.summary, incident.investigation ?? null, incident.rootCause ?? null, incident.correctiveAction ?? null, incident.resolution ?? null, incident.occurredAt] };
+  }
+};
+
+export const complianceIssueStatements = {
+  listByFacility(organizationId: UUID, facilityId: UUID): SqlStatement { return { text: 'SELECT * FROM compliance_issues WHERE organization_id = $1 AND facility_id = $2 ORDER BY severity, issue', values: [organizationId, facilityId] }; },
+  upsert(issue: ComplianceIssue): SqlStatement {
+    return { text: `
+      INSERT INTO compliance_issues (id, organization_id, facility_id, resident_id, issue, severity, status, resolution_link)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      ON CONFLICT (id) DO UPDATE SET issue=EXCLUDED.issue, severity=EXCLUDED.severity, status=EXCLUDED.status, resolution_link=EXCLUDED.resolution_link, updated_at=now()
+      RETURNING *
+    `, values: [issue.id, issue.organizationId, issue.facilityId, issue.residentId ?? null, issue.issue, issue.severity, issue.status, issue.resolutionLink] };
+  }
+};
+
+export const billingChargeStatements = {
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM billing_charges WHERE resident_id = $1 ORDER BY created_at DESC', values: [residentId] }; },
+  upsert(charge: BillingCharge): SqlStatement {
+    return { text: `INSERT INTO billing_charges (id, organization_id, facility_id, resident_id, type, description, amount_cents, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO UPDATE SET type=EXCLUDED.type, description=EXCLUDED.description, amount_cents=EXCLUDED.amount_cents, status=EXCLUDED.status, updated_at=now() RETURNING *`,
+      values: [charge.id, charge.organizationId, charge.facilityId, charge.residentId, charge.type, charge.description, charge.amountCents, charge.status] };
+  }
+};
+
+export const invoiceStatements = {
+  selectById(id: UUID): SqlStatement { return { text: 'SELECT * FROM invoices WHERE id = $1', values: [id] }; },
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM invoices WHERE resident_id = $1 ORDER BY due_date DESC', values: [residentId] }; },
+  upsert(invoice: Invoice): SqlStatement {
+    return { text: `INSERT INTO invoices (id, organization_id, facility_id, resident_id, invoice_number, balance_cents, due_date, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO UPDATE SET balance_cents=EXCLUDED.balance_cents, due_date=EXCLUDED.due_date, status=EXCLUDED.status, updated_at=now() RETURNING *`,
+      values: [invoice.id, invoice.organizationId, invoice.facilityId, invoice.residentId, invoice.invoiceNumber, invoice.balanceCents, invoice.dueDate, invoice.status] };
+  }
+};
+
+export const paymentTransactionStatements = {
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM payment_transactions WHERE resident_id = $1 ORDER BY posted_at DESC', values: [residentId] }; },
+  insert(transaction: PaymentTransaction): SqlStatement {
+    return { text: `INSERT INTO payment_transactions (id, organization_id, facility_id, resident_id, invoice_id, type, amount_cents, method, posted_at, posted_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      values: [transaction.id, transaction.organizationId, transaction.facilityId, transaction.residentId, transaction.invoiceId ?? null, transaction.type, transaction.amountCents, transaction.method, transaction.postedAt, transaction.postedBy] };
   }
 };
 

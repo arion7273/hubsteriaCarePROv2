@@ -106,6 +106,154 @@ export type WorkflowActionJobInput = {
   priority?: BackgroundJob['priority'];
 };
 
+export type Assessment = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  type: string;
+  status: 'due' | 'in_progress' | 'review' | 'complete';
+  score?: number;
+  answers: Record<string, unknown>;
+};
+
+export type CarePlan = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  goal: string;
+  interventions: string[];
+  outcome: string;
+  reviewDate: string;
+  assignedStaff: string;
+  status: 'active' | 'resolved' | 'inactive';
+};
+
+export type CareTask = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  title: string;
+  taskType: 'one_time' | 'daily' | 'weekly' | 'monthly' | 'custom_recurring';
+  dueAt: string;
+  assignedStaff: string;
+  status: 'due' | 'overdue' | 'complete' | 'missed' | 'unassigned';
+};
+
+export type AdlEntry = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  category: string;
+  outcome: string;
+  note?: string;
+  recordedAt: string;
+  recordedBy: UUID;
+};
+
+export type BillingCharge = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  type: 'recurring' | 'level_of_care' | 'move_in' | 'move_out' | 'ancillary';
+  description: string;
+  amountCents: number;
+  status: 'draft' | 'posted' | 'void';
+};
+
+export type Invoice = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  invoiceNumber: string;
+  balanceCents: number;
+  dueDate: string;
+  status: 'draft' | 'posted' | 'paid' | 'overdue';
+};
+
+export type PaymentTransaction = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  invoiceId?: UUID;
+  type: 'payment' | 'credit' | 'refund';
+  amountCents: number;
+  method: string;
+  postedAt: string;
+  postedBy: UUID;
+};
+
+export type ServicePlanRecord = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  service: string;
+  schedule: string;
+  assignedStaff: string;
+  exceptions?: string;
+  status: 'active' | 'inactive';
+};
+
+export type MedicationOrder = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  medication: string;
+  dosage: string;
+  route: string;
+  schedule: string;
+  status: 'active' | 'future' | 'prn' | 'discontinued' | 'hold';
+  instructions?: string;
+};
+
+export type MedicationAdministration = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  medicationOrderId: UUID;
+  action: 'given' | 'refused' | 'held' | 'resident_absent' | 'not_available';
+  reason?: string;
+  outcome?: string;
+  administeredAt: string;
+  administeredBy: UUID;
+};
+
+export type Incident = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  type: 'fall' | 'injury' | 'medication_error' | 'behavioral_event' | 'elopement' | 'infection_event';
+  severity: 'info' | 'warning' | 'critical';
+  status: 'open' | 'investigating' | 'corrective_action' | 'resolved';
+  summary: string;
+  investigation?: string;
+  rootCause?: string;
+  correctiveAction?: string;
+  resolution?: string;
+  occurredAt: string;
+};
+
+export type ComplianceIssue = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId?: UUID;
+  issue: string;
+  severity: 'info' | 'warning' | 'critical';
+  status: 'open' | 'resolved';
+  resolutionLink: string;
+};
+
 export type User = {
   id: UUID;
   email: string;
