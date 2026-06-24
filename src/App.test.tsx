@@ -519,4 +519,47 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Notification Center Pro sends family medication updates, incident alerts/i)).toBeInTheDocument();
     expect(screen.getByText(/Resident Command Center controls which resident updates, documents, and timeline events become family-visible/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 13 Billing Center operations charges and invoices', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Billing & Financial Operations' })).toBeInTheDocument();
+    expect(screen.getByText('Occupancy Revenue')).toBeInTheDocument();
+    expect(screen.getByText('Outstanding Balances')).toBeInTheDocument();
+
+    const operations = screen.getByLabelText('Billing operations');
+    ['Recurring Charges', 'Level of Care Billing', 'Move-In Charges', 'Move-Out Charges', 'Ancillary Services', 'Invoices', 'Statements', 'Payments', 'Credits', 'Refunds'].forEach(
+      (operation) => {
+        expect(within(operations).getByText(operation)).toBeInTheDocument();
+      }
+    );
+
+    const charges = screen.getByLabelText('Charge items');
+    expect(within(charges).getByText('Level of Care Billing')).toBeInTheDocument();
+    expect(within(charges).getByText('Move-In Charge')).toBeInTheDocument();
+
+    const invoices = screen.getByLabelText('Invoices');
+    expect(within(invoices).getByText('INV-1042')).toBeInTheDocument();
+    expect(within(invoices).getByText('INV-1007')).toBeInTheDocument();
+    expect(within(invoices).getByText('Overdue')).toBeInTheDocument();
+  });
+
+  it('supports billing payments aging reports and integration contracts', () => {
+    render(<App />);
+
+    const payments = screen.getByLabelText('Payment activity');
+    expect(within(payments).getByText('Payment')).toBeInTheDocument();
+    expect(within(payments).getByText('Credit')).toBeInTheDocument();
+    expect(within(payments).getByText('Refund')).toBeInTheDocument();
+
+    const aging = screen.getByLabelText('Aging report');
+    ['Current', '30 Days', '60 Days', '90+ Days'].forEach((bucket) => {
+      expect(within(aging).getByText(bucket)).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Resident Command Center displays billing events, statements, balances/i)).toBeInTheDocument();
+    expect(screen.getByText(/Family Portal shows billing information only when responsible-party and payer permissions allow access/i)).toBeInTheDocument();
+    expect(screen.getByText(/Print Center Pro exports invoices, statements, receipts, aging reports/i)).toBeInTheDocument();
+    expect(screen.getByText(/All charges, invoices, statements, payments, credits, refunds, and billing adjustments/i)).toBeInTheDocument();
+  });
 });

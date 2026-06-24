@@ -79,6 +79,15 @@ import {
   familyPermissionRules
 } from './data/family';
 import {
+  agingReport,
+  billingIntegrationRequirements,
+  billingMetrics,
+  billingOperations,
+  chargeItems,
+  invoiceItems,
+  paymentActivity
+} from './data/billing';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -208,6 +217,7 @@ function App() {
             'Incidents & Compliance',
             'Communication Center',
             'Family Portal',
+            'Billing Center',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -228,7 +238,9 @@ function App() {
                             ? '#communication-center'
                             : item === 'Family Portal'
                               ? '#family-portal'
-                              : `#${item.toLowerCase().replaceAll(' ', '-')}`
+                              : item === 'Billing Center'
+                                ? '#billing-center'
+                                : `#${item.toLowerCase().replaceAll(' ', '-')}`
               }
               key={item}
             >
@@ -240,8 +252,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-12</strong>
-            <span>Family portal active</span>
+            <strong>Phase 0-13</strong>
+            <span>Billing center active</span>
           </div>
         </div>
       </aside>
@@ -298,6 +310,9 @@ function App() {
               </a>
               <a className="button secondary" href="#family-portal">
                 Open Family Portal
+              </a>
+              <a className="button secondary" href="#billing-center">
+                Open Billing
               </a>
             </div>
           </div>
@@ -1722,6 +1737,140 @@ function App() {
             </div>
             <ul className="check-list">
               {familyIntegrationRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className="content-card billing-center" id="billing-center" aria-labelledby="billing-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 13</p>
+              <h2 id="billing-title">Billing & Financial Operations</h2>
+              <p>
+                Revenue operations for recurring charges, level-of-care billing, move-in and move-out charges,
+                ancillary services, invoices, statements, payments, credits, refunds, aging, and collections.
+              </p>
+            </div>
+            <div className="billing-status">
+              <span>Revenue operations</span>
+              <strong>Aging tracked</strong>
+            </div>
+          </div>
+
+          <div className="billing-metric-grid">
+            {billingMetrics.map((metric) => (
+              <article className="billing-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="billing-operation-panel">
+            <div className="card-heading">
+              <span>Billing Center</span>
+              <strong>Financial operations supported</strong>
+            </div>
+            <div className="billing-operation-grid" aria-label="Billing operations">
+              {billingOperations.map((operation) => (
+                <span key={operation}>{operation}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="billing-layout">
+            <div className="billing-panel">
+              <div className="card-heading">
+                <span>Charges</span>
+                <strong>Recurring, level of care, move-in, ancillary</strong>
+              </div>
+              <div className="charge-list" aria-label="Charge items">
+                {chargeItems.map((charge) => (
+                  <article key={`${charge.type}-${charge.resident}`}>
+                    <div>
+                      <strong>{charge.type}</strong>
+                      <span>
+                        {charge.resident} | {charge.frequency}
+                      </span>
+                    </div>
+                    <p>{charge.amount}</p>
+                    <span className={`billing-status-pill ${charge.status.toLowerCase()}`}>{charge.status}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="billing-panel">
+              <div className="card-heading">
+                <span>Invoices and statements</span>
+                <strong>Balances and due dates</strong>
+              </div>
+              <div className="invoice-list" aria-label="Invoices">
+                {invoiceItems.map((invoice) => (
+                  <article key={invoice.invoice}>
+                    <div>
+                      <strong>{invoice.invoice}</strong>
+                      <span>{invoice.resident}</span>
+                    </div>
+                    <p>
+                      {invoice.balance} | Due {invoice.dueDate}
+                    </p>
+                    <span className={`billing-status-pill ${invoice.status.toLowerCase()}`}>{invoice.status}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="billing-layout">
+            <div className="billing-panel">
+              <div className="card-heading">
+                <span>Payments, credits, refunds</span>
+                <strong>Posted financial activity</strong>
+              </div>
+              <div className="payment-list" aria-label="Payment activity">
+                {paymentActivity.map((activity) => (
+                  <article key={`${activity.type}-${activity.resident}-${activity.amount}`}>
+                    <span>{activity.type}</span>
+                    <div>
+                      <strong>{activity.resident}</strong>
+                      <p>
+                        {activity.amount} | {activity.method}
+                      </p>
+                    </div>
+                    <small>{activity.posted}</small>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="billing-panel">
+              <div className="card-heading">
+                <span>Aging Reports</span>
+                <strong>30 / 60 / 90 day tracking</strong>
+              </div>
+              <div className="aging-grid" aria-label="Aging report">
+                {agingReport.map((item) => (
+                  <article key={item.bucket}>
+                    <span>{item.bucket}</span>
+                    <strong>{item.balance}</strong>
+                    <small>{item.accounts}</small>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="billing-panel integration-panel">
+            <div className="card-heading">
+              <span>Billing integration contract</span>
+              <strong>Resident, family, print, notification, and audit hooks</strong>
+            </div>
+            <ul className="check-list">
+              {billingIntegrationRequirements.map((requirement) => (
                 <li key={requirement}>{requirement}</li>
               ))}
             </ul>

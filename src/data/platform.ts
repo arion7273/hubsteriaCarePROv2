@@ -364,6 +364,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Communication Center', 'Notification Center Integration', 'Audit Log Contract'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Billing Charges Invoices and Payments',
+    module: 'Billing & Financial Operations',
+    status: 'registered',
+    dependencies: ['Resident Command Center', 'Family Portal', 'Audit Log Contract'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Aging Reports and Revenue Dashboard',
+    module: 'Billing & Financial Operations',
+    status: 'registered',
+    dependencies: ['Billing Charges Invoices and Payments', 'Print Center Integration'],
+    version: '0.1.0'
   }
 ];
 

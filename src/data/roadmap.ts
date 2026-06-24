@@ -192,7 +192,7 @@ export const enterprisePhases: Phase[] = [
   {
     id: '13',
     title: 'Billing & Financial Operations',
-    status: 'future',
+    status: 'foundation',
     milestone: 'Revenue Operations',
     summary: 'Recurring charges, level-of-care billing, invoices, statements, payments, aging, and revenue dashboards.',
     deliverables: ['Charges', 'Invoices', 'Payments', 'Aging reports']

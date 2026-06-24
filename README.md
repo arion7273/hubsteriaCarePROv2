@@ -19,6 +19,7 @@ This repository currently implements the first product foundation milestone:
 - Phase 10 Incidents & Compliance Center with incident workflows, investigations, root cause analysis, corrective actions, compliance dashboard, fix-this-issue links, and survey readiness
 - Phase 11 Communication Center with secure staff/family/provider messaging, shift handoff, announcements, read receipts, and notification-backed communication workflows
 - Phase 12 Family Portal with resident overview, approved care updates, documents, secure messages, appointments, billing visibility, family notifications, and role-based permissions
+- Phase 13 Billing & Financial Operations with recurring charges, level-of-care billing, invoices, statements, payments, credits, refunds, aging reports, and revenue dashboards
 - Roadmap registry for phases 0-20
 - Regression tests for the foundation shell
 

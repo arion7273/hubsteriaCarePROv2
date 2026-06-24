@@ -2921,6 +2921,189 @@ p {
   padding-left: 1.15rem;
 }
 
+.billing-center {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.billing-status {
+  display: grid;
+  gap: 0.2rem;
+  min-width: min(100%, 17rem);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.billing-status span {
+  color: var(--success);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.billing-status strong {
+  color: var(--primary-strong);
+}
+
+.billing-metric-grid,
+.billing-layout,
+.billing-operation-grid,
+.aging-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.billing-metric-grid,
+.aging-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.billing-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.billing-operation-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.billing-metric-card,
+.billing-operation-panel,
+.billing-panel,
+.charge-list article,
+.invoice-list article,
+.payment-list article,
+.aging-grid article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.billing-metric-card,
+.billing-operation-panel,
+.billing-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.billing-metric-card span,
+.aging-grid span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.billing-metric-card strong,
+.aging-grid strong {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  letter-spacing: -0.05em;
+}
+
+.billing-metric-card small,
+.aging-grid small {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.billing-operation-grid span {
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 0.55rem 0.75rem;
+}
+
+.charge-list,
+.invoice-list,
+.payment-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.charge-list article,
+.invoice-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.charge-list span:not(.billing-status-pill),
+.invoice-list span:not(.billing-status-pill) {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.charge-list p,
+.invoice-list p,
+.payment-list p {
+  margin: 0;
+}
+
+.billing-status-pill {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.billing-status-pill.posted,
+.billing-status-pill.paid {
+  background: #ddf6ed;
+  color: var(--success);
+}
+
+.billing-status-pill.draft,
+.billing-status-pill.refunded {
+  background: #e8eef9;
+  color: #355985;
+}
+
+.billing-status-pill.overdue {
+  background: #ffe4e2;
+  color: var(--danger);
+}
+
+.payment-list article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.payment-list article > span {
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+}
+
+.payment-list small {
+  color: var(--muted);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.aging-grid article {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.85rem;
+  background: var(--surface);
+}
+
 .role-grid,
 .roadmap-grid {
   display: grid;
@@ -3078,6 +3261,9 @@ summary {
   .communication-metric-grid,
   .family-metric-grid,
   .family-dashboard-grid,
+  .billing-metric-grid,
+  .billing-operation-grid,
+  .aging-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -3102,6 +3288,7 @@ summary {
   .incidents-layout,
   .communication-layout,
   .family-layout,
+  .billing-layout,
   .module-connection-panel,
   .notification-layout,
   .notification-bottom-grid,
@@ -3150,6 +3337,9 @@ summary {
   .communication-metric-grid,
   .family-metric-grid,
   .family-dashboard-grid,
+  .billing-metric-grid,
+  .billing-operation-grid,
+  .aging-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -3237,6 +3427,9 @@ summary {
   .announcement-list article,
   .family-message-list article,
   .family-notification-list article,
+  .charge-list article,
+  .invoice-list article,
+  .payment-list article,
   .sync-field-list article,
   .refill-list article,
   .configuration-audit-list article,
