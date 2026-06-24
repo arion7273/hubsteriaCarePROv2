@@ -215,6 +215,16 @@ function App() {
   const [loginEmail, setLoginEmail] = useState('b094650@gmail.com');
   const [loginPassword, setLoginPassword] = useState('');
   const [mfaCode, setMfaCode] = useState('');
+  const [organizationName, setOrganizationName] = useState('Northstar Senior Living');
+  const [facilityOrganizationId, setFacilityOrganizationId] = useState('org-1');
+  const [facilityName, setFacilityName] = useState('Cedar Grove');
+  const [residentOrganizationId, setResidentOrganizationId] = useState('org-1');
+  const [residentFacilityId, setResidentFacilityId] = useState('facility-1');
+  const [residentFirstName, setResidentFirstName] = useState('Maria');
+  const [residentLastName, setResidentLastName] = useState('Alvarez');
+  const [userOrganizationId, setUserOrganizationId] = useState('org-1');
+  const [userEmail, setUserEmail] = useState('caregiver@example.com');
+  const [userRoleTier, setUserRoleTier] = useState('EMPLOYEE');
   const [apiWorkflowLog, setApiWorkflowLog] = useState<string[]>(['No API workflow actions run yet.']);
   const globalSearchRef = useRef<HTMLInputElement>(null);
   const apiBaseUrl = getConfiguredApiBaseUrl();
@@ -645,60 +655,6 @@ function App() {
             <button type="button" onClick={runDemoLogin}>
               Demo login + MFA
             </button>
-            <button
-              type="button"
-              onClick={() =>
-                runApiAction('Create organization', (client) =>
-                  client.createOrganization(requireDemoSession(), 'Northstar Senior Living')
-                )
-              }
-            >
-              Create organization
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                runApiAction('Create facility', (client) =>
-                  client.createFacility(requireDemoSession(), { organizationId: 'org-1', name: 'Cedar Grove' })
-                )
-              }
-            >
-              Create facility
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                runApiAction('Create resident', (client) =>
-                  client.createResident(requireDemoSession(), {
-                    organizationId: 'org-1',
-                    facilityId: 'facility-1',
-                    firstName: 'Maria',
-                    lastName: 'Alvarez',
-                    preferredName: 'Maria',
-                    room: '214B',
-                    levelOfCare: 'Memory Care'
-                  })
-                )
-              }
-            >
-              Create resident
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                runApiAction('List residents', (client) => client.listResidents(requireDemoSession(), 'org-1', 'facility-1'))
-              }
-            >
-              List residents
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                runApiAction('List users', (client) => client.listUsers(requireDemoSession(), 'org-1'))
-              }
-            >
-              List users
-            </button>
             <a href={`${apiBaseUrl}/openapi.json`} target="_blank" rel="noreferrer">
               Open API contract
             </a>
@@ -759,6 +715,139 @@ function App() {
               <button type="button" onClick={handleLogout}>
                 Logout
               </button>
+            </div>
+          </div>
+
+          <div className="api-crud-grid">
+            <div className="api-crud-card">
+              <div className="card-heading">
+                <span>Organizations</span>
+                <strong>Create and list</strong>
+              </div>
+              <label htmlFor="api-organization-name">Organization name</label>
+              <input id="api-organization-name" value={organizationName} onChange={(event) => setOrganizationName(event.target.value)} />
+              <div className="api-mini-actions">
+                <button
+                  type="button"
+                  onClick={() => runApiAction('Create organization', (client) => client.createOrganization(requireDemoSession(), organizationName))}
+                >
+                  Create organization
+                </button>
+                <button type="button" onClick={() => runApiAction('List organizations', (client) => client.listOrganizations(requireDemoSession()))}>
+                  List organizations
+                </button>
+              </div>
+            </div>
+
+            <div className="api-crud-card">
+              <div className="card-heading">
+                <span>Facilities</span>
+                <strong>Create and list</strong>
+              </div>
+              <label htmlFor="api-facility-org">Organization ID</label>
+              <input id="api-facility-org" value={facilityOrganizationId} onChange={(event) => setFacilityOrganizationId(event.target.value)} />
+              <label htmlFor="api-facility-name">Facility name</label>
+              <input id="api-facility-name" value={facilityName} onChange={(event) => setFacilityName(event.target.value)} />
+              <div className="api-mini-actions">
+                <button
+                  type="button"
+                  onClick={() =>
+                    runApiAction('Create facility', (client) =>
+                      client.createFacility(requireDemoSession(), { organizationId: facilityOrganizationId, name: facilityName })
+                    )
+                  }
+                >
+                  Create facility
+                </button>
+                <button
+                  type="button"
+                  onClick={() => runApiAction('List facilities', (client) => client.listFacilities(requireDemoSession(), facilityOrganizationId))}
+                >
+                  List facilities
+                </button>
+              </div>
+            </div>
+
+            <div className="api-crud-card">
+              <div className="card-heading">
+                <span>Residents</span>
+                <strong>Create and list</strong>
+              </div>
+              <label htmlFor="api-resident-org">Organization ID</label>
+              <input id="api-resident-org" value={residentOrganizationId} onChange={(event) => setResidentOrganizationId(event.target.value)} />
+              <label htmlFor="api-resident-facility">Facility ID</label>
+              <input id="api-resident-facility" value={residentFacilityId} onChange={(event) => setResidentFacilityId(event.target.value)} />
+              <label htmlFor="api-resident-first">First name</label>
+              <input id="api-resident-first" value={residentFirstName} onChange={(event) => setResidentFirstName(event.target.value)} />
+              <label htmlFor="api-resident-last">Last name</label>
+              <input id="api-resident-last" value={residentLastName} onChange={(event) => setResidentLastName(event.target.value)} />
+              <div className="api-mini-actions">
+                <button
+                  type="button"
+                  onClick={() =>
+                    runApiAction('Create resident', (client) =>
+                      client.createResident(requireDemoSession(), {
+                        organizationId: residentOrganizationId,
+                        facilityId: residentFacilityId,
+                        firstName: residentFirstName,
+                        lastName: residentLastName
+                      })
+                    )
+                  }
+                >
+                  Create resident
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    runApiAction('List residents', (client) =>
+                      client.listResidents(requireDemoSession(), residentOrganizationId, residentFacilityId)
+                    )
+                  }
+                >
+                  List residents
+                </button>
+              </div>
+            </div>
+
+            <div className="api-crud-card">
+              <div className="card-heading">
+                <span>Users</span>
+                <strong>Create and list</strong>
+              </div>
+              <label htmlFor="api-user-org">Organization ID</label>
+              <input id="api-user-org" value={userOrganizationId} onChange={(event) => setUserOrganizationId(event.target.value)} />
+              <label htmlFor="api-user-email">User email</label>
+              <input id="api-user-email" value={userEmail} onChange={(event) => setUserEmail(event.target.value)} />
+              <label htmlFor="api-user-role">Role tier</label>
+              <select id="api-user-role" value={userRoleTier} onChange={(event) => setUserRoleTier(event.target.value)}>
+                {['T2', 'T3', 'EMPLOYEE', 'FAMILY', 'RESIDENT'].map((tier) => (
+                  <option key={tier} value={tier}>
+                    {tier}
+                  </option>
+                ))}
+              </select>
+              <div className="api-mini-actions">
+                <button
+                  type="button"
+                  onClick={() =>
+                    runApiAction('Create user', (client) =>
+                      client.createUser(requireDemoSession(), {
+                        email: userEmail,
+                        roleTier: userRoleTier,
+                        organizationId: userOrganizationId,
+                        facilityIds: [],
+                        permissions: ['resident:read']
+                      })
+                    )
+                  }
+                >
+                  Create user
+                </button>
+                <button type="button" onClick={() => runApiAction('List users', (client) => client.listUsers(requireDemoSession(), userOrganizationId))}>
+                  List users
+                </button>
+              </div>
             </div>
           </div>
 

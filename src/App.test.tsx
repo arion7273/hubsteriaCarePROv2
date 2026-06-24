@@ -73,12 +73,10 @@ describe('HubsteriaCarePRO foundation', () => {
           headers: { 'content-type': 'application/json' }
         })
       )
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ ok: true, status: 201, data: { id: 'org-1' } }), {
-          status: 200,
-          headers: { 'content-type': 'application/json' }
-        })
-      );
+      .mockResolvedValue(new Response(JSON.stringify({ ok: true, status: 201, data: { id: 'ok' } }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      }));
 
     render(<App />);
     await user.click(screen.getByRole('button', { name: 'Demo login + MFA' }));
@@ -98,6 +96,83 @@ describe('HubsteriaCarePRO foundation', () => {
       }
     });
   });
+
+  it('uses form values for first admin CRUD API screens', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ok: true,
+            status: 200,
+            data: {
+              session: { id: 'session-1' },
+              mfaChallenge: { id: 'mfa-1' }
+            }
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, status: 200, data: { id: 'session-1', mfaVerified: true } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      )
+      .mockResolvedValue(new Response(JSON.stringify({ ok: true, status: 201, data: { id: 'ok' } }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      }));
+
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Demo login + MFA' }));
+
+    await user.clear(screen.getByLabelText('Organization name'));
+    await user.type(screen.getByLabelText('Organization name'), 'Acme Senior Living');
+    await user.click(screen.getByRole('button', { name: 'Create organization' }));
+
+    await user.clear(screen.getByLabelText('Facility name'));
+    await user.type(screen.getByLabelText('Facility name'), 'Acme East');
+    await user.click(screen.getByRole('button', { name: 'Create facility' }));
+
+    await user.clear(screen.getByLabelText('First name'));
+    await user.type(screen.getByLabelText('First name'), 'Ana');
+    await user.clear(screen.getByLabelText('Last name'));
+    await user.type(screen.getByLabelText('Last name'), 'Rivera');
+    await user.click(screen.getByRole('button', { name: 'Create resident' }));
+
+    await user.clear(screen.getByLabelText('User email'));
+    await user.type(screen.getByLabelText('User email'), 'nurse@example.com');
+    await user.selectOptions(screen.getByLabelText('Role tier'), 'T3');
+    await user.click(screen.getByRole('button', { name: 'Create user' }));
+
+    const orgCall = fetchMock.mock.calls[2] as unknown as [URL, RequestInit];
+    expect(orgCall[1].body).toBe(JSON.stringify({ name: 'Acme Senior Living' }));
+
+    const facilityCall = fetchMock.mock.calls[3] as unknown as [URL, RequestInit];
+    expect(facilityCall[1].body).toBe(JSON.stringify({ organizationId: 'org-1', name: 'Acme East' }));
+
+    const residentCall = fetchMock.mock.calls[4] as unknown as [URL, RequestInit];
+    expect(residentCall[1].body).toBe(
+      JSON.stringify({
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        firstName: 'Ana',
+        lastName: 'Rivera'
+      })
+    );
+
+    const userCall = fetchMock.mock.calls[5] as unknown as [URL, RequestInit];
+    expect(userCall[1].body).toBe(
+      JSON.stringify({
+        email: 'nurse@example.com',
+        roleTier: 'T3',
+        organizationId: 'org-1',
+        facilityIds: [],
+        permissions: ['resident:read']
+      })
+    );
+  }, 15000);
 
   it('supports manual login MFA and logout session UI', async () => {
     const user = userEvent.setup();
@@ -155,7 +230,7 @@ describe('HubsteriaCarePRO foundation', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    expect(screen.getByText('Organizations')).toBeInTheDocument();
+    expect(screen.getAllByText('Organizations').length).toBeGreaterThan(0);
     expect(screen.getByText('DigitalRX Health')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'T2 Organization' }));
