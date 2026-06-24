@@ -336,6 +336,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Incident Workflow Engine', 'Print Center Integration', 'Configuration Center'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Secure Messaging and Shift Handoff',
+    module: 'Communication Center',
+    status: 'registered',
+    dependencies: ['Resident Command Center', 'Notification Center Integration', 'Audit Log Contract'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Announcements and Read Receipts',
+    module: 'Communication Center',
+    status: 'registered',
+    dependencies: ['Secure Messaging and Shift Handoff', 'Configuration Center'],
+    version: '0.1.0'
   }
 ];
 

@@ -452,4 +452,35 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Print Center Pro exports incident reports, investigation packets/i)).toBeInTheDocument();
     expect(screen.getByText(/All incident creation, updates, investigations, corrective actions/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 11 Communication Center messaging and shift handoff workflows', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Communication Center' })).toBeInTheDocument();
+    expect(screen.getAllByText('Unread Messages').length).toBeGreaterThan(0);
+
+    const threads = screen.getByLabelText('Message threads');
+    expect(within(threads).getByText('Evening med pass coverage')).toBeInTheDocument();
+    expect(within(threads).getByText('Maria Alvarez care update')).toBeInTheDocument();
+    expect(within(threads).getByText('Warfarin hold clarification')).toBeInTheDocument();
+    expect(within(threads).getByText('Escalated')).toBeInTheDocument();
+
+    const handoffs = screen.getByLabelText('Shift handoffs');
+    expect(within(handoffs).getByText('Maria Alvarez')).toBeInTheDocument();
+    expect(within(handoffs).getByText(/Monitor wandering cues and complete evening redirection task/i)).toBeInTheDocument();
+    expect(within(handoffs).getByText('Pending')).toBeInTheDocument();
+  });
+
+  it('supports announcements read receipts and communication integrations', () => {
+    render(<App />);
+
+    const announcements = screen.getByLabelText('Facility announcements');
+    expect(within(announcements).getByText('Emergency weather alert')).toBeInTheDocument();
+    expect(within(announcements).getByText('Medication policy update')).toBeInTheDocument();
+    expect(within(announcements).getByText('91% read')).toBeInTheDocument();
+
+    expect(screen.getByText(/Notification Center Pro sends in-app, email, SMS, and push notices/i)).toBeInTheDocument();
+    expect(screen.getByText(/Resident Command Center displays resident-linked messages/i)).toBeInTheDocument();
+    expect(screen.getByText(/All messages, announcements, handoffs, read receipts, escalations, and edits/i)).toBeInTheDocument();
+  });
 });

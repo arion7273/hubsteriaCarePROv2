@@ -64,6 +64,13 @@ import {
   surveyReadinessChecklist
 } from './data/incidents';
 import {
+  communicationIntegrationRequirements,
+  communicationMetrics,
+  facilityAnnouncements,
+  messageThreads,
+  shiftHandoffs
+} from './data/communication';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -191,6 +198,7 @@ function App() {
             'eMAR & Medication',
             'DigitalRX Hub',
             'Incidents & Compliance',
+            'Communication Center',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -207,7 +215,9 @@ function App() {
                         ? '#digitalrx-integration-hub'
                         : item === 'Incidents & Compliance'
                           ? '#incidents-compliance-center'
-                          : `#${item.toLowerCase().replaceAll(' ', '-')}`
+                          : item === 'Communication Center'
+                            ? '#communication-center'
+                            : `#${item.toLowerCase().replaceAll(' ', '-')}`
               }
               key={item}
             >
@@ -219,8 +229,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-10</strong>
-            <span>Compliance center active</span>
+            <strong>Phase 0-11</strong>
+            <span>Communication active</span>
           </div>
         </div>
       </aside>
@@ -271,6 +281,9 @@ function App() {
               </a>
               <a className="button secondary" href="#incidents-compliance-center">
                 Open Compliance
+              </a>
+              <a className="button secondary" href="#communication-center">
+                Open Communication
               </a>
             </div>
           </div>
@@ -1477,6 +1490,112 @@ function App() {
                 <li key={requirement}>{requirement}</li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        <section className="content-card communication-center" id="communication-center" aria-labelledby="communication-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 11</p>
+              <h2 id="communication-title">Communication Center</h2>
+              <p>
+                Secure messaging, shift handoff, facility announcements, read receipts, and notification-backed
+                communication workflows for staff, families, and providers.
+              </p>
+            </div>
+            <div className="communication-status">
+              <span>Secure messaging</span>
+              <strong>Read receipts active</strong>
+            </div>
+          </div>
+
+          <div className="communication-metric-grid">
+            {communicationMetrics.map((metric) => (
+              <article className="communication-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="communication-layout">
+            <div className="communication-panel">
+              <div className="card-heading">
+                <span>Messaging</span>
+                <strong>Internal staff, family, and provider threads</strong>
+              </div>
+              <div className="message-thread-list" aria-label="Message threads">
+                {messageThreads.map((thread) => (
+                  <article key={`${thread.audience}-${thread.subject}`}>
+                    <div>
+                      <strong>{thread.subject}</strong>
+                      <span>
+                        {thread.audience} | {thread.participants}
+                      </span>
+                    </div>
+                    <p>{thread.lastActivity}</p>
+                    <span className={`message-status-pill ${thread.status.toLowerCase().replaceAll(' ', '-')}`}>
+                      {thread.status}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="communication-panel">
+              <div className="card-heading">
+                <span>Shift Handoff Center</span>
+                <strong>Outgoing to incoming shift</strong>
+              </div>
+              <div className="handoff-list" aria-label="Shift handoffs">
+                {shiftHandoffs.map((handoff) => (
+                  <article key={`${handoff.resident}-${handoff.outgoingShift}`}>
+                    <strong>{handoff.resident}</strong>
+                    <span>
+                      {`${handoff.outgoingShift} -> ${handoff.incomingShift}`}
+                    </span>
+                    <p>{handoff.note}</p>
+                    <small>{handoff.readConfirmation}</small>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="communication-layout">
+            <div className="communication-panel">
+              <div className="card-heading">
+                <span>Facility Announcements</span>
+                <strong>Emergency alerts, policy updates, meetings</strong>
+              </div>
+              <div className="announcement-list" aria-label="Facility announcements">
+                {facilityAnnouncements.map((announcement) => (
+                  <article key={announcement.title}>
+                    <div>
+                      <strong>{announcement.title}</strong>
+                      <span>{announcement.audience}</span>
+                    </div>
+                    <span className={`announcement-priority ${announcement.priority.toLowerCase()}`}>
+                      {announcement.priority}
+                    </span>
+                    <p>{announcement.readReceipts}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="communication-panel integration-panel">
+              <div className="card-heading">
+                <span>Communication integration contract</span>
+                <strong>Notification, resident, configuration, print, and audit hooks</strong>
+              </div>
+              <ul className="check-list">
+                {communicationIntegrationRequirements.map((requirement) => (
+                  <li key={requirement}>{requirement}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         </section>
 

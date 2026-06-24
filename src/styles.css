@@ -2598,6 +2598,155 @@ p {
   padding-left: 1.15rem;
 }
 
+.communication-center {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.communication-status {
+  display: grid;
+  gap: 0.2rem;
+  min-width: min(100%, 17rem);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.communication-status span {
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.communication-status strong {
+  color: var(--primary-strong);
+}
+
+.communication-metric-grid,
+.communication-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.communication-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.communication-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.communication-metric-card,
+.communication-panel,
+.message-thread-list article,
+.handoff-list article,
+.announcement-list article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.communication-metric-card,
+.communication-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.communication-metric-card span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.communication-metric-card strong {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  letter-spacing: -0.05em;
+}
+
+.communication-metric-card small {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.message-thread-list,
+.handoff-list,
+.announcement-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.message-thread-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.message-thread-list span:not(.message-status-pill),
+.handoff-list span,
+.handoff-list small,
+.announcement-list span:not(.announcement-priority) {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.message-thread-list p,
+.handoff-list p,
+.announcement-list p {
+  margin: 0;
+}
+
+.message-status-pill,
+.announcement-priority {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.message-status-pill.read,
+.announcement-priority.routine {
+  background: #ddf6ed;
+  color: var(--success);
+}
+
+.message-status-pill.unread,
+.message-status-pill.needs-reply,
+.announcement-priority.policy {
+  background: #fff4da;
+  color: var(--warning);
+}
+
+.message-status-pill.escalated,
+.announcement-priority.emergency {
+  background: #ffe4e2;
+  color: var(--danger);
+}
+
+.handoff-list article {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.announcement-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
 .role-grid,
 .roadmap-grid {
   display: grid;
@@ -2752,6 +2901,7 @@ summary {
   .digitalrx-metric-grid,
   .incident-metric-grid,
   .incident-workflow,
+  .communication-metric-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -2774,6 +2924,7 @@ summary {
   .medication-subgrid,
   .digitalrx-layout,
   .incidents-layout,
+  .communication-layout,
   .module-connection-panel,
   .notification-layout,
   .notification-bottom-grid,
@@ -2819,6 +2970,7 @@ summary {
   .digitalrx-metric-grid,
   .incident-metric-grid,
   .incident-workflow,
+  .communication-metric-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -2902,6 +3054,8 @@ summary {
   .pharmacy-inbox-list article,
   .incident-record-list article,
   .compliance-list article,
+  .message-thread-list article,
+  .announcement-list article,
   .sync-field-list article,
   .refill-list article,
   .configuration-audit-list article,

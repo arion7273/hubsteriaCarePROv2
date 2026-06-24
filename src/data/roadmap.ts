@@ -176,7 +176,7 @@ export const enterprisePhases: Phase[] = [
   {
     id: '11',
     title: 'Communication Center',
-    status: 'future',
+    status: 'foundation',
     milestone: 'Secure Messaging',
     summary: 'Staff, family, provider messaging, shift handoff, announcements, read receipts, and notification integration.',
     deliverables: ['Messaging', 'Shift handoff', 'Announcements', 'Read receipts']
