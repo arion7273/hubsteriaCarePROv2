@@ -62,6 +62,8 @@ Audit events must include:
 
 Implement PostgreSQL repository adapters for `src/domain/repositories.ts`, then wire them to an API layer.
 
+See `docs/postgres-adapters.md` for the statement builders and row mappers that should be used by concrete PostgreSQL repository classes.
+
 ## Authentication persistence rules
 
 - Sessions must expire.

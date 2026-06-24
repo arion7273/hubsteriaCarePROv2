@@ -41,6 +41,7 @@ describe('production readiness workflow', () => {
     const api = readFileSync('docs/api-foundation.md', 'utf8');
     const auth = readFileSync('docs/authentication-foundation.md', 'utf8');
     const database = readFileSync('docs/database-foundation.md', 'utf8');
+    const postgresAdapters = readFileSync('docs/postgres-adapters.md', 'utf8');
     const hipaa = readFileSync('docs/hipaa-security-readiness.md', 'utf8');
     const goLive = readFileSync('docs/go-live-checklist.md', 'utf8');
     const runbook = readFileSync('docs/operational-runbook.md', 'utf8');
@@ -65,6 +66,8 @@ describe('production readiness workflow', () => {
     expect(database).toContain('PostgreSQL');
     expect(database).toContain('Tenant isolation rules');
     expect(database).toContain('`audit_logs` is append-only');
+    expect(postgresAdapters).toContain('parameterized SQL builders');
+    expect(postgresAdapters).toContain('row-to-domain mappers');
     expect(hipaa).toContain('Administrative safeguards');
     expect(hipaa).toContain('Technical safeguards');
     expect(goLive).toContain('Tenant isolation tests completed');
