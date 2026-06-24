@@ -37,12 +37,47 @@ describe('production readiness workflow', () => {
 
   it('documents security, HIPAA, and go-live governance gates', () => {
     const security = readFileSync('SECURITY.md', 'utf8');
+    const backend = readFileSync('docs/backend-foundation.md', 'utf8');
+    const api = readFileSync('docs/api-foundation.md', 'utf8');
+    const auth = readFileSync('docs/authentication-foundation.md', 'utf8');
+    const database = readFileSync('docs/database-foundation.md', 'utf8');
+    const postgresAdapters = readFileSync('docs/postgres-adapters.md', 'utf8');
     const hipaa = readFileSync('docs/hipaa-security-readiness.md', 'utf8');
     const goLive = readFileSync('docs/go-live-checklist.md', 'utf8');
     const runbook = readFileSync('docs/operational-runbook.md', 'utf8');
 
     expect(security).toContain('Report security concerns');
     expect(security).toContain('HIPAA security review');
+    expect(backend).toContain('Server-side authentication');
+    expect(backend).toContain('Tenant-isolated data access');
+    expect(backend).toContain('Immutable audit logs');
+    expect(backend).toContain('npm run api:dev');
+    expect(api).toContain('POST /auth/login');
+    expect(api).toContain('POST /residents');
+    expect(api).toContain('PATCH /residents');
+    expect(api).toContain('POST /users');
+    expect(api).toContain('PATCH /users');
+    expect(api).toContain('Protected routes require a valid session');
+    expect(api).toContain('Resident APIs must enforce organization and facility scope');
+    expect(api).toContain('User APIs must enforce organization scope');
+    expect(api).toContain('OpenAPI documentation');
+    expect(api).toContain('framework-agnostic dispatcher');
+    expect(api).toContain('Invalid request bodies must return `400`');
+    expect(api).toContain('Rate-limited requests must return `429`');
+    expect(api).toContain('Request logs must redact passwords');
+    expect(api).toContain('Node HTTP runtime adapter');
+    expect(api).toContain('/openapi.json');
+    expect(api).toContain('npm run api:dev');
+    expect(auth).toContain('MFA verification');
+    expect(auth).toContain('Plain-text passwords must never be stored');
+    expect(auth).toContain('Sessions must expire and be revocable');
+    expect(database).toContain('PostgreSQL');
+    expect(database).toContain('Tenant isolation rules');
+    expect(database).toContain('`audit_logs` is append-only');
+    expect(database).toContain('npm run db:migrate');
+    expect(database).toContain('schema_migrations');
+    expect(postgresAdapters).toContain('parameterized SQL builders');
+    expect(postgresAdapters).toContain('row-to-domain mappers');
     expect(hipaa).toContain('Administrative safeguards');
     expect(hipaa).toContain('Technical safeguards');
     expect(goLive).toContain('Tenant isolation tests completed');
@@ -58,8 +93,9 @@ describe('production readiness workflow', () => {
 
     expect(envExample).toContain('VITE_APP_ENV=production');
     expect(envExample).toContain('VITE_APP_SUPPORT_EMAIL=');
-    expect(envExample).not.toContain('password');
-    expect(envExample).not.toContain('secret');
+    expect(envExample).toContain('DEMO_AUTH_PASSWORD=change-me-for-local-demo-only');
+    expect(envExample).not.toContain('Ariana');
+    expect(envExample).not.toContain('sk_');
     expect(codeowners).toContain('@arion7273');
     expect(gitignore).toContain('!.env.example');
   });

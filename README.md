@@ -57,6 +57,10 @@ docker run --rm -p 8080:8080 hubsteria-care-pro:latest
 ## Production readiness docs
 
 - `SECURITY.md`
+- `docs/backend-foundation.md`
+- `docs/api-foundation.md`
+- `docs/authentication-foundation.md`
+- `docs/database-foundation.md`
 - `docs/hipaa-security-readiness.md`
 - `docs/go-live-checklist.md`
 - `docs/operational-runbook.md`
