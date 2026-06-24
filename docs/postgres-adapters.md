@@ -11,6 +11,8 @@ The repository now includes PostgreSQL adapter helpers without binding to a spec
   - parameterized SQL builders for organizations, facilities, users, feature registry, and audit logs
 - `src/adapters/postgres/mappers.ts`
   - row-to-domain mappers
+- `src/adapters/postgres/repositories.ts`
+  - concrete repository classes using a generic PostgreSQL client
 
 ## Rules
 
@@ -19,7 +21,8 @@ The repository now includes PostgreSQL adapter helpers without binding to a spec
 - Audit log adapter behavior is append-only.
 - JSON states and feature dependencies are serialized before database writes.
 - User queries join roles, facilities, and permissions to build an access context.
+- Repository classes return domain objects and keep SQL execution behind `src/domain/repositories.ts` interfaces.
 
 ## Next step
 
-Choose a PostgreSQL client, such as `pg`, and implement concrete classes that satisfy `src/domain/repositories.ts` using these statement builders and mappers.
+Choose a PostgreSQL client, such as `pg`, and pass it into the concrete repository classes through the generic `PostgresClient` interface.

@@ -1,6 +1,6 @@
 import type { RegisteredFeature } from '../../domain';
 import type { AuditEvent } from '../../domain/audit';
-import type { Facility, Organization, Permission, RoleTier, User } from '../../domain/types';
+import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, RoleTier, User } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -57,6 +57,37 @@ export function mapAuditRow(row: PostgresRow): AuditEvent {
     beforeState: row.before_state,
     afterState: row.after_state
   });
+}
+
+export function mapAuthSessionRow(row: PostgresRow): AuthSession {
+  return {
+    id: String(row.id),
+    userId: String(row.user_id),
+    createdAt: toIsoString(row.created_at),
+    expiresAt: toIsoString(row.expires_at),
+    mfaVerified: Boolean(row.mfa_verified),
+    revokedAt: row.revoked_at ? toIsoString(row.revoked_at) : undefined
+  };
+}
+
+export function mapMfaChallengeRow(row: PostgresRow): MfaChallenge {
+  return {
+    id: String(row.id),
+    userId: String(row.user_id),
+    createdAt: toIsoString(row.created_at),
+    expiresAt: toIsoString(row.expires_at),
+    verifiedAt: row.verified_at ? toIsoString(row.verified_at) : undefined
+  };
+}
+
+export function mapPasswordResetRequestRow(row: PostgresRow): PasswordResetRequest {
+  return {
+    id: String(row.id),
+    userId: String(row.user_id),
+    createdAt: toIsoString(row.created_at),
+    expiresAt: toIsoString(row.expires_at),
+    usedAt: row.used_at ? toIsoString(row.used_at) : undefined
+  };
 }
 
 function toStringArray(value: unknown): string[] {

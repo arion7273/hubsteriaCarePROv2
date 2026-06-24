@@ -1,4 +1,4 @@
-import type { AuditEvent, Facility, Organization, RegisteredFeature, User, UUID } from '../../domain';
+import type { AuditEvent, AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, User, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -173,6 +173,86 @@ export const auditLogStatements = {
         ORDER BY created_at DESC
       `,
       values: [entityType, entityId]
+    };
+  }
+};
+
+export const authSessionStatements = {
+  selectById(id: UUID): SqlStatement {
+    return {
+      text: 'SELECT id, user_id, created_at, expires_at, mfa_verified, revoked_at FROM auth_sessions WHERE id = $1',
+      values: [id]
+    };
+  },
+
+  upsert(session: AuthSession): SqlStatement {
+    return {
+      text: `
+        INSERT INTO auth_sessions (id, user_id, created_at, expires_at, mfa_verified, revoked_at)
+        VALUES ($1, $2, $3, $4, $5, $6)
+        ON CONFLICT (id) DO UPDATE
+        SET expires_at = EXCLUDED.expires_at,
+            mfa_verified = EXCLUDED.mfa_verified,
+            revoked_at = EXCLUDED.revoked_at
+        RETURNING id, user_id, created_at, expires_at, mfa_verified, revoked_at
+      `,
+      values: [session.id, session.userId, session.createdAt, session.expiresAt, session.mfaVerified, session.revokedAt ?? null]
+    };
+  },
+
+  revoke(id: UUID, revokedAt: string): SqlStatement {
+    return {
+      text: `
+        UPDATE auth_sessions
+        SET revoked_at = $2
+        WHERE id = $1
+        RETURNING id, user_id, created_at, expires_at, mfa_verified, revoked_at
+      `,
+      values: [id, revokedAt]
+    };
+  }
+};
+
+export const mfaChallengeStatements = {
+  selectById(id: UUID): SqlStatement {
+    return {
+      text: 'SELECT id, user_id, created_at, expires_at, verified_at FROM mfa_challenges WHERE id = $1',
+      values: [id]
+    };
+  },
+
+  upsert(challenge: MfaChallenge): SqlStatement {
+    return {
+      text: `
+        INSERT INTO mfa_challenges (id, user_id, created_at, expires_at, verified_at)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (id) DO UPDATE
+        SET verified_at = EXCLUDED.verified_at
+        RETURNING id, user_id, created_at, expires_at, verified_at
+      `,
+      values: [challenge.id, challenge.userId, challenge.createdAt, challenge.expiresAt, challenge.verifiedAt ?? null]
+    };
+  }
+};
+
+export const passwordResetStatements = {
+  selectById(id: UUID): SqlStatement {
+    return {
+      text: 'SELECT id, user_id, created_at, expires_at, used_at FROM password_reset_requests WHERE id = $1',
+      values: [id]
+    };
+  },
+
+  upsert(request: PasswordResetRequest): SqlStatement {
+    return {
+      text: `
+        INSERT INTO password_reset_requests (id, user_id, created_at, expires_at, used_at)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (id) DO UPDATE
+        SET used_at = EXCLUDED.used_at
+        RETURNING id, user_id, created_at, expires_at, used_at
+      `,
+      values: [request.id, request.userId, request.createdAt, request.expiresAt, request.usedAt ?? null]
     };
   }
 };
