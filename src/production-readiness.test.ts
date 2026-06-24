@@ -68,6 +68,8 @@ describe('production readiness workflow', () => {
     expect(database).toContain('PostgreSQL');
     expect(database).toContain('Tenant isolation rules');
     expect(database).toContain('`audit_logs` is append-only');
+    expect(database).toContain('npm run db:migrate');
+    expect(database).toContain('schema_migrations');
     expect(postgresAdapters).toContain('parameterized SQL builders');
     expect(postgresAdapters).toContain('row-to-domain mappers');
     expect(hipaa).toContain('Administrative safeguards');

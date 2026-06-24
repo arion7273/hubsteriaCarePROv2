@@ -23,6 +23,14 @@ The initial database target is PostgreSQL.
   - MFA challenges
   - password reset requests
 
+Run migrations with:
+
+```bash
+npm run db:migrate
+```
+
+The migration runner records applied versions in `schema_migrations`.
+
 ## Tenant isolation rules
 
 Every production query must filter by tenant scope:

@@ -87,3 +87,9 @@ npm run api:dev
 ```
 
 The runtime defaults to in-memory repositories unless `BACKEND_REPOSITORY_MODE=postgres` is configured.
+
+Apply PostgreSQL migrations with:
+
+```bash
+npm run db:migrate
+```
