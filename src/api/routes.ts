@@ -133,5 +133,35 @@ export const apiRoutes: ApiRouteDefinition[] = [
     path: '/users',
     authRequired: true,
     description: 'Update user'
+  },
+  {
+    method: 'POST',
+    path: '/incidents',
+    authRequired: true,
+    description: 'Create incident'
+  },
+  {
+    method: 'GET',
+    path: '/incidents',
+    authRequired: true,
+    description: 'List incidents by resident or facility'
+  },
+  {
+    method: 'PATCH',
+    path: '/incidents',
+    authRequired: true,
+    description: 'Update incident'
+  },
+  {
+    method: 'POST',
+    path: '/compliance-issues',
+    authRequired: true,
+    description: 'Create compliance issue'
+  },
+  {
+    method: 'GET',
+    path: '/compliance-issues',
+    authRequired: true,
+    description: 'List compliance issues by facility'
   }
 ];

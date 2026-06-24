@@ -22,6 +22,9 @@ The initial database target is PostgreSQL.
   - auth sessions
   - MFA challenges
   - password reset requests
+- `database/migrations/0008_incidents_compliance.sql`
+  - incidents
+  - compliance issues
 
 Run migrations with:
 

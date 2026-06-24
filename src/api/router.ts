@@ -1,5 +1,7 @@
 import {
   createFacilityHandler,
+  createComplianceIssueHandler,
+  createIncidentHandler,
   createOrganizationHandler,
   createResidentHandler,
   createUserHandler,
@@ -7,7 +9,9 @@ import {
   getOrganizationHandler,
   getResidentHandler,
   listFeaturesHandler,
+  listComplianceIssuesHandler,
   listFacilitiesHandler,
+  listIncidentsHandler,
   listOrganizationsHandler,
   listResidentsHandler,
   listUsersHandler,
@@ -15,6 +19,7 @@ import {
   logoutHandler,
   passwordResetHandler,
   registerFeatureHandler,
+  updateIncidentHandler,
   updateFacilityHandler,
   updateOrganizationHandler,
   updateResidentHandler,
@@ -28,10 +33,13 @@ import { composeMiddleware, type ApiMiddleware } from './middleware';
 import { apiRoutes } from './routes';
 import {
   isCreateFacilityBody,
+  isCreateComplianceIssueBody,
+  isCreateIncidentBody,
   isCreateOrganizationBody,
   isCreateResidentBody,
   isCreateUserBody,
   isUpdateFacilityBody,
+  isUpdateIncidentBody,
   isUpdateOrganizationBody,
   isLoginBody,
   isPasswordResetBody,
@@ -168,7 +176,12 @@ const routeConfigs: RouteConfig[] = [
     path: '/users',
     validate: isUpdateUserBody,
     handler: updateUserHandler as RouteHandler
-  }
+  },
+  { method: 'POST', path: '/incidents', validate: isCreateIncidentBody, handler: createIncidentHandler as RouteHandler },
+  { method: 'GET', path: '/incidents', handler: listIncidentsHandler },
+  { method: 'PATCH', path: '/incidents', validate: isUpdateIncidentBody, handler: updateIncidentHandler as RouteHandler },
+  { method: 'POST', path: '/compliance-issues', validate: isCreateComplianceIssueBody, handler: createComplianceIssueHandler as RouteHandler },
+  { method: 'GET', path: '/compliance-issues', handler: listComplianceIssuesHandler }
 ];
 
 export function createApiRouter(services: ApiServices, middlewares: ApiMiddleware[] = []) {

@@ -1,6 +1,6 @@
 import type { RegisteredFeature } from '../../domain';
 import type { AuditEvent } from '../../domain/audit';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
+import type { AuthSession, ComplianceIssue, Facility, Incident, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -44,6 +44,37 @@ export function mapResidentRow(row: PostgresRow): Resident {
     room: row.room ? String(row.room) : undefined,
     levelOfCare: row.level_of_care ? String(row.level_of_care) : undefined,
     status: status as Resident['status']
+  };
+}
+
+export function mapIncidentRow(row: PostgresRow): Incident {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: String(row.resident_id),
+    type: String(row.type) as Incident['type'],
+    severity: String(row.severity) as Incident['severity'],
+    status: String(row.status) as Incident['status'],
+    summary: String(row.summary),
+    investigation: row.investigation ? String(row.investigation) : undefined,
+    rootCause: row.root_cause ? String(row.root_cause) : undefined,
+    correctiveAction: row.corrective_action ? String(row.corrective_action) : undefined,
+    resolution: row.resolution ? String(row.resolution) : undefined,
+    occurredAt: String(row.occurred_at)
+  };
+}
+
+export function mapComplianceIssueRow(row: PostgresRow): ComplianceIssue {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: row.resident_id ? String(row.resident_id) : undefined,
+    issue: String(row.issue),
+    severity: String(row.severity) as ComplianceIssue['severity'],
+    status: String(row.status) as ComplianceIssue['status'],
+    resolutionLink: String(row.resolution_link)
   };
 }
 

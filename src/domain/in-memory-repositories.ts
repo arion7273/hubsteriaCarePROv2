@@ -4,15 +4,17 @@ import type {
   AuditLogRepository,
   AuthSessionRepository,
   BackendRepositories,
+  ComplianceIssueRepository,
   FacilityRepository,
   FeatureRegistryRepository,
+  IncidentRepository,
   MfaChallengeRepository,
   OrganizationRepository,
   PasswordResetRepository,
   ResidentRepository,
   UserRepository
 } from './repositories';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
+import type { AuthSession, ComplianceIssue, Facility, Incident, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -85,6 +87,32 @@ export class InMemoryResidentRepository implements ResidentRepository {
   async save(resident: Resident): Promise<Resident> {
     this.residents.set(resident.id, resident);
     return resident;
+  }
+}
+
+export class InMemoryIncidentRepository implements IncidentRepository {
+  private readonly incidents = new Map<UUID, Incident>();
+  async getById(id: UUID): Promise<Incident | null> { return this.incidents.get(id) ?? null; }
+  async listByResident(residentId: UUID): Promise<Incident[]> {
+    return [...this.incidents.values()].filter((incident) => incident.residentId === residentId);
+  }
+  async listByFacility(organizationId: UUID, facilityId: UUID): Promise<Incident[]> {
+    return [...this.incidents.values()].filter((incident) => incident.organizationId === organizationId && incident.facilityId === facilityId);
+  }
+  async save(incident: Incident): Promise<Incident> {
+    this.incidents.set(incident.id, incident);
+    return incident;
+  }
+}
+
+export class InMemoryComplianceIssueRepository implements ComplianceIssueRepository {
+  private readonly issues = new Map<UUID, ComplianceIssue>();
+  async listByFacility(organizationId: UUID, facilityId: UUID): Promise<ComplianceIssue[]> {
+    return [...this.issues.values()].filter((issue) => issue.organizationId === organizationId && issue.facilityId === facilityId);
+  }
+  async save(issue: ComplianceIssue): Promise<ComplianceIssue> {
+    this.issues.set(issue.id, issue);
+    return issue;
   }
 }
 
@@ -177,6 +205,8 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     facilities: new InMemoryFacilityRepository(),
     users: new InMemoryUserRepository(),
     residents: new InMemoryResidentRepository(),
+    incidents: new InMemoryIncidentRepository(),
+    complianceIssues: new InMemoryComplianceIssueRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
     featureRegistry: new InMemoryFeatureRegistryRepository(),
     authSessions: new InMemoryAuthSessionRepository(),

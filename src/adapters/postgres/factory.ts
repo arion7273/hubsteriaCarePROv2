@@ -1,9 +1,11 @@
 import type { BackendRepositories, RoleTier, UUID } from '../../domain';
 import {
   PostgresAuditLogRepository,
+  PostgresComplianceIssueRepository,
   PostgresAuthSessionRepository,
   PostgresFacilityRepository,
   PostgresFeatureRegistryRepository,
+  PostgresIncidentRepository,
   PostgresMfaChallengeRepository,
   PostgresOrganizationRepository,
   PostgresPasswordResetRepository,
@@ -26,6 +28,8 @@ export function createPostgresBackendRepositories(
     facilities: new PostgresFacilityRepository(client),
     users: new PostgresUserRepository(client, options.roleIdForTier),
     residents: new PostgresResidentRepository(client),
+    incidents: new PostgresIncidentRepository(client),
+    complianceIssues: new PostgresComplianceIssueRepository(client),
     auditLogs: new PostgresAuditLogRepository(client),
     featureRegistry: new PostgresFeatureRegistryRepository(client, options.createId),
     authSessions: new PostgresAuthSessionRepository(client),

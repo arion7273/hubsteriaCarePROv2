@@ -2,7 +2,7 @@ import { createAuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
 import type { BackendRepositories } from './repositories';
 import { requirePermission } from './access-control';
-import type { AccessContext, Facility, Organization, Resident, User, UUID } from './types';
+import type { AccessContext, ComplianceIssue, Facility, Incident, Organization, Resident, User, UUID } from './types';
 
 export type IdFactory = () => UUID;
 export type Clock = () => Date;
@@ -377,6 +377,58 @@ export class BackendFoundationService {
     return saved;
   }
 
+  async createIncident(context: AccessContext, input: Omit<Incident, 'id'>): Promise<Incident> {
+    const resident = await this.getResident(context, input.residentId);
+    const decision = requirePermission(
+      context,
+      { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id },
+      'resident:write'
+    );
+    assertAllowed(decision);
+    const incident = await this.repositories.incidents.save({ id: this.createId(), ...input });
+    await this.auditScopedEntity(context, 'Incident', incident.id, incident, incident.organizationId, incident.facilityId, incident.residentId);
+    return incident;
+  }
+
+  async listIncidentsByResident(context: AccessContext, residentId: UUID): Promise<Incident[]> {
+    await this.getResident(context, residentId);
+    return this.repositories.incidents.listByResident(residentId);
+  }
+
+  async listIncidentsByFacility(context: AccessContext, organizationId: UUID, facilityId: UUID): Promise<Incident[]> {
+    const decision = requirePermission(context, { scope: 'facility', organizationId, facilityId }, 'resident:read');
+    assertAllowed(decision);
+    return this.repositories.incidents.listByFacility(organizationId, facilityId);
+  }
+
+  async updateIncident(context: AccessContext, incidentId: UUID, updates: Partial<Omit<Incident, 'id' | 'organizationId' | 'facilityId' | 'residentId'>>): Promise<Incident> {
+    const existing = await this.repositories.incidents.getById(incidentId);
+    if (!existing) throw new Error('Incident not found');
+    const decision = requirePermission(
+      context,
+      { scope: 'resident', organizationId: existing.organizationId, facilityId: existing.facilityId, residentId: existing.residentId },
+      'resident:write'
+    );
+    assertAllowed(decision);
+    const saved = await this.repositories.incidents.save({ ...existing, ...updates, id: existing.id });
+    await this.auditScopedEntity(context, 'Incident', saved.id, saved, saved.organizationId, saved.facilityId, saved.residentId, existing);
+    return saved;
+  }
+
+  async createComplianceIssue(context: AccessContext, input: Omit<ComplianceIssue, 'id'>): Promise<ComplianceIssue> {
+    const decision = requirePermission(context, { scope: 'facility', organizationId: input.organizationId, facilityId: input.facilityId }, 'facility:manage');
+    assertAllowed(decision);
+    const issue = await this.repositories.complianceIssues.save({ id: this.createId(), ...input });
+    await this.auditScopedEntity(context, 'ComplianceIssue', issue.id, issue, issue.organizationId, issue.facilityId, issue.residentId);
+    return issue;
+  }
+
+  async listComplianceIssuesByFacility(context: AccessContext, organizationId: UUID, facilityId: UUID): Promise<ComplianceIssue[]> {
+    const decision = requirePermission(context, { scope: 'facility', organizationId, facilityId }, 'facility:manage');
+    assertAllowed(decision);
+    return this.repositories.complianceIssues.listByFacility(organizationId, facilityId);
+  }
+
   async createUser(
     context: AccessContext,
     input: Omit<User, 'id' | 'status'>
@@ -452,6 +504,30 @@ export class BackendFoundationService {
     );
 
     return saved;
+  }
+
+  private async auditScopedEntity(
+    context: AccessContext,
+    entityType: string,
+    entityId: UUID,
+    afterState: unknown,
+    organizationId: UUID,
+    facilityId: UUID,
+    residentId?: UUID,
+    beforeState: unknown = null
+  ): Promise<void> {
+    await this.repositories.auditLogs.append(createAuditEvent({
+      id: this.createId(),
+      action: beforeState ? 'update' : 'create',
+      actorUserId: context.user.id,
+      actorRole: context.user.roleTier,
+      entityType,
+      entityId,
+      scope: { scope: residentId ? 'resident' : 'facility', organizationId, facilityId, residentId },
+      beforeState,
+      afterState,
+      now: this.clock()
+    }));
   }
 }
 
