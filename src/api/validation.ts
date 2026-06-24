@@ -23,6 +23,7 @@ import type {
   UpdateUserBody,
   VerifyMfaBody
 } from './handlers';
+import type { CompleteCareTaskBody, CreateCareTaskBody, CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateServicePlanBody, CreateUserBody, LogAdlBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -224,6 +225,20 @@ export function isCreateCarePlanBody(body: unknown): body is CreateCarePlanBody 
     isNonEmptyString(body.assignedStaff) &&
     ['active', 'resolved', 'inactive'].includes(String(body.status))
   );
+export function isCreateCareTaskBody(body: unknown): body is CreateCareTaskBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.title) && ['one_time', 'daily', 'weekly', 'monthly', 'custom_recurring'].includes(String(body.taskType)) && isNonEmptyString(body.dueAt) && isNonEmptyString(body.assignedStaff) && ['due', 'overdue', 'complete', 'missed', 'unassigned'].includes(String(body.status));
+}
+
+export function isCompleteCareTaskBody(body: unknown): body is CompleteCareTaskBody {
+  return isRecord(body) && isNonEmptyString(body.taskId);
+}
+
+export function isLogAdlBody(body: unknown): body is LogAdlBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.category) && isNonEmptyString(body.outcome) && optionalString(body.note);
+}
+
+export function isCreateServicePlanBody(body: unknown): body is CreateServicePlanBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.service) && isNonEmptyString(body.schedule) && isNonEmptyString(body.assignedStaff) && optionalString(body.exceptions) && ['active', 'inactive'].includes(String(body.status));
 }
 
 function isRecord(body: unknown): body is Record<string, unknown> {

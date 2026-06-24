@@ -7,6 +7,10 @@ import type {
   AuthSessionRepository,
   BackendRepositories,
   CarePlanRepository,
+  AdlEntryRepository,
+  AuthSessionRepository,
+  BackendRepositories,
+  CareTaskRepository,
   FacilityRepository,
   FeatureRegistryRepository,
   MfaChallengeRepository,
@@ -30,6 +34,10 @@ import type {
   UserCredential,
   UUID
 } from './types';
+  ServicePlanRepository,
+  UserRepository
+} from './repositories';
+import type { AdlEntry, AuthSession, CareTask, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, ServicePlanRecord, User, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -182,6 +190,37 @@ export class InMemoryCarePlanRepository implements CarePlanRepository {
   async save(carePlan: CarePlan): Promise<CarePlan> {
     this.carePlans.set(carePlan.id, carePlan);
     return carePlan;
+export class InMemoryCareTaskRepository implements CareTaskRepository {
+  private readonly tasks = new Map<UUID, CareTask>();
+  async getById(id: UUID): Promise<CareTask | null> { return this.tasks.get(id) ?? null; }
+  async listByResident(residentId: UUID): Promise<CareTask[]> {
+    return [...this.tasks.values()].filter((task) => task.residentId === residentId);
+  }
+  async save(task: CareTask): Promise<CareTask> {
+    this.tasks.set(task.id, task);
+    return task;
+  }
+}
+
+export class InMemoryAdlEntryRepository implements AdlEntryRepository {
+  private readonly entries = new Map<UUID, AdlEntry>();
+  async listByResident(residentId: UUID): Promise<AdlEntry[]> {
+    return [...this.entries.values()].filter((entry) => entry.residentId === residentId);
+  }
+  async save(entry: AdlEntry): Promise<AdlEntry> {
+    this.entries.set(entry.id, entry);
+    return entry;
+  }
+}
+
+export class InMemoryServicePlanRepository implements ServicePlanRepository {
+  private readonly plans = new Map<UUID, ServicePlanRecord>();
+  async listByResident(residentId: UUID): Promise<ServicePlanRecord[]> {
+    return [...this.plans.values()].filter((plan) => plan.residentId === residentId);
+  }
+  async save(plan: ServicePlanRecord): Promise<ServicePlanRecord> {
+    this.plans.set(plan.id, plan);
+    return plan;
   }
 }
 
@@ -278,6 +317,9 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     backgroundJobs: new InMemoryBackgroundJobRepository(),
     assessments: new InMemoryAssessmentRepository(),
     carePlans: new InMemoryCarePlanRepository(),
+    careTasks: new InMemoryCareTaskRepository(),
+    adlEntries: new InMemoryAdlEntryRepository(),
+    servicePlans: new InMemoryServicePlanRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
     featureRegistry: new InMemoryFeatureRegistryRepository(),
     authSessions: new InMemoryAuthSessionRepository(),

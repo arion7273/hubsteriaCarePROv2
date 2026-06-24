@@ -10,9 +10,12 @@ import {
   failBackgroundJobHandler,
   createAssessmentHandler,
   createCarePlanHandler,
+  completeCareTaskHandler,
+  createCareTaskHandler,
   createOrganizationHandler,
   createResidentHandler,
   createUserHandler,
+  createServicePlanHandler,
   getFacilityHandler,
   getOrganizationHandler,
   getResidentHandler,
@@ -25,6 +28,10 @@ import {
   listUsersHandler,
   leaseBackgroundJobsHandler,
   listBackgroundJobsHandler,
+  listAdlsHandler,
+  listCareTasksHandler,
+  listServicePlansHandler,
+  logAdlHandler,
   loginHandler,
   logoutHandler,
   passwordResetHandler,
@@ -52,9 +59,13 @@ import {
   isFailBackgroundJobBody,
   isCreateAssessmentBody,
   isCreateCarePlanBody,
+  isCompleteCareTaskBody,
+  isCreateCareTaskBody,
   isCreateOrganizationBody,
   isCreateResidentBody,
   isCreateUserBody,
+  isCreateServicePlanBody,
+  isLogAdlBody,
   isUpdateFacilityBody,
   isUpdateOrganizationBody,
   isLoginBody,
@@ -225,6 +236,13 @@ const routeConfigs: RouteConfig[] = [
     path: '/care-plans',
     handler: listCarePlansHandler
   }
+  { method: 'POST', path: '/tasks', validate: isCreateCareTaskBody, handler: createCareTaskHandler as RouteHandler },
+  { method: 'GET', path: '/tasks', handler: listCareTasksHandler },
+  { method: 'PATCH', path: '/tasks/complete', validate: isCompleteCareTaskBody, handler: completeCareTaskHandler as RouteHandler },
+  { method: 'POST', path: '/adls', validate: isLogAdlBody, handler: logAdlHandler as RouteHandler },
+  { method: 'GET', path: '/adls', handler: listAdlsHandler },
+  { method: 'POST', path: '/service-plans', validate: isCreateServicePlanBody, handler: createServicePlanHandler as RouteHandler },
+  { method: 'GET', path: '/service-plans', handler: listServicePlansHandler }
 ];
 
 export function createApiRouter(services: ApiServices, middlewares: ApiMiddleware[] = []) {

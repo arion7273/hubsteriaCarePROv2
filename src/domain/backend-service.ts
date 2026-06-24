@@ -18,6 +18,7 @@ import type {
   UUID,
   WorkflowActionJobInput
 } from './types';
+import type { AccessContext, AdlEntry, CareTask, Facility, Organization, Resident, ServicePlanRecord, User, UUID } from './types';
 
 export type IdFactory = () => UUID;
 export type Clock = () => Date;
@@ -613,6 +614,56 @@ export class BackendFoundationService {
   async listCarePlansByResident(context: AccessContext, residentId: UUID): Promise<CarePlan[]> {
     await this.getResident(context, residentId);
     return this.repositories.carePlans.listByResident(residentId);
+  async createCareTask(context: AccessContext, input: Omit<CareTask, 'id'>): Promise<CareTask> {
+    const resident = await this.getResident(context, input.residentId);
+    const decision = requirePermission(context, { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id }, 'resident:write');
+    assertAllowed(decision);
+    const task = await this.repositories.careTasks.save({ id: this.createId(), ...input });
+    await this.auditEntity(context, 'CareTask', task.id, task, { scope: 'resident', organizationId: task.organizationId, facilityId: task.facilityId, residentId: task.residentId });
+    return task;
+  }
+
+  async listCareTasksByResident(context: AccessContext, residentId: UUID): Promise<CareTask[]> {
+    await this.getResident(context, residentId);
+    return this.repositories.careTasks.listByResident(residentId);
+  }
+
+  async completeCareTask(context: AccessContext, taskId: UUID): Promise<CareTask> {
+    const existing = await this.repositories.careTasks.getById(taskId);
+    if (!existing) throw new Error('Task not found');
+    const decision = requirePermission(context, { scope: 'resident', organizationId: existing.organizationId, facilityId: existing.facilityId, residentId: existing.residentId }, 'resident:write');
+    assertAllowed(decision);
+    const saved = await this.repositories.careTasks.save({ ...existing, status: 'complete' });
+    await this.auditEntity(context, 'CareTask', saved.id, saved, { scope: 'resident', organizationId: saved.organizationId, facilityId: saved.facilityId, residentId: saved.residentId }, existing);
+    return saved;
+  }
+
+  async logAdl(context: AccessContext, input: Omit<AdlEntry, 'id' | 'recordedAt' | 'recordedBy'>): Promise<AdlEntry> {
+    const resident = await this.getResident(context, input.residentId);
+    const decision = requirePermission(context, { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id }, 'resident:write');
+    assertAllowed(decision);
+    const entry = await this.repositories.adlEntries.save({ id: this.createId(), recordedAt: this.clock().toISOString(), recordedBy: context.user.id, ...input });
+    await this.auditEntity(context, 'AdlEntry', entry.id, entry, { scope: 'resident', organizationId: entry.organizationId, facilityId: entry.facilityId, residentId: entry.residentId });
+    return entry;
+  }
+
+  async listAdlsByResident(context: AccessContext, residentId: UUID): Promise<AdlEntry[]> {
+    await this.getResident(context, residentId);
+    return this.repositories.adlEntries.listByResident(residentId);
+  }
+
+  async createServicePlan(context: AccessContext, input: Omit<ServicePlanRecord, 'id'>): Promise<ServicePlanRecord> {
+    const resident = await this.getResident(context, input.residentId);
+    const decision = requirePermission(context, { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id }, 'resident:write');
+    assertAllowed(decision);
+    const plan = await this.repositories.servicePlans.save({ id: this.createId(), ...input });
+    await this.auditEntity(context, 'ServicePlan', plan.id, plan, { scope: 'resident', organizationId: plan.organizationId, facilityId: plan.facilityId, residentId: plan.residentId });
+    return plan;
+  }
+
+  async listServicePlansByResident(context: AccessContext, residentId: UUID): Promise<ServicePlanRecord[]> {
+    await this.getResident(context, residentId);
+    return this.repositories.servicePlans.listByResident(residentId);
   }
 
   async createUser(
@@ -706,6 +757,14 @@ export class BackendFoundationService {
   }
 
   private async auditJob(context: AccessContext, job: BackgroundJob, beforeState: BackgroundJob | null): Promise<void> {
+  private async auditEntity(
+    context: AccessContext,
+    entityType: string,
+    entityId: UUID,
+    afterState: unknown,
+    scope: { scope: 'resident'; organizationId: UUID; facilityId: UUID; residentId: UUID },
+    beforeState: unknown = null
+  ) {
     await this.repositories.auditLogs.append(createAuditEvent({
       id: this.createId(),
       action: beforeState ? 'update' : 'create',
@@ -716,6 +775,11 @@ export class BackendFoundationService {
       scope: { scope: job.residentId ? 'resident' : job.facilityId ? 'facility' : job.organizationId ? 'organization' : 'platform', organizationId: job.organizationId, facilityId: job.facilityId, residentId: job.residentId },
       beforeState,
       afterState: job,
+      entityType,
+      entityId,
+      scope,
+      beforeState,
+      afterState,
       now: this.clock()
     }));
   }

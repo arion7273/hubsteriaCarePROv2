@@ -107,6 +107,19 @@ export type WorkflowActionJobInput = {
 };
 
 export type Assessment = {
+export type CareTask = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  title: string;
+  taskType: 'one_time' | 'daily' | 'weekly' | 'monthly' | 'custom_recurring';
+  dueAt: string;
+  assignedStaff: string;
+  status: 'due' | 'overdue' | 'complete' | 'missed' | 'unassigned';
+};
+
+export type AdlEntry = {
   id: UUID;
   organizationId: UUID;
   facilityId: UUID;
@@ -118,6 +131,14 @@ export type Assessment = {
 };
 
 export type CarePlan = {
+  category: string;
+  outcome: string;
+  note?: string;
+  recordedAt: string;
+  recordedBy: UUID;
+};
+
+export type ServicePlanRecord = {
   id: UUID;
   organizationId: UUID;
   facilityId: UUID;
@@ -128,6 +149,11 @@ export type CarePlan = {
   reviewDate: string;
   assignedStaff: string;
   status: 'active' | 'resolved' | 'inactive';
+  service: string;
+  schedule: string;
+  assignedStaff: string;
+  exceptions?: string;
+  status: 'active' | 'inactive';
 };
 
 export type User = {

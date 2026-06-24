@@ -14,6 +14,7 @@ import type {
   UserCredential,
   UUID
 } from './types';
+import type { AdlEntry, AuthSession, CareTask, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, ServicePlanRecord, User, UUID } from './types';
 
 export interface OrganizationRepository {
   getById(id: UUID): Promise<Organization | null>;
@@ -62,6 +63,20 @@ export interface CarePlanRepository {
   getById(id: UUID): Promise<CarePlan | null>;
   listByResident(residentId: UUID): Promise<CarePlan[]>;
   save(carePlan: CarePlan): Promise<CarePlan>;
+export interface CareTaskRepository {
+  getById(id: UUID): Promise<CareTask | null>;
+  listByResident(residentId: UUID): Promise<CareTask[]>;
+  save(task: CareTask): Promise<CareTask>;
+}
+
+export interface AdlEntryRepository {
+  listByResident(residentId: UUID): Promise<AdlEntry[]>;
+  save(entry: AdlEntry): Promise<AdlEntry>;
+}
+
+export interface ServicePlanRepository {
+  listByResident(residentId: UUID): Promise<ServicePlanRecord[]>;
+  save(plan: ServicePlanRecord): Promise<ServicePlanRecord>;
 }
 
 export interface AuditLogRepository {
@@ -99,6 +114,9 @@ export type BackendRepositories = {
   backgroundJobs: BackgroundJobRepository;
   assessments: AssessmentRepository;
   carePlans: CarePlanRepository;
+  careTasks: CareTaskRepository;
+  adlEntries: AdlEntryRepository;
+  servicePlans: ServicePlanRepository;
   auditLogs: AuditLogRepository;
   featureRegistry: FeatureRegistryRepository;
   authSessions: AuthSessionRepository;

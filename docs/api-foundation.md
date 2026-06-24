@@ -68,6 +68,13 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - `POST /jobs/digitalrx`
 - `POST /jobs/ai`
 - `POST /jobs/workflow-actions`
+- `POST /tasks`
+- `GET /tasks`
+- `PATCH /tasks/complete`
+- `POST /adls`
+- `GET /adls`
+- `POST /service-plans`
+- `GET /service-plans`
 
 ## Security requirements
 
@@ -82,6 +89,7 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - Background job APIs must enforce platform or tenant scope depending on job ownership.
 - Typed job producer APIs enqueue notification, print, DigitalRX, AI, and workflow work into the shared background queue.
 - Background job processors must register handlers per job type and dead-letter jobs that cannot be handled after retries.
+- Task, ADL, and service plan APIs must enforce resident/facility scope.
 - Invalid request bodies must return `400`.
 - Wrong methods must return `405`.
 - Unknown routes must return `404`.
