@@ -4009,6 +4009,137 @@ p {
   padding-left: 1.15rem;
 }
 
+.production-center {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.production-status {
+  display: grid;
+  gap: 0.2rem;
+  min-width: min(100%, 17rem);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.production-status span {
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.production-status strong {
+  color: var(--primary-strong);
+}
+
+.production-metric-grid,
+.production-layout,
+.deployment-step-grid,
+.enterprise-document-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.production-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.production-layout {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+}
+
+.deployment-step-grid,
+.enterprise-document-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.production-metric-card,
+.production-panel,
+.production-checklist article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.production-metric-card,
+.production-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.production-metric-card span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.production-metric-card strong {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  letter-spacing: -0.05em;
+}
+
+.production-metric-card small {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.production-checklist {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.production-checklist article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.production-checklist p {
+  margin: 0;
+}
+
+.production-status-pill {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.production-status-pill.ready {
+  background: #ddf6ed;
+  color: var(--success);
+}
+
+.production-status-pill.in-progress {
+  background: #fff4da;
+  color: var(--warning);
+}
+
+.production-status-pill.required {
+  background: #ffe4e2;
+  color: var(--danger);
+}
+
+.deployment-step-grid span,
+.enterprise-document-grid span {
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 0.55rem 0.75rem;
+}
+
 .role-grid,
 .roadmap-grid {
   display: grid;
@@ -4179,6 +4310,9 @@ summary {
   .executive-drilldown-grid,
   .ai-metric-grid,
   .performance-metric-grid,
+  .production-metric-grid,
+  .deployment-step-grid,
+  .enterprise-document-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -4210,6 +4344,7 @@ summary {
   .executive-layout,
   .ai-layout,
   .performance-layout,
+  .production-layout,
   .module-connection-panel,
   .notification-layout,
   .notification-bottom-grid,
@@ -4271,6 +4406,9 @@ summary {
   .executive-drilldown-grid,
   .ai-metric-grid,
   .performance-metric-grid,
+  .production-metric-grid,
+  .deployment-step-grid,
+  .enterprise-document-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -4371,6 +4509,7 @@ summary {
   .ai-compliance-list article > div,
   .scale-capability-list article,
   .load-test-list article,
+  .production-checklist article,
   .sync-field-list article,
   .refill-list article,
   .configuration-audit-list article,

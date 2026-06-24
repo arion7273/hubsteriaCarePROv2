@@ -134,6 +134,13 @@ import {
   scaleCapabilities
 } from './data/performance';
 import {
+  deploymentPipelineSteps,
+  enterpriseDocuments,
+  productionChecklist,
+  productionMetrics,
+  productionReadinessRequirements
+} from './data/production';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -270,6 +277,7 @@ function App() {
             'Executive Command Center',
             'AI Insights',
             'Performance & Scalability',
+            'Production Hardening',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -304,7 +312,9 @@ function App() {
                                           ? '#ai-assistant-insights'
                                           : item === 'Performance & Scalability'
                                             ? '#performance-scalability'
-                                            : `#${item.toLowerCase().replaceAll(' ', '-')}`
+                                            : item === 'Production Hardening'
+                                              ? '#production-hardening'
+                                              : `#${item.toLowerCase().replaceAll(' ', '-')}`
               }
               key={item}
             >
@@ -316,8 +326,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-19</strong>
-            <span>Scale foundation active</span>
+            <strong>Phase 0-20</strong>
+            <span>Production readiness active</span>
           </div>
         </div>
       </aside>
@@ -395,6 +405,9 @@ function App() {
               </a>
               <a className="button secondary" href="#performance-scalability">
                 Open Performance
+              </a>
+              <a className="button secondary" href="#production-hardening">
+                Open Hardening
               </a>
             </div>
           </div>
@@ -2593,6 +2606,89 @@ function App() {
                 ))}
               </ul>
             </div>
+          </div>
+        </section>
+
+        <section className="content-card production-center" id="production-hardening" aria-labelledby="production-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 20</p>
+              <h2 id="production-title">Production Hardening & Enterprise Readiness</h2>
+              <p>
+                Final readiness layer for HIPAA review, penetration testing, audit validation, backups,
+                disaster recovery, high availability, monitoring, error tracking, CI, deployment, and enterprise documentation.
+              </p>
+            </div>
+            <div className="production-status">
+              <span>Release candidate</span>
+              <strong>Go-live gated</strong>
+            </div>
+          </div>
+
+          <div className="production-metric-grid">
+            {productionMetrics.map((metric) => (
+              <article className="production-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="production-layout">
+            <div className="production-panel">
+              <div className="card-heading">
+                <span>Production Checklist</span>
+                <strong>Hardening and enterprise gates</strong>
+              </div>
+              <div className="production-checklist" aria-label="Production checklist">
+                {productionChecklist.map((item) => (
+                  <article key={item.area}>
+                    <div>
+                      <strong>{item.area}</strong>
+                      <p>{item.detail}</p>
+                    </div>
+                    <span className={`production-status-pill ${item.status.toLowerCase().replaceAll(' ', '-')}`}>
+                      {item.status}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="production-panel">
+              <div className="card-heading">
+                <span>Deployment Pipeline</span>
+                <strong>Release candidate steps</strong>
+              </div>
+              <div className="deployment-step-grid" aria-label="Deployment pipeline steps">
+                {deploymentPipelineSteps.map((step) => (
+                  <span key={step}>{step}</span>
+                ))}
+              </div>
+
+              <div className="card-heading">
+                <span>Enterprise Documentation</span>
+                <strong>Go-live support materials</strong>
+              </div>
+              <div className="enterprise-document-grid" aria-label="Enterprise documents">
+                {enterpriseDocuments.map((document) => (
+                  <span key={document}>{document}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="production-panel integration-panel">
+            <div className="card-heading">
+              <span>Production readiness contract</span>
+              <strong>Security, regression, monitoring, integrations, docs, and signoff</strong>
+            </div>
+            <ul className="check-list">
+              {productionReadinessRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
           </div>
         </section>
 

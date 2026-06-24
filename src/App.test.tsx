@@ -767,4 +767,39 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Every module must preserve dashboard, resident search, and medication action performance budgets/i)).toBeInTheDocument();
     expect(screen.getByText(/Scalability architecture must support thousands of facilities/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 20 Production Hardening checklist pipeline and documentation', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Production Hardening & Enterprise Readiness' })).toBeInTheDocument();
+    expect(screen.getByText('Regression Tests')).toBeInTheDocument();
+    expect(screen.getByText('CI Gates')).toBeInTheDocument();
+
+    const checklist = screen.getByLabelText('Production checklist');
+    ['HIPAA Security Review', 'Penetration Testing', 'Audit Validation', 'Backup Systems', 'Disaster Recovery', 'High Availability', 'Monitoring', 'Error Tracking', 'Regression Test Suite', 'Deployment Pipeline', 'Enterprise Documentation', 'Release Candidate Process'].forEach(
+      (item) => {
+        expect(within(checklist).getByText(item)).toBeInTheDocument();
+      }
+    );
+
+    const pipeline = screen.getByLabelText('Deployment pipeline steps');
+    ['Code review', 'Dependency install', 'Regression tests', 'Production build', 'Security checks', 'Artifact promotion', 'Environment approval', 'Rollback plan'].forEach(
+      (step) => {
+        expect(within(pipeline).getByText(step)).toBeInTheDocument();
+      }
+    );
+
+    const docs = screen.getByLabelText('Enterprise documents');
+    expect(within(docs).getByText('Administrator Manuals')).toBeInTheDocument();
+    expect(within(docs).getByText('Go-Live Readiness Certification')).toBeInTheDocument();
+  });
+
+  it('tracks final production readiness requirements', () => {
+    render(<App />);
+
+    expect(screen.getByText(/No deployment proceeds unless authentication, resident CRUD, user CRUD/i)).toBeInTheDocument();
+    expect(screen.getByText(/Tenant isolation, role permissions, audit immutability/i)).toBeInTheDocument();
+    expect(screen.getByText(/HIPAA security review, penetration testing, disaster recovery drills/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Administrator manuals, user manuals, API documentation/i).length).toBeGreaterThan(0);
+  });
 });

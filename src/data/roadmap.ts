@@ -248,7 +248,7 @@ export const enterprisePhases: Phase[] = [
   {
     id: '20',
     title: 'Production Hardening & Enterprise Readiness',
-    status: 'future',
+    status: 'foundation',
     milestone: 'Enterprise Release',
     summary: 'HIPAA review, penetration testing, backups, disaster recovery, HA, monitoring, error tracking, regression suite, and manuals.',
     deliverables: ['Security review', 'Monitoring', 'Deployment pipeline', 'Go-live certification']

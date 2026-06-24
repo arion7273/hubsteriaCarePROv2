@@ -462,6 +462,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Tenant Isolation Guard', 'Audit Log Contract'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Production Hardening Checklist',
+    module: 'Production Hardening & Enterprise Readiness',
+    status: 'registered',
+    dependencies: ['Regression Protection', 'Audit Log Contract', 'Tenant Isolation Guard'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Release Candidate and Enterprise Documentation',
+    module: 'Production Hardening & Enterprise Readiness',
+    status: 'registered',
+    dependencies: ['Production Hardening Checklist', 'CI Pipeline'],
+    version: '0.1.0'
   }
 ];
 
