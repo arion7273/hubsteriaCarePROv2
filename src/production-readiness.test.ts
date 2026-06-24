@@ -58,6 +58,7 @@ describe('production readiness workflow', () => {
     const database = readFileSync('docs/database-foundation.md', 'utf8');
     const postgresAdapters = readFileSync('docs/postgres-adapters.md', 'utf8');
     const postgresIntegration = readFileSync('docs/postgres-integration-tests.md', 'utf8');
+    const stagingSmoke = readFileSync('docs/staging-smoke-tests.md', 'utf8');
     const hipaa = readFileSync('docs/hipaa-security-readiness.md', 'utf8');
     const goLive = readFileSync('docs/go-live-checklist.md', 'utf8');
     const runbook = readFileSync('docs/operational-runbook.md', 'utf8');
@@ -136,6 +137,9 @@ describe('production readiness workflow', () => {
     expect(postgresIntegration).toContain('PostgreSQL integration tests');
     expect(postgresIntegration).toContain('npm run test:postgres');
     expect(postgresIntegration).toContain('seeds the role rows');
+    expect(stagingSmoke).toContain('Staging smoke tests');
+    expect(stagingSmoke).toContain('npm run test:staging-smoke');
+    expect(stagingSmoke).toContain('login, MFA, and logout');
     expect(hipaa).toContain('Administrative safeguards');
     expect(hipaa).toContain('Technical safeguards');
     expect(goLive).toContain('Tenant isolation tests completed');
@@ -155,6 +159,8 @@ describe('production readiness workflow', () => {
     expect(envExample).toContain('DEMO_AUTH_PASSWORD=change-me-for-local-demo-only');
     expect(envExample).toContain('TEST_DATABASE_URL=');
     expect(envExample).toContain('RUN_POSTGRES_INTEGRATION=false');
+    expect(envExample).toContain('RUN_STAGING_SMOKE=false');
+    expect(envExample).toContain('STAGING_API_BASE_URL=http://localhost:3000');
     expect(envExample).toContain('MONITORING_ENDPOINT=');
     expect(envExample).toContain('ERROR_TRACKING_DSN=');
     expect(envExample).toContain('RELEASE_VERSION=local-dev');
