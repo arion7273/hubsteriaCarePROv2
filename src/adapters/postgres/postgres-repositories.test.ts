@@ -8,6 +8,7 @@ import {
   PostgresOrganizationRepository,
   PostgresPasswordResetRepository,
   PostgresResidentRepository,
+  PostgresUserCredentialRepository,
   PostgresUserRepository,
   type PostgresClient,
   type PostgresRow,
@@ -186,5 +187,27 @@ describe('Postgres repository classes', () => {
     const resetRepository = new PostgresPasswordResetRepository(resetClient);
 
     await expect(resetRepository.getById('reset-1')).resolves.toMatchObject({ id: 'reset-1', userId: 'user-1' });
+  });
+
+  it('maps user credential repository operations', async () => {
+    const client = new FakePostgresClient([
+      {
+        user_id: 'user-1',
+        password_hash: 'pbkdf2-sha512$1000$salt$hash',
+        updated_at: '2026-06-24T01:00:00.000Z'
+      }
+    ]);
+    const repository = new PostgresUserCredentialRepository(client);
+
+    await expect(repository.getByUserId('user-1')).resolves.toMatchObject({
+      userId: 'user-1',
+      passwordHash: 'pbkdf2-sha512$1000$salt$hash'
+    });
+    await repository.save({
+      userId: 'user-1',
+      passwordHash: 'pbkdf2-sha512$1000$salt$hash',
+      updatedAt: '2026-06-24T01:00:00.000Z'
+    });
+    expect(client.statements[1].text).toContain('INSERT INTO user_credentials');
   });
 });

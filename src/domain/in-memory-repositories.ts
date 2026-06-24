@@ -10,9 +10,10 @@ import type {
   OrganizationRepository,
   PasswordResetRepository,
   ResidentRepository,
+  UserCredentialRepository,
   UserRepository
 } from './repositories';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
+import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -66,6 +67,19 @@ export class InMemoryUserRepository implements UserRepository {
   async save(user: User): Promise<User> {
     this.users.set(user.id, user);
     return user;
+  }
+}
+
+export class InMemoryUserCredentialRepository implements UserCredentialRepository {
+  private readonly credentials = new Map<UUID, UserCredential>();
+
+  async getByUserId(userId: UUID): Promise<UserCredential | null> {
+    return this.credentials.get(userId) ?? null;
+  }
+
+  async save(credential: UserCredential): Promise<UserCredential> {
+    this.credentials.set(credential.userId, credential);
+    return credential;
   }
 }
 
@@ -176,6 +190,7 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     organizations: new InMemoryOrganizationRepository(),
     facilities: new InMemoryFacilityRepository(),
     users: new InMemoryUserRepository(),
+    userCredentials: new InMemoryUserCredentialRepository(),
     residents: new InMemoryResidentRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
     featureRegistry: new InMemoryFeatureRegistryRepository(),

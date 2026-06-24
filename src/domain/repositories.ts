@@ -1,6 +1,6 @@
 import type { AuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
+import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
 
 export interface OrganizationRepository {
   getById(id: UUID): Promise<Organization | null>;
@@ -19,6 +19,11 @@ export interface UserRepository {
   getByEmail(email: string): Promise<User | null>;
   listByOrganization(organizationId: UUID): Promise<User[]>;
   save(user: User): Promise<User>;
+}
+
+export interface UserCredentialRepository {
+  getByUserId(userId: UUID): Promise<UserCredential | null>;
+  save(credential: UserCredential): Promise<UserCredential>;
 }
 
 export interface ResidentRepository {
@@ -57,6 +62,7 @@ export type BackendRepositories = {
   organizations: OrganizationRepository;
   facilities: FacilityRepository;
   users: UserRepository;
+  userCredentials: UserCredentialRepository;
   residents: ResidentRepository;
   auditLogs: AuditLogRepository;
   featureRegistry: FeatureRegistryRepository;

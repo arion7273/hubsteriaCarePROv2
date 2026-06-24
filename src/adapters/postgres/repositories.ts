@@ -8,9 +8,10 @@ import type {
   OrganizationRepository,
   PasswordResetRepository,
   ResidentRepository,
+  UserCredentialRepository,
   UserRepository
 } from '../../domain/repositories';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UUID } from '../../domain/types';
+import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UserCredential, UUID } from '../../domain/types';
 import {
   auditLogStatements,
   authSessionStatements,
@@ -20,6 +21,7 @@ import {
   organizationStatements,
   passwordResetStatements,
   residentStatements,
+  userCredentialStatements,
   userStatements
 } from './statements';
 import {
@@ -31,6 +33,7 @@ import {
   mapOrganizationRow,
   mapPasswordResetRequestRow,
   mapResidentRow,
+  mapUserCredentialRow,
   mapUserRow
 } from './mappers';
 import type { PostgresClient, PostgresRow } from './types';
@@ -190,6 +193,18 @@ export class PostgresPasswordResetRepository implements PasswordResetRepository 
 
   async save(request: PasswordResetRequest): Promise<PasswordResetRequest> {
     return requiredFirst(await this.client.query(passwordResetStatements.upsert(request)), mapPasswordResetRequestRow);
+  }
+}
+
+export class PostgresUserCredentialRepository implements UserCredentialRepository {
+  constructor(private readonly client: PostgresClient) {}
+
+  async getByUserId(userId: UUID): Promise<UserCredential | null> {
+    return first(await this.client.query(userCredentialStatements.selectByUserId(userId)), mapUserCredentialRow);
+  }
+
+  async save(credential: UserCredential): Promise<UserCredential> {
+    return requiredFirst(await this.client.query(userCredentialStatements.upsert(credential)), mapUserCredentialRow);
   }
 }
 
