@@ -42,4 +42,14 @@ npm run dev
 ```bash
 npm test
 npm run build
+npm run verify
+```
+
+## Production container
+
+See `docs/production-deployment.md`.
+
+```bash
+docker build -t hubsteria-care-pro:latest .
+docker run --rm -p 8080:8080 hubsteria-care-pro:latest
 ```
