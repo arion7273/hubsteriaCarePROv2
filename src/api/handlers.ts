@@ -12,6 +12,8 @@ import {
   type CareTask,
   type DigitalRxSyncJobInput,
   type Facility,
+  type MedicationAdministration,
+  type MedicationOrder,
   type NotificationJobInput,
   type Organization,
   type PrintJobInput,
@@ -21,7 +23,6 @@ import {
   type UUID,
   type WorkflowActionJobInput
 } from '../domain';
-import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type Facility, type MedicationAdministration, type MedicationOrder, type Organization, type Resident, type User, type UUID } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -426,6 +427,9 @@ export async function listServicePlansHandler(services: ApiServices, request: Ap
     const residentId = request.query?.residentId;
     if (!residentId) throw new Error('residentId is required');
     return services.backend.listServicePlansByResident(context, residentId);
+  });
+}
+
 export async function createMedicationOrderHandler(services: ApiServices, request: ApiRequest<CreateMedicationOrderBody>): Promise<ApiResponse> {
   return withContext(services, request, async (context) => {
     assertBody(request.body);

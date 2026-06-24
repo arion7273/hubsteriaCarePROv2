@@ -29,6 +29,8 @@ import type {
   CarePlan,
   CareTask,
   Facility,
+  MedicationAdministration,
+  MedicationOrder,
   MfaChallenge,
   Organization,
   PasswordResetRequest,
@@ -38,7 +40,6 @@ import type {
   UserCredential,
   UUID
 } from './types';
-import type { AuthSession, Facility, MedicationAdministration, MedicationOrder, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -225,6 +226,9 @@ export class InMemoryServicePlanRepository implements ServicePlanRepository {
   async save(plan: ServicePlanRecord): Promise<ServicePlanRecord> {
     this.plans.set(plan.id, plan);
     return plan;
+  }
+}
+
 export class InMemoryMedicationOrderRepository implements MedicationOrderRepository {
   private readonly orders = new Map<UUID, MedicationOrder>();
   async getById(id: UUID): Promise<MedicationOrder | null> { return this.orders.get(id) ?? null; }

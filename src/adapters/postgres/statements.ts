@@ -7,6 +7,8 @@ import type {
   CarePlan,
   CareTask,
   Facility,
+  MedicationAdministration,
+  MedicationOrder,
   MfaChallenge,
   Organization,
   PasswordResetRequest,
@@ -17,7 +19,6 @@ import type {
   UserCredential,
   UUID
 } from '../../domain';
-import type { AuditEvent, AuthSession, Facility, MedicationAdministration, MedicationOrder, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -363,6 +364,9 @@ export const servicePlanStatements = {
       ON CONFLICT (id) DO UPDATE SET service=EXCLUDED.service, schedule=EXCLUDED.schedule, assigned_staff=EXCLUDED.assigned_staff, exceptions=EXCLUDED.exceptions, status=EXCLUDED.status, updated_at=now()
       RETURNING *
     `, values: [plan.id, plan.organizationId, plan.facilityId, plan.residentId, plan.service, plan.schedule, plan.assignedStaff, plan.exceptions ?? null, plan.status] };
+  }
+};
+
 export const medicationOrderStatements = {
   selectById(id: UUID): SqlStatement { return { text: 'SELECT * FROM medication_orders WHERE id = $1', values: [id] }; },
   listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM medication_orders WHERE resident_id = $1 ORDER BY medication', values: [residentId] }; },

@@ -27,6 +27,8 @@ import type {
   CarePlan,
   CareTask,
   Facility,
+  MedicationAdministration,
+  MedicationOrder,
   MfaChallenge,
   Organization,
   PasswordResetRequest,
@@ -37,7 +39,6 @@ import type {
   UserCredential,
   UUID
 } from '../../domain/types';
-import type { AuthSession, Facility, MedicationAdministration, MedicationOrder, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UUID } from '../../domain/types';
 import {
   assessmentStatements,
   adlEntryStatements,
@@ -227,6 +228,8 @@ export class PostgresServicePlanRepository implements ServicePlanRepository {
   constructor(private readonly client: PostgresClient) {}
   async listByResident(residentId: UUID): Promise<ServicePlanRecord[]> { return (await this.client.query(servicePlanStatements.listByResident(residentId))).rows.map(mapServicePlanRow); }
   async save(plan: ServicePlanRecord): Promise<ServicePlanRecord> { return requiredFirst(await this.client.query(servicePlanStatements.upsert(plan)), mapServicePlanRow); }
+}
+
 export class PostgresMedicationOrderRepository implements MedicationOrderRepository {
   constructor(private readonly client: PostgresClient) {}
   async getById(id: UUID): Promise<MedicationOrder | null> { return first(await this.client.query(medicationOrderStatements.selectById(id)), mapMedicationOrderRow); }

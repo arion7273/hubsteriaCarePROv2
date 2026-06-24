@@ -248,7 +248,7 @@ const routeConfigs: RouteConfig[] = [
   { method: 'POST', path: '/adls', validate: isLogAdlBody, handler: logAdlHandler as RouteHandler },
   { method: 'GET', path: '/adls', handler: listAdlsHandler },
   { method: 'POST', path: '/service-plans', validate: isCreateServicePlanBody, handler: createServicePlanHandler as RouteHandler },
-  { method: 'GET', path: '/service-plans', handler: listServicePlansHandler }
+  { method: 'GET', path: '/service-plans', handler: listServicePlansHandler },
   { method: 'POST', path: '/medication-orders', validate: isCreateMedicationOrderBody, handler: createMedicationOrderHandler as RouteHandler },
   { method: 'GET', path: '/medication-orders', handler: listMedicationOrdersHandler },
   { method: 'POST', path: '/medication-administrations', validate: isRecordMedicationAdministrationBody, handler: recordMedicationAdministrationHandler as RouteHandler },

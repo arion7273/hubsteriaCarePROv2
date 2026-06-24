@@ -8,6 +8,7 @@ import type {
   CreateCarePlanBody,
   CreateCareTaskBody,
   CreateFacilityBody,
+  CreateMedicationOrderBody,
   CreateOrganizationBody,
   CreateResidentBody,
   CreateServicePlanBody,
@@ -21,13 +22,13 @@ import type {
   FailBackgroundJobBody,
   LogAdlBody,
   LoginBody,
+  RecordMedicationAdministrationBody,
   UpdateFacilityBody,
   UpdateOrganizationBody,
   UpdateResidentBody,
   UpdateUserBody,
   VerifyMfaBody
 } from './handlers';
-import type { CreateFacilityBody, CreateMedicationOrderBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, RecordMedicationAdministrationBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -245,6 +246,8 @@ export function isLogAdlBody(body: unknown): body is LogAdlBody {
 
 export function isCreateServicePlanBody(body: unknown): body is CreateServicePlanBody {
   return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.service) && isNonEmptyString(body.schedule) && isNonEmptyString(body.assignedStaff) && optionalString(body.exceptions) && ['active', 'inactive'].includes(String(body.status));
+}
+
 export function isCreateMedicationOrderBody(body: unknown): body is CreateMedicationOrderBody {
   return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.medication) && isNonEmptyString(body.dosage) && isNonEmptyString(body.route) && isNonEmptyString(body.schedule) && ['active', 'future', 'prn', 'discontinued', 'hold'].includes(String(body.status)) && optionalString(body.instructions);
 }

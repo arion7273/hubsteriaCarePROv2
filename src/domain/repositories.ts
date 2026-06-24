@@ -8,6 +8,8 @@ import type {
   CarePlan,
   CareTask,
   Facility,
+  MedicationAdministration,
+  MedicationOrder,
   MfaChallenge,
   Organization,
   PasswordResetRequest,
@@ -17,7 +19,6 @@ import type {
   UserCredential,
   UUID
 } from './types';
-import type { AuthSession, Facility, MedicationAdministration, MedicationOrder, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
 
 export interface OrganizationRepository {
   getById(id: UUID): Promise<Organization | null>;
@@ -82,6 +83,8 @@ export interface AdlEntryRepository {
 export interface ServicePlanRepository {
   listByResident(residentId: UUID): Promise<ServicePlanRecord[]>;
   save(plan: ServicePlanRecord): Promise<ServicePlanRecord>;
+}
+
 export interface MedicationOrderRepository {
   getById(id: UUID): Promise<MedicationOrder | null>;
   listByResident(residentId: UUID): Promise<MedicationOrder[]>;
