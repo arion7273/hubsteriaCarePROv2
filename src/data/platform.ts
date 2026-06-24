@@ -308,6 +308,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Medication Orders and Med Pass', 'Audit Log Contract', 'Configuration Center'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'DigitalRX Connector',
+    module: 'DigitalRX Integration Hub',
+    status: 'registered',
+    dependencies: ['Configuration Center', 'Medication Orders and Med Pass', 'Audit Log Contract'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Pharmacy Inbox and Resident Matching',
+    module: 'DigitalRX Integration Hub',
+    status: 'registered',
+    dependencies: ['DigitalRX Connector', 'Resident Command Center', 'Notification Center Integration'],
+    version: '0.1.0'
   }
 ];
 

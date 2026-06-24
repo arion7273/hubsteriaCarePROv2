@@ -155,7 +155,7 @@ export const clinicalOperationsPhases: Phase[] = [
   {
     id: '9',
     title: 'DigitalRX Integration Hub',
-    status: 'future',
+    status: 'foundation',
     milestone: 'Pharmacy Connectivity',
     summary:
       'DigitalRX connection settings, pharmacy inbox, medication sync, resident matching, refill tracking, and webhook events.',

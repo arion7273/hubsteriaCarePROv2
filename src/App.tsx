@@ -45,6 +45,16 @@ import {
   prnManagement
 } from './data/medications';
 import {
+  digitalRxConnection,
+  digitalRxEvents,
+  digitalRxIntegrationRequirements,
+  digitalRxMetrics,
+  medicationSyncFields,
+  pharmacyInbox,
+  refillTracking,
+  residentMatchingRules
+} from './data/digitalrx';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -170,6 +180,7 @@ function App() {
             'Assessments & Care Plans',
             'Tasks ADLs & Services',
             'eMAR & Medication',
+            'DigitalRX Hub',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -182,7 +193,9 @@ function App() {
                     ? '#tasks-adls-services'
                     : item === 'eMAR & Medication'
                       ? '#emar-medication-management'
-                      : `#${item.toLowerCase().replaceAll(' ', '-')}`
+                      : item === 'DigitalRX Hub'
+                        ? '#digitalrx-integration-hub'
+                        : `#${item.toLowerCase().replaceAll(' ', '-')}`
               }
               key={item}
             >
@@ -194,8 +207,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-8</strong>
-            <span>Medication workflows active</span>
+            <strong>Phase 0-9</strong>
+            <span>Pharmacy hub active</span>
           </div>
         </div>
       </aside>
@@ -240,6 +253,9 @@ function App() {
               </a>
               <a className="button secondary" href="#emar-medication-management">
                 Open eMAR
+              </a>
+              <a className="button secondary" href="#digitalrx-integration-hub">
+                Open DigitalRX
               </a>
             </div>
           </div>
@@ -1175,6 +1191,158 @@ function App() {
             </div>
             <ul className="check-list">
               {medicationIntegrationRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className="content-card digitalrx-center" id="digitalrx-integration-hub" aria-labelledby="digitalrx-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 9</p>
+              <h2 id="digitalrx-title">DigitalRX Integration Hub</h2>
+              <p>
+                Pharmacy connector layer that lets DigitalRX remain the pharmacy source of truth while
+                HubsteriaCarePRO becomes the caregiver-facing eMAR and medication workflow.
+              </p>
+            </div>
+            <div className="digitalrx-status">
+              <span>{digitalRxConnection.connectionStatus}</span>
+              <strong>{digitalRxConnection.lastSync}</strong>
+            </div>
+          </div>
+
+          <div className="digitalrx-metric-grid">
+            {digitalRxMetrics.map((metric) => (
+              <article className="digitalrx-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="digitalrx-layout">
+            <div className="digitalrx-panel">
+              <div className="card-heading">
+                <span>DigitalRX Connection Center</span>
+                <strong>Secure connector settings</strong>
+              </div>
+              <dl className="digitalrx-connection-list">
+                <div>
+                  <dt>API Endpoint</dt>
+                  <dd>{digitalRxConnection.endpoint}</dd>
+                </div>
+                <div>
+                  <dt>API Key</dt>
+                  <dd>{digitalRxConnection.apiKeyStatus}</dd>
+                </div>
+                <div>
+                  <dt>Connection Status</dt>
+                  <dd>{digitalRxConnection.connectionStatus}</dd>
+                </div>
+                <div>
+                  <dt>Last Sync</dt>
+                  <dd>{digitalRxConnection.lastSync}</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div className="digitalrx-panel">
+              <div className="card-heading">
+                <span>Pharmacy Inbox</span>
+                <strong>Orders, changes, discontinuations, refills</strong>
+              </div>
+              <div className="pharmacy-inbox-list" aria-label="Pharmacy inbox">
+                {pharmacyInbox.map((item) => (
+                  <article key={`${item.type}-${item.resident}-${item.medication}`}>
+                    <div>
+                      <strong>{item.type}</strong>
+                      <span>
+                        {item.resident} | {item.medication}
+                      </span>
+                    </div>
+                    <p>{item.received}</p>
+                    <span className={`pharmacy-status-pill ${item.status.toLowerCase().replaceAll(' ', '-')}`}>
+                      {item.status}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="digitalrx-layout">
+            <div className="digitalrx-panel">
+              <div className="card-heading">
+                <span>Medication Sync</span>
+                <strong>DigitalRX to eMAR mapping</strong>
+              </div>
+              <div className="sync-field-list" aria-label="Medication sync fields">
+                {medicationSyncFields.map((field) => (
+                  <article key={field.field}>
+                    <strong>{field.field}</strong>
+                    <span>
+                      {field.source} -&gt; {field.destination}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="digitalrx-panel">
+              <div className="card-heading">
+                <span>Resident Matching</span>
+                <strong>Confirm before import</strong>
+              </div>
+              <ul className="resident-match-list">
+                {residentMatchingRules.map((rule) => (
+                  <li key={rule}>{rule}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="digitalrx-layout">
+            <div className="digitalrx-panel">
+              <div className="card-heading">
+                <span>Refill Tracking</span>
+                <strong>Requested to delivered</strong>
+              </div>
+              <div className="refill-list" aria-label="Refill tracking">
+                {refillTracking.map((refill) => (
+                  <article key={`${refill.resident}-${refill.medication}`}>
+                    <div>
+                      <strong>{refill.medication}</strong>
+                      <span>{refill.resident}</span>
+                    </div>
+                    <span className={`refill-status-pill ${refill.status.toLowerCase()}`}>{refill.status}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="digitalrx-panel">
+              <div className="card-heading">
+                <span>DigitalRX Events</span>
+                <strong>Webhook-ready connector events</strong>
+              </div>
+              <div className="digitalrx-event-grid" aria-label="DigitalRX events">
+                {digitalRxEvents.map((event) => (
+                  <span key={event}>{event}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="digitalrx-panel integration-panel">
+            <div className="card-heading">
+              <span>DigitalRX integration contract</span>
+              <strong>Pharmacy source of truth with eMAR synchronization</strong>
+            </div>
+            <ul className="check-list">
+              {digitalRxIntegrationRequirements.map((requirement) => (
                 <li key={requirement}>{requirement}</li>
               ))}
             </ul>

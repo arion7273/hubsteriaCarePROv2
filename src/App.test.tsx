@@ -371,4 +371,45 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Resident Command Center displays medication orders, med pass activity/i)).toBeInTheDocument();
     expect(screen.getByText(/Print Center Pro exports medication administration records/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 9 DigitalRX connection settings pharmacy inbox and medication sync', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'DigitalRX Integration Hub' })).toBeInTheDocument();
+    expect(screen.getByText('https://api.digitalrx.example/v1')).toBeInTheDocument();
+    expect(screen.getByText('Stored in secure connector vault')).toBeInTheDocument();
+    expect(screen.getAllByText('Connected').length).toBeGreaterThan(0);
+
+    const inbox = screen.getByLabelText('Pharmacy inbox');
+    expect(within(inbox).getByText('Medication Order')).toBeInTheDocument();
+    expect(within(inbox).getByText('Medication Change')).toBeInTheDocument();
+    expect(within(inbox).getByText('Discontinued Order')).toBeInTheDocument();
+    expect(within(inbox).getByText(/Memantine 5mg/)).toBeInTheDocument();
+
+    const syncFields = screen.getByLabelText('Medication sync fields');
+    ['Medication Name', 'Strength', 'Frequency', 'Route', 'Start Date', 'End Date'].forEach((field) => {
+      expect(within(syncFields).getByText(field)).toBeInTheDocument();
+    });
+  });
+
+  it('supports DigitalRX resident matching refill tracking events and integration contract', () => {
+    render(<App />);
+
+    expect(screen.getByText(/Match by resident name, date of birth, facility, and room/i)).toBeInTheDocument();
+    expect(screen.getByText(/Prevent medication import until resident match is confirmed/i)).toBeInTheDocument();
+
+    const refills = screen.getByLabelText('Refill tracking');
+    expect(within(refills).getByText('Hydralazine 25mg')).toBeInTheDocument();
+    expect(within(refills).getByText('Requested')).toBeInTheDocument();
+    expect(within(refills).getByText('Delivered')).toBeInTheDocument();
+
+    const events = screen.getByLabelText('DigitalRX events');
+    ['order_created', 'order_updated', 'order_discontinued', 'refill_updated'].forEach((event) => {
+      expect(within(events).getByText(event)).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/DigitalRX remains the pharmacy source of truth/i)).toBeInTheDocument();
+    expect(screen.getByText(/Connector architecture supports REST APIs, FHIR-ready mapping, webhooks/i)).toBeInTheDocument();
+    expect(screen.getByText(/All connector actions, matches, imports, updates, discontinuations, refills, and errors/i)).toBeInTheDocument();
+  });
 });

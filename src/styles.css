@@ -2197,6 +2197,202 @@ p {
   background: var(--surface);
 }
 
+.digitalrx-center {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.digitalrx-status {
+  display: grid;
+  gap: 0.2rem;
+  min-width: min(100%, 16rem);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.digitalrx-status span {
+  color: var(--success);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.digitalrx-status strong {
+  color: var(--primary-strong);
+}
+
+.digitalrx-metric-grid,
+.digitalrx-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.digitalrx-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.digitalrx-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.digitalrx-metric-card,
+.digitalrx-panel,
+.pharmacy-inbox-list article,
+.sync-field-list article,
+.refill-list article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.digitalrx-metric-card,
+.digitalrx-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.digitalrx-metric-card span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.digitalrx-metric-card strong {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  letter-spacing: -0.05em;
+}
+
+.digitalrx-metric-card small {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.digitalrx-connection-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.digitalrx-connection-list div {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.digitalrx-connection-list dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.digitalrx-connection-list dd {
+  margin: 0;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+}
+
+.pharmacy-inbox-list,
+.sync-field-list,
+.refill-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pharmacy-inbox-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.pharmacy-inbox-list span:not(.pharmacy-status-pill),
+.sync-field-list span,
+.refill-list span:not(.refill-status-pill) {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.pharmacy-inbox-list p {
+  margin: 0;
+}
+
+.pharmacy-status-pill,
+.refill-status-pill {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pharmacy-status-pill.matched,
+.pharmacy-status-pill.synced,
+.refill-status-pill.delivered {
+  background: #ddf6ed;
+  color: var(--success);
+}
+
+.pharmacy-status-pill.needs-review,
+.pharmacy-status-pill.new,
+.refill-status-pill.processing,
+.refill-status-pill.requested {
+  background: #fff4da;
+  color: var(--warning);
+}
+
+.pharmacy-status-pill.error {
+  background: #ffe4e2;
+  color: var(--danger);
+}
+
+.refill-status-pill.shipped {
+  background: #e8eef9;
+  color: #355985;
+}
+
+.sync-field-list article,
+.refill-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.resident-match-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.digitalrx-event-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.digitalrx-event-grid span {
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 0.55rem 0.75rem;
+}
+
 .role-grid,
 .roadmap-grid {
   display: grid;
@@ -2348,6 +2544,7 @@ summary {
   .task-metric-grid,
   .shift-dashboard-grid,
   .medication-metric-grid,
+  .digitalrx-metric-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -2368,6 +2565,7 @@ summary {
   .tasks-layout,
   .medication-layout,
   .medication-subgrid,
+  .digitalrx-layout,
   .module-connection-panel,
   .notification-layout,
   .notification-bottom-grid,
@@ -2410,6 +2608,7 @@ summary {
   .task-metric-grid,
   .shift-dashboard-grid,
   .medication-metric-grid,
+  .digitalrx-metric-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -2490,6 +2689,9 @@ summary {
   .suggestion-list article,
   .caregiver-task-list article,
   .medication-order-list article,
+  .pharmacy-inbox-list article,
+  .sync-field-list article,
+  .refill-list article,
   .configuration-audit-list article,
   .toggle-list article,
   .preview-sheet dl {
