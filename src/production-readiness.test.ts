@@ -34,4 +34,33 @@ describe('production readiness workflow', () => {
     expect(guide).toContain('HIPAA security review');
     expect(guide).toContain('Server-side tenant isolation');
   });
+
+  it('documents security, HIPAA, and go-live governance gates', () => {
+    const security = readFileSync('SECURITY.md', 'utf8');
+    const hipaa = readFileSync('docs/hipaa-security-readiness.md', 'utf8');
+    const goLive = readFileSync('docs/go-live-checklist.md', 'utf8');
+    const runbook = readFileSync('docs/operational-runbook.md', 'utf8');
+
+    expect(security).toContain('Report security concerns');
+    expect(security).toContain('HIPAA security review');
+    expect(hipaa).toContain('Administrative safeguards');
+    expect(hipaa).toContain('Technical safeguards');
+    expect(goLive).toContain('Tenant isolation tests completed');
+    expect(goLive).toContain('Go-live readiness certification signed');
+    expect(runbook).toContain('Standard deployment');
+    expect(runbook).toContain('Rollback');
+  });
+
+  it('provides environment and ownership templates without secrets', () => {
+    const envExample = readFileSync('.env.example', 'utf8');
+    const codeowners = readFileSync('.github/CODEOWNERS', 'utf8');
+    const gitignore = readFileSync('.gitignore', 'utf8');
+
+    expect(envExample).toContain('VITE_APP_ENV=production');
+    expect(envExample).toContain('VITE_APP_SUPPORT_EMAIL=');
+    expect(envExample).not.toContain('password');
+    expect(envExample).not.toContain('secret');
+    expect(codeowners).toContain('@arion7273');
+    expect(gitignore).toContain('!.env.example');
+  });
 });
