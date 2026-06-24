@@ -12,6 +12,7 @@ import {
   createCarePlanHandler,
   completeCareTaskHandler,
   createCareTaskHandler,
+  createMedicationOrderHandler,
   createOrganizationHandler,
   createResidentHandler,
   createUserHandler,
@@ -32,10 +33,13 @@ import {
   listCareTasksHandler,
   listServicePlansHandler,
   logAdlHandler,
+  listMedicationAdministrationsHandler,
+  listMedicationOrdersHandler,
   loginHandler,
   logoutHandler,
   passwordResetHandler,
   registerFeatureHandler,
+  recordMedicationAdministrationHandler,
   updateFacilityHandler,
   updateOrganizationHandler,
   updateResidentHandler,
@@ -61,6 +65,7 @@ import {
   isCreateCarePlanBody,
   isCompleteCareTaskBody,
   isCreateCareTaskBody,
+  isCreateMedicationOrderBody,
   isCreateOrganizationBody,
   isCreateResidentBody,
   isCreateUserBody,
@@ -70,6 +75,7 @@ import {
   isUpdateOrganizationBody,
   isLoginBody,
   isPasswordResetBody,
+  isRecordMedicationAdministrationBody,
   isRegisteredFeatureBody,
   isUpdateResidentBody,
   isUpdateUserBody,
@@ -243,6 +249,10 @@ const routeConfigs: RouteConfig[] = [
   { method: 'GET', path: '/adls', handler: listAdlsHandler },
   { method: 'POST', path: '/service-plans', validate: isCreateServicePlanBody, handler: createServicePlanHandler as RouteHandler },
   { method: 'GET', path: '/service-plans', handler: listServicePlansHandler }
+  { method: 'POST', path: '/medication-orders', validate: isCreateMedicationOrderBody, handler: createMedicationOrderHandler as RouteHandler },
+  { method: 'GET', path: '/medication-orders', handler: listMedicationOrdersHandler },
+  { method: 'POST', path: '/medication-administrations', validate: isRecordMedicationAdministrationBody, handler: recordMedicationAdministrationHandler as RouteHandler },
+  { method: 'GET', path: '/medication-administrations', handler: listMedicationAdministrationsHandler }
 ];
 
 export function createApiRouter(services: ApiServices, middlewares: ApiMiddleware[] = []) {

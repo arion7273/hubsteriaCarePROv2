@@ -131,6 +131,7 @@ export type CarePlan = {
 };
 
 export type CareTask = {
+export type MedicationOrder = {
   id: UUID;
   organizationId: UUID;
   facilityId: UUID;
@@ -155,6 +156,15 @@ export type AdlEntry = {
 };
 
 export type ServicePlanRecord = {
+  medication: string;
+  dosage: string;
+  route: string;
+  schedule: string;
+  status: 'active' | 'future' | 'prn' | 'discontinued' | 'hold';
+  instructions?: string;
+};
+
+export type MedicationAdministration = {
   id: UUID;
   organizationId: UUID;
   facilityId: UUID;
@@ -164,6 +174,12 @@ export type ServicePlanRecord = {
   assignedStaff: string;
   exceptions?: string;
   status: 'active' | 'inactive';
+  medicationOrderId: UUID;
+  action: 'given' | 'refused' | 'held' | 'resident_absent' | 'not_available';
+  reason?: string;
+  outcome?: string;
+  administeredAt: string;
+  administeredBy: UUID;
 };
 
 export type User = {

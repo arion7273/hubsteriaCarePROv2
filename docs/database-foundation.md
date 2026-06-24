@@ -31,6 +31,9 @@ The initial database target is PostgreSQL.
   - care tasks
   - ADL entries
   - service plans
+- `database/migrations/0007_emar_medications.sql`
+  - medication orders
+  - medication administrations
 
 Run migrations with:
 

@@ -17,6 +17,7 @@ import type {
   UserCredential,
   UUID
 } from '../../domain';
+import type { AuditEvent, AuthSession, Facility, MedicationAdministration, MedicationOrder, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -362,6 +363,27 @@ export const servicePlanStatements = {
       ON CONFLICT (id) DO UPDATE SET service=EXCLUDED.service, schedule=EXCLUDED.schedule, assigned_staff=EXCLUDED.assigned_staff, exceptions=EXCLUDED.exceptions, status=EXCLUDED.status, updated_at=now()
       RETURNING *
     `, values: [plan.id, plan.organizationId, plan.facilityId, plan.residentId, plan.service, plan.schedule, plan.assignedStaff, plan.exceptions ?? null, plan.status] };
+export const medicationOrderStatements = {
+  selectById(id: UUID): SqlStatement { return { text: 'SELECT * FROM medication_orders WHERE id = $1', values: [id] }; },
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM medication_orders WHERE resident_id = $1 ORDER BY medication', values: [residentId] }; },
+  upsert(order: MedicationOrder): SqlStatement {
+    return { text: `
+      INSERT INTO medication_orders (id, organization_id, facility_id, resident_id, medication, dosage, route, schedule, status, instructions)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      ON CONFLICT (id) DO UPDATE SET medication=EXCLUDED.medication, dosage=EXCLUDED.dosage, route=EXCLUDED.route, schedule=EXCLUDED.schedule, status=EXCLUDED.status, instructions=EXCLUDED.instructions, updated_at=now()
+      RETURNING *
+    `, values: [order.id, order.organizationId, order.facilityId, order.residentId, order.medication, order.dosage, order.route, order.schedule, order.status, order.instructions ?? null] };
+  }
+};
+
+export const medicationAdministrationStatements = {
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM medication_administrations WHERE resident_id = $1 ORDER BY administered_at DESC', values: [residentId] }; },
+  insert(administration: MedicationAdministration): SqlStatement {
+    return { text: `
+      INSERT INTO medication_administrations (id, organization_id, facility_id, resident_id, medication_order_id, action, reason, outcome, administered_at, administered_by)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      RETURNING *
+    `, values: [administration.id, administration.organizationId, administration.facilityId, administration.residentId, administration.medicationOrderId, administration.action, administration.reason ?? null, administration.outcome ?? null, administration.administeredAt, administration.administeredBy] };
   }
 };
 
