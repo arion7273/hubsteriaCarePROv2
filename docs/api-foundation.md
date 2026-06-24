@@ -15,6 +15,14 @@ The current API layer is framework-agnostic. It defines handler contracts that c
   - session-to-access-context resolution
 - `src/api/routes.ts`
   - route manifest and auth requirements
+- `src/api/router.ts`
+  - framework-agnostic dispatcher
+  - method/path matching
+  - 404/405 responses
+- `src/api/validation.ts`
+  - request body validation for current routes
+- `src/api/openapi.ts`
+  - initial OpenAPI 3.1 API contract
 
 ## Initial routes
 
@@ -35,14 +43,16 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - Domain services enforce tenant scope and permissions.
 - Domain services write audit events for significant actions.
 - Invalid login must return a generic invalid credentials response.
+- Invalid request bodies must return `400`.
+- Wrong methods must return `405`.
+- Unknown routes must return `404`.
 
 ## Next implementation step
 
 Mount these handlers into a real HTTP runtime and add:
 
-- request validation
 - rate limiting
 - CSRF protection if cookie sessions are used
 - production logging
-- OpenAPI documentation
+- generated OpenAPI documentation publishing
 - integration tests against a test database

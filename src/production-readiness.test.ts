@@ -53,6 +53,8 @@ describe('production readiness workflow', () => {
     expect(api).toContain('POST /auth/login');
     expect(api).toContain('Protected routes require a valid session');
     expect(api).toContain('OpenAPI documentation');
+    expect(api).toContain('framework-agnostic dispatcher');
+    expect(api).toContain('Invalid request bodies must return `400`');
     expect(auth).toContain('MFA verification');
     expect(auth).toContain('Plain-text passwords must never be stored');
     expect(auth).toContain('Sessions must expire and be revocable');

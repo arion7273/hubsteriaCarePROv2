@@ -8,10 +8,12 @@ import {
 } from '../domain';
 import {
   apiRoutes,
+  createApiRouter,
   createFacilityHandler,
   createOrganizationHandler,
   listFeaturesHandler,
   loginHandler,
+  openApiDocument,
   registerFeatureHandler,
   verifyMfaHandler,
   type ApiServices
@@ -98,6 +100,14 @@ describe('API foundation handlers', () => {
         expect.objectContaining({ method: 'GET', path: '/feature-registry', authRequired: true })
       ])
     );
+  });
+
+  it('exposes OpenAPI metadata for current routes', () => {
+    expect(openApiDocument.openapi).toBe('3.1.0');
+    expect(openApiDocument.info.title).toBe('HubsteriaCarePRO API');
+    expect(openApiDocument.paths).toHaveProperty('/auth/login');
+    expect(openApiDocument.paths).toHaveProperty('/organizations');
+    expect(openApiDocument.components.securitySchemes.session.name).toBe('X-Session-Id');
   });
 
   it('returns API errors for invalid login without leaking account status', async () => {
@@ -211,5 +221,51 @@ describe('API foundation handlers', () => {
 
     expect(listed).toMatchObject({ ok: true });
     expect(listed.ok && listed.data).toHaveLength(1);
+  });
+
+  it('dispatches requests through the API router', async () => {
+    const services = createApiServices();
+    const router = createApiRouter(services);
+    await services.repositories.users.save(t1User);
+
+    const login = await router.handle({
+      method: 'POST',
+      path: '/auth/login',
+      body: { email: t1User.email, password: 'correct-password' }
+    });
+
+    expect(login).toMatchObject({ ok: true, status: 200 });
+  });
+
+  it('validates request bodies before handler execution', async () => {
+    const services = createApiServices();
+    const router = createApiRouter(services);
+
+    const response = await router.handle({
+      method: 'POST',
+      path: '/auth/login',
+      body: { email: t1User.email }
+    });
+
+    expect(response).toMatchObject({
+      ok: false,
+      status: 400,
+      error: { code: 'invalid_request_body' }
+    });
+  });
+
+  it('returns 404 for unknown routes and 405 for invalid methods', async () => {
+    const services = createApiServices();
+    const router = createApiRouter(services);
+
+    await expect(router.handle({ method: 'GET', path: '/missing' })).resolves.toMatchObject({
+      ok: false,
+      status: 404
+    });
+
+    await expect(router.handle({ method: 'GET', path: '/auth/login' })).resolves.toMatchObject({
+      ok: false,
+      status: 405
+    });
   });
 });
