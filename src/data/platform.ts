@@ -193,7 +193,7 @@ export const featureRegistry: FeatureRegistryItem[] = [
   {
     featureName: 'Notification Center Integration',
     module: 'Platform Services',
-    status: 'gated',
+    status: 'registered',
     dependencies: ['Templates', 'Rules', 'Delivery Tracking'],
     version: '0.1.0'
   },
@@ -223,6 +223,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     module: 'Design System',
     status: 'registered',
     dependencies: ['Responsive Design Tokens', 'Accessibility Standards'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Notification Rules and Escalation',
+    module: 'Notification Center Pro',
+    status: 'registered',
+    dependencies: ['Templates', 'Routing', 'Role Targeting', 'Delivery Tracking'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Notification Delivery and Read Tracking',
+    module: 'Notification Center Pro',
+    status: 'registered',
+    dependencies: ['In-App', 'Email', 'SMS', 'Push'],
     version: '0.1.0'
   }
 ];

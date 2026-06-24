@@ -18,6 +18,14 @@ import {
   type DashboardMetric
 } from './data/platform';
 import {
+  notificationChannels,
+  notificationHistory,
+  notificationIntegrationRequirements,
+  notificationMetrics,
+  notificationRules,
+  notificationTemplates
+} from './data/notifications';
+import {
   commandCapabilities,
   favorites,
   personalizedDashboards,
@@ -110,6 +118,7 @@ function App() {
             'Dashboards',
             'Resident Command Center',
             'Productivity System',
+            'Notification Center Pro',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -123,8 +132,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-3</strong>
-            <span>Productivity layer active</span>
+            <strong>Phase 0-4</strong>
+            <span>Notifications active</span>
           </div>
         </div>
       </aside>
@@ -151,6 +160,9 @@ function App() {
               </a>
               <a className="button secondary" href="#productivity-system">
                 Open Productivity
+              </a>
+              <a className="button secondary" href="#notification-center-pro">
+                Open Notifications
               </a>
             </div>
           </div>
@@ -287,6 +299,132 @@ function App() {
                 ))}
               </div>
             </article>
+          </div>
+        </section>
+
+        <section className="content-card notification-center" id="notification-center-pro" aria-labelledby="notification-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 4</p>
+              <h2 id="notification-title">Notification Center Pro</h2>
+              <p>
+                Enterprise notification services for in-app, email, SMS, and push alerts with templates, rules,
+                routing, escalation, delivery tracking, read tracking, history, and role-based targeting.
+              </p>
+            </div>
+            <div className="notification-status">
+              <span>Routing engine</span>
+              <strong>Tenant scoped</strong>
+            </div>
+          </div>
+
+          <div className="notification-metric-grid">
+            {notificationMetrics.map((metric) => (
+              <article className="notification-metric" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="notification-channel-grid">
+            {notificationChannels.map((channel) => (
+              <article className="notification-channel-card" key={channel.channel}>
+                <span>{channel.channel}</span>
+                <p>{channel.purpose}</p>
+                <strong>{channel.sla}</strong>
+              </article>
+            ))}
+          </div>
+
+          <div className="notification-layout">
+            <div className="notification-panel">
+              <div className="card-heading">
+                <span>Templates</span>
+                <strong>Reusable event messaging</strong>
+              </div>
+              <div className="template-list">
+                {notificationTemplates.map((template) => (
+                  <article key={template.name}>
+                    <div>
+                      <strong>{template.name}</strong>
+                      <span>{template.module}</span>
+                    </div>
+                    <p>{template.trigger}</p>
+                    <small>{template.audience}</small>
+                    <div className="channel-chip-row">
+                      {template.channels.map((channel) => (
+                        <span key={channel}>{channel}</span>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="notification-panel">
+              <div className="card-heading">
+                <span>Rules and escalation</span>
+                <strong>Role-based routing</strong>
+              </div>
+              <div className="rule-list">
+                {notificationRules.map((rule) => (
+                  <article key={rule.name}>
+                    <div className="rule-header">
+                      <strong>{rule.name}</strong>
+                      <span className={`pill ${rule.status === 'Active' ? 'registered' : 'planned'}`}>{rule.status}</span>
+                    </div>
+                    <p>{rule.condition}</p>
+                    <dl>
+                      <div>
+                        <dt>Route</dt>
+                        <dd>{rule.route}</dd>
+                      </div>
+                      <div>
+                        <dt>Escalation</dt>
+                        <dd>{rule.escalation}</dd>
+                      </div>
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="notification-bottom-grid">
+            <div className="notification-panel">
+              <div className="card-heading">
+                <span>Delivery and read tracking</span>
+                <strong>Notification history</strong>
+              </div>
+              <div className="history-list" aria-label="Notification history">
+                {notificationHistory.map((event) => (
+                  <article key={`${event.event}-${event.timestamp}`}>
+                    <span className={`delivery-status ${event.deliveryStatus.toLowerCase()}`}>{event.deliveryStatus}</span>
+                    <div>
+                      <strong>{event.event}</strong>
+                      <p>
+                        {event.resident} | {event.recipient} | {event.channel}
+                      </p>
+                    </div>
+                    <time>{event.timestamp}</time>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="notification-panel integration-panel">
+              <div className="card-heading">
+                <span>Integration contract</span>
+                <strong>Required for all future modules</strong>
+              </div>
+              <ul className="check-list">
+                {notificationIntegrationRequirements.map((requirement) => (
+                  <li key={requirement}>{requirement}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         </section>
 

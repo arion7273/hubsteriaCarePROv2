@@ -47,8 +47,8 @@ describe('HubsteriaCarePRO foundation', () => {
   it('shows the enterprise hierarchy including the future T2.5 regional role', () => {
     render(<App />);
 
-    expect(screen.getByText(/Master Administrator/i)).toBeInTheDocument();
-    expect(screen.getByText(/Organization Administrator/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Master Administrator/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Organization Administrator/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Regional Administrator/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Facility Administrator/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Permission-Based Staff/i)).toBeInTheDocument();
@@ -139,5 +139,32 @@ describe('HubsteriaCarePRO foundation', () => {
     await user.click(screen.getByRole('button', { name: 'T3 Facility' }));
     expect(screen.getAllByText('Staff On Shift').length).toBeGreaterThan(0);
     expect(screen.getAllByRole('button', { name: 'Start Assessment' }).length).toBeGreaterThan(0);
+  });
+
+  it('renders Phase 4 Notification Center Pro channels, templates, and routing rules', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Notification Center Pro' })).toBeInTheDocument();
+    ['In-App', 'Email', 'SMS', 'Push'].forEach((channel) => {
+      expect(screen.getAllByText(channel).length).toBeGreaterThan(0);
+    });
+
+    expect(screen.getAllByText('Medication Refused').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('DigitalRX Sync Warning').length).toBeGreaterThan(0);
+    expect(screen.getByText('Critical med refusal escalation')).toBeInTheDocument();
+    expect(screen.getByText(/Escalate by SMS if unread after 10 minutes/i)).toBeInTheDocument();
+  });
+
+  it('tracks notification delivery history and required future module integration contract', () => {
+    render(<App />);
+
+    const history = screen.getByLabelText('Notification history');
+    expect(within(history).getAllByText('Delivered').length).toBeGreaterThan(0);
+    expect(within(history).getAllByText('Escalated').length).toBeGreaterThan(0);
+    expect(within(history).getByText(/Medication Manager/i)).toBeInTheDocument();
+
+    expect(screen.getByText(/Every major event can generate in-app, email, SMS, or push notifications/i)).toBeInTheDocument();
+    expect(screen.getByText(/Notification rules remain tenant-scoped/i)).toBeInTheDocument();
+    expect(screen.getByText(/Delivery tracking records queued, delivered, read, failed, and escalated states/i)).toBeInTheDocument();
   });
 });

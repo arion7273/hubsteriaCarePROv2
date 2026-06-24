@@ -83,7 +83,7 @@ export const foundationPhases: Phase[] = [
   {
     id: '4',
     title: 'Notification Center Pro',
-    status: 'planned',
+    status: 'foundation',
     milestone: 'Enterprise Notifications',
     summary:
       'In-app, email, SMS, and push notification platform with templates, rules, routing, escalation, and tracking.',
