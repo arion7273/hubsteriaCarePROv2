@@ -25,6 +25,7 @@ Backend-facing TypeScript contracts live in `src/domain`.
 - `repositories.ts` defines persistence interfaces for future database adapters.
 - `in-memory-repositories.ts` provides executable in-memory adapters for tests and local service development.
 - `backend-service.ts` provides tenant-safe service operations that enforce permissions and append audit events.
+- `database/migrations` contains the initial PostgreSQL schema and permission seed data.
 
 ## Access rules
 
@@ -67,3 +68,5 @@ Next, choose a backend stack and implement repository adapters:
 - Audit log append-only table
 - Tenant-scoped database queries
 - Integration workers for notifications, DigitalRX, print, and AI
+
+See `docs/database-foundation.md` for the schema, tenant query rules, and audit log persistence requirements.

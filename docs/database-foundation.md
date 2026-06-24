@@ -1,0 +1,59 @@
+# Database foundation
+
+The initial database target is PostgreSQL.
+
+## Migrations
+
+- `database/migrations/0001_multitenant_foundation.sql`
+  - organizations
+  - facilities
+  - roles
+  - permissions
+  - role permissions
+  - users
+  - user facilities
+  - residents
+  - feature registry
+  - audit logs
+  - tenant/access indexes
+- `database/migrations/0002_seed_permissions.sql`
+  - base permission keys aligned with `src/domain/types.ts`
+
+## Tenant isolation rules
+
+Every production query must filter by tenant scope:
+
+- `organization_id`
+- `facility_id`
+- `resident_id` when applicable
+
+T1 platform users are the only users that may intentionally cross organization boundaries.
+
+T2 users may query only their organization.
+
+T3 and employee users may query only assigned facilities.
+
+Family and resident users require resident-specific permission mapping before data access.
+
+## Audit log rules
+
+`audit_logs` is append-only.
+
+Production database roles must not receive `UPDATE` or `DELETE` grants on `audit_logs`.
+
+Audit events must include:
+
+- action
+- actor user
+- actor role
+- entity type
+- entity ID
+- organization
+- facility
+- resident when applicable
+- before state
+- after state
+
+## Next step
+
+Implement PostgreSQL repository adapters for `src/domain/repositories.ts`, then wire them to an API layer.
