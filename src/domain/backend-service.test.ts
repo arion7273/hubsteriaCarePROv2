@@ -31,7 +31,38 @@ const t3User: User = {
 };
 
 function createTestService() {
-  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'job-1', 'audit-job-1', 'audit-job-fail', 'job-2', 'audit-job-2', 'audit-job-complete', 'audit-4', 'user-1', 'audit-user', 'audit-user-update', 'feature-audit'];
+  const ids = [
+    'org-1',
+    'audit-1',
+    'facility-1',
+    'audit-2',
+    'resident-1',
+    'audit-3',
+    'task-1',
+    'audit-task',
+    'audit-task-complete',
+    'adl-1',
+    'audit-adl',
+    'service-plan-1',
+    'audit-service-plan',
+    'audit-4',
+    'user-1',
+    'audit-user',
+    'audit-user-update',
+    'org-1', 'audit-1',
+    'facility-1', 'audit-2',
+    'resident-1', 'audit-3',
+    'med-order-1', 'audit-med-order',
+    'med-admin-1', 'audit-med-admin',
+    'org-1', 'audit-1',
+    'facility-1', 'audit-2',
+    'resident-1', 'audit-3',
+    'incident-1', 'audit-incident', 'audit-incident-update',
+    'compliance-1', 'audit-compliance',
+    'audit-4',
+    'user-1', 'audit-user', 'audit-user-update',
+    'feature-audit'
+  ];
   const repositories = createInMemoryBackendRepositories();
   const service = new BackendFoundationService(
     repositories,
@@ -228,6 +259,230 @@ describe('BackendFoundationService', () => {
     await expect(service.enqueueDigitalRxSyncJob({ user: t1User }, { organizationId: 'org-1', event: 'refill_updated', payload: { refillId: 'refill-1' } })).resolves.toMatchObject({ type: 'digitalrx_sync' });
     await expect(service.enqueueAiGenerationJob({ user: t1User }, { task: 'resident_summary', payload: { residentId: 'resident-1' } })).resolves.toMatchObject({ type: 'ai_generation' });
     await expect(service.enqueueWorkflowActionJob({ user: t1User }, { trigger: 'Assessment Due', action: 'Create Task', payload: { residentId: 'resident-1' } })).resolves.toMatchObject({ type: 'workflow_action' });
+  });
+
+  it('creates and lists assessments and care plans with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+    await service.createResident(
+      { user: { ...t3User, permissions: ['resident:write', 'assessment:manage'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
+    );
+
+    const assessment = await service.createAssessment(
+      { user: { ...t3User, permissions: ['assessment:manage'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        type: 'Fall Risk Assessment',
+        status: 'review',
+        score: 8,
+        answers: { mobility: 'walker' }
+      }
+    );
+
+    expect(assessment).toMatchObject({ type: 'Fall Risk Assessment', score: 8 });
+    await expect(service.listAssessmentsByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+
+    const carePlan = await service.createCarePlan(
+      { user: { ...t3User, permissions: ['assessment:manage'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        goal: 'Reduce fall risk',
+        interventions: ['Escort to dining room'],
+        outcome: 'No falls',
+        reviewDate: '2026-07-24',
+        assignedStaff: 'Wellness Director',
+        status: 'active'
+      }
+    );
+
+    expect(carePlan).toMatchObject({ goal: 'Reduce fall risk' });
+    await expect(service.listCarePlansByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+    await expect(repositories.auditLogs.listByEntity('Assessment', assessment.id)).resolves.toHaveLength(1);
+    await expect(repositories.auditLogs.listByEntity('CarePlan', carePlan.id)).resolves.toHaveLength(1);
+  });
+
+  it('creates medication orders and records med pass actions with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+    await service.createResident(
+      { user: { ...t3User, permissions: ['resident:write', 'medication:manage'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
+    );
+
+    const order = await service.createMedicationOrder(
+      { user: { ...t3User, permissions: ['medication:manage'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        medication: 'Lisinopril',
+        dosage: '10mg',
+        route: 'PO',
+        schedule: 'Daily 8 AM',
+        status: 'active',
+        instructions: 'Check BP first'
+      }
+    );
+
+    expect(order).toMatchObject({ medication: 'Lisinopril', status: 'active' });
+    await expect(service.listMedicationOrdersByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+
+    const administration = await service.recordMedicationAdministration(
+      { user: { ...t3User, permissions: ['medication:manage'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        medicationOrderId: order.id,
+        action: 'given',
+        outcome: 'No adverse reaction'
+      }
+    );
+
+    expect(administration).toMatchObject({ action: 'given', administeredBy: t3User.id });
+    await expect(service.listMedicationAdministrationsByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+    await expect(repositories.auditLogs.listByEntity('MedicationOrder', order.id)).resolves.toHaveLength(1);
+    await expect(repositories.auditLogs.listByEntity('MedicationAdministration', administration.id)).resolves.toHaveLength(1);
+  });
+
+  it('creates tasks, completes tasks, logs ADLs, and creates service plans with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+    await service.createResident(
+      { user: { ...t3User, permissions: ['resident:write'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
+    );
+
+    const task = await service.createCareTask(
+      { user: { ...t3User, permissions: ['resident:write'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        title: 'Breakfast ADL documentation',
+        taskType: 'daily',
+        dueAt: '2026-06-24T09:30:00.000Z',
+        assignedStaff: 'Caregiver Lead',
+        status: 'due'
+      }
+    );
+
+    await expect(service.completeCareTask({ user: { ...t3User, permissions: ['resident:write'] } }, task.id)).resolves.toMatchObject({
+      status: 'complete'
+    });
+    await expect(service.listCareTasksByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+
+    const adl = await service.logAdl(
+      { user: { ...t3User, permissions: ['resident:write'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        category: 'Feeding',
+        outcome: '75% breakfast intake'
+      }
+    );
+    expect(adl.recordedBy).toBe(t3User.id);
+    await expect(service.listAdlsByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+
+    const servicePlan = await service.createServicePlan(
+      { user: { ...t3User, permissions: ['resident:write'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        service: 'Memory care evening support',
+        schedule: 'Daily',
+        assignedStaff: 'Evening Caregiver',
+        status: 'active'
+      }
+    );
+    expect(servicePlan.service).toBe('Memory care evening support');
+    await expect(service.listServicePlansByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+    await expect(repositories.auditLogs.listByEntity('CareTask', task.id)).resolves.toHaveLength(2);
+  });
+
+  it('creates, lists, and updates incidents and compliance issues with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+    await service.createResident(
+      { user: { ...t3User, permissions: ['resident:write'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
+    );
+
+    const incident = await service.createIncident(
+      { user: { ...t3User, permissions: ['resident:write'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        type: 'fall',
+        severity: 'warning',
+        status: 'open',
+        summary: 'Resident slipped near dining room',
+        occurredAt: '2026-06-24T10:00:00.000Z'
+      }
+    );
+
+    expect(incident).toMatchObject({ type: 'fall', status: 'open' });
+    await expect(service.listIncidentsByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+    await expect(service.updateIncident({ user: { ...t3User, permissions: ['resident:write'] } }, incident.id, { status: 'resolved', resolution: 'Care plan updated' })).resolves.toMatchObject({ status: 'resolved' });
+
+    const issue = await service.createComplianceIssue(
+      { user: t3User },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        issue: 'Missing documentation',
+        severity: 'warning',
+        status: 'open',
+        resolutionLink: 'Open documentation exceptions'
+      }
+    );
+
+    expect(issue.issue).toBe('Missing documentation');
+    await expect(service.listComplianceIssuesByFacility({ user: t3User }, 'org-1', 'facility-1')).resolves.toHaveLength(1);
+    await expect(repositories.auditLogs.listByEntity('Incident', incident.id)).resolves.toHaveLength(2);
+    await expect(repositories.auditLogs.listByEntity('ComplianceIssue', issue.id)).resolves.toHaveLength(1);
+  });
+
+  it('creates charges, invoices, and payment transactions with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+    await service.createResident(
+      { user: { ...t3User, permissions: ['resident:write', 'billing:manage'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
+    );
+
+    const charge = await service.createBillingCharge(
+      { user: { ...t3User, permissions: ['billing:manage'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1', type: 'recurring', description: 'Monthly rent', amountCents: 540000, status: 'posted' }
+    );
+    const invoice = await service.createInvoice(
+      { user: { ...t3User, permissions: ['billing:manage'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1', invoiceNumber: 'INV-1', balanceCents: 540000, dueDate: '2026-07-01', status: 'posted' }
+    );
+    const payment = await service.recordPaymentTransaction(
+      { user: { ...t3User, permissions: ['billing:manage'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1', invoiceId: invoice.id, type: 'payment', amountCents: 540000, method: 'ACH' }
+    );
+
+    expect(charge.description).toBe('Monthly rent');
+    expect(payment.postedBy).toBe(t3User.id);
+    await expect(service.listBillingChargesByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+    await expect(service.listInvoicesByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+    await expect(service.listPaymentTransactionsByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+    await expect(repositories.auditLogs.listByEntity('Invoice', invoice.id)).resolves.toHaveLength(1);
   });
 
   it('denies resident creation across facility boundaries', async () => {

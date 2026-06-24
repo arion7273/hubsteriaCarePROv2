@@ -1,20 +1,55 @@
 import type { AuditEvent } from './audit';
 import { assertFeatureRegistration, type RegisteredFeature } from './feature-registry';
 import type {
+  AdlEntryRepository,
   AuditLogRepository,
+  AssessmentRepository,
   BackgroundJobRepository,
+  BillingChargeRepository,
   AuthSessionRepository,
   BackendRepositories,
+  CarePlanRepository,
+  CareTaskRepository,
+  MedicationAdministrationRepository,
+  MedicationOrderRepository,
+  ComplianceIssueRepository,
   FacilityRepository,
   FeatureRegistryRepository,
+  IncidentRepository,
+  InvoiceRepository,
   MfaChallengeRepository,
   OrganizationRepository,
   PasswordResetRepository,
+  PaymentTransactionRepository,
   ResidentRepository,
+  ServicePlanRepository,
   UserCredentialRepository,
   UserRepository
 } from './repositories';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
+import type {
+  Assessment,
+  AdlEntry,
+  AuthSession,
+  BackgroundJob,
+  BillingCharge,
+  CarePlan,
+  CareTask,
+  ComplianceIssue,
+  Facility,
+  Incident,
+  Invoice,
+  MedicationAdministration,
+  MedicationOrder,
+  MfaChallenge,
+  Organization,
+  PaymentTransaction,
+  PasswordResetRequest,
+  Resident,
+  ServicePlanRecord,
+  User,
+  UserCredential,
+  UUID
+} from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -136,6 +171,157 @@ function priorityValue(priority: BackgroundJob['priority']): number {
   return { low: 0, normal: 1, high: 2, critical: 3 }[priority];
 }
 
+export class InMemoryAssessmentRepository implements AssessmentRepository {
+  private readonly assessments = new Map<UUID, Assessment>();
+
+  async getById(id: UUID): Promise<Assessment | null> {
+    return this.assessments.get(id) ?? null;
+  }
+
+  async listByResident(residentId: UUID): Promise<Assessment[]> {
+    return [...this.assessments.values()].filter((assessment) => assessment.residentId === residentId);
+  }
+
+  async save(assessment: Assessment): Promise<Assessment> {
+    this.assessments.set(assessment.id, assessment);
+    return assessment;
+  }
+}
+
+export class InMemoryCarePlanRepository implements CarePlanRepository {
+  private readonly carePlans = new Map<UUID, CarePlan>();
+
+  async getById(id: UUID): Promise<CarePlan | null> {
+    return this.carePlans.get(id) ?? null;
+  }
+
+  async listByResident(residentId: UUID): Promise<CarePlan[]> {
+    return [...this.carePlans.values()].filter((carePlan) => carePlan.residentId === residentId);
+  }
+
+  async save(carePlan: CarePlan): Promise<CarePlan> {
+    this.carePlans.set(carePlan.id, carePlan);
+    return carePlan;
+  }
+}
+
+export class InMemoryCareTaskRepository implements CareTaskRepository {
+  private readonly tasks = new Map<UUID, CareTask>();
+  async getById(id: UUID): Promise<CareTask | null> { return this.tasks.get(id) ?? null; }
+  async listByResident(residentId: UUID): Promise<CareTask[]> {
+    return [...this.tasks.values()].filter((task) => task.residentId === residentId);
+  }
+  async save(task: CareTask): Promise<CareTask> {
+    this.tasks.set(task.id, task);
+    return task;
+  }
+}
+
+export class InMemoryAdlEntryRepository implements AdlEntryRepository {
+  private readonly entries = new Map<UUID, AdlEntry>();
+  async listByResident(residentId: UUID): Promise<AdlEntry[]> {
+    return [...this.entries.values()].filter((entry) => entry.residentId === residentId);
+  }
+  async save(entry: AdlEntry): Promise<AdlEntry> {
+    this.entries.set(entry.id, entry);
+    return entry;
+  }
+}
+
+export class InMemoryServicePlanRepository implements ServicePlanRepository {
+  private readonly plans = new Map<UUID, ServicePlanRecord>();
+  async listByResident(residentId: UUID): Promise<ServicePlanRecord[]> {
+    return [...this.plans.values()].filter((plan) => plan.residentId === residentId);
+  }
+  async save(plan: ServicePlanRecord): Promise<ServicePlanRecord> {
+    this.plans.set(plan.id, plan);
+    return plan;
+  }
+}
+
+export class InMemoryMedicationOrderRepository implements MedicationOrderRepository {
+  private readonly orders = new Map<UUID, MedicationOrder>();
+  async getById(id: UUID): Promise<MedicationOrder | null> { return this.orders.get(id) ?? null; }
+  async listByResident(residentId: UUID): Promise<MedicationOrder[]> {
+    return [...this.orders.values()].filter((order) => order.residentId === residentId);
+  }
+  async save(order: MedicationOrder): Promise<MedicationOrder> {
+    this.orders.set(order.id, order);
+    return order;
+  }
+}
+
+export class InMemoryMedicationAdministrationRepository implements MedicationAdministrationRepository {
+  private readonly administrations = new Map<UUID, MedicationAdministration>();
+  async listByResident(residentId: UUID): Promise<MedicationAdministration[]> {
+    return [...this.administrations.values()].filter((administration) => administration.residentId === residentId);
+  }
+  async save(administration: MedicationAdministration): Promise<MedicationAdministration> {
+    this.administrations.set(administration.id, administration);
+    return administration;
+  }
+}
+
+export class InMemoryIncidentRepository implements IncidentRepository {
+  private readonly incidents = new Map<UUID, Incident>();
+  async getById(id: UUID): Promise<Incident | null> { return this.incidents.get(id) ?? null; }
+  async listByResident(residentId: UUID): Promise<Incident[]> {
+    return [...this.incidents.values()].filter((incident) => incident.residentId === residentId);
+  }
+  async listByFacility(organizationId: UUID, facilityId: UUID): Promise<Incident[]> {
+    return [...this.incidents.values()].filter((incident) => incident.organizationId === organizationId && incident.facilityId === facilityId);
+  }
+  async save(incident: Incident): Promise<Incident> {
+    this.incidents.set(incident.id, incident);
+    return incident;
+  }
+}
+
+export class InMemoryComplianceIssueRepository implements ComplianceIssueRepository {
+  private readonly issues = new Map<UUID, ComplianceIssue>();
+  async listByFacility(organizationId: UUID, facilityId: UUID): Promise<ComplianceIssue[]> {
+    return [...this.issues.values()].filter((issue) => issue.organizationId === organizationId && issue.facilityId === facilityId);
+  }
+  async save(issue: ComplianceIssue): Promise<ComplianceIssue> {
+    this.issues.set(issue.id, issue);
+    return issue;
+  }
+}
+
+export class InMemoryBillingChargeRepository implements BillingChargeRepository {
+  private readonly charges = new Map<UUID, BillingCharge>();
+  async listByResident(residentId: UUID): Promise<BillingCharge[]> {
+    return [...this.charges.values()].filter((charge) => charge.residentId === residentId);
+  }
+  async save(charge: BillingCharge): Promise<BillingCharge> {
+    this.charges.set(charge.id, charge);
+    return charge;
+  }
+}
+
+export class InMemoryInvoiceRepository implements InvoiceRepository {
+  private readonly invoices = new Map<UUID, Invoice>();
+  async getById(id: UUID): Promise<Invoice | null> { return this.invoices.get(id) ?? null; }
+  async listByResident(residentId: UUID): Promise<Invoice[]> {
+    return [...this.invoices.values()].filter((invoice) => invoice.residentId === residentId);
+  }
+  async save(invoice: Invoice): Promise<Invoice> {
+    this.invoices.set(invoice.id, invoice);
+    return invoice;
+  }
+}
+
+export class InMemoryPaymentTransactionRepository implements PaymentTransactionRepository {
+  private readonly transactions = new Map<UUID, PaymentTransaction>();
+  async listByResident(residentId: UUID): Promise<PaymentTransaction[]> {
+    return [...this.transactions.values()].filter((transaction) => transaction.residentId === residentId);
+  }
+  async save(transaction: PaymentTransaction): Promise<PaymentTransaction> {
+    this.transactions.set(transaction.id, transaction);
+    return transaction;
+  }
+}
+
 export class InMemoryAuditLogRepository implements AuditLogRepository {
   private readonly events: AuditEvent[] = [];
 
@@ -227,6 +413,18 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     userCredentials: new InMemoryUserCredentialRepository(),
     residents: new InMemoryResidentRepository(),
     backgroundJobs: new InMemoryBackgroundJobRepository(),
+    assessments: new InMemoryAssessmentRepository(),
+    carePlans: new InMemoryCarePlanRepository(),
+    careTasks: new InMemoryCareTaskRepository(),
+    adlEntries: new InMemoryAdlEntryRepository(),
+    servicePlans: new InMemoryServicePlanRepository(),
+    medicationOrders: new InMemoryMedicationOrderRepository(),
+    medicationAdministrations: new InMemoryMedicationAdministrationRepository(),
+    incidents: new InMemoryIncidentRepository(),
+    complianceIssues: new InMemoryComplianceIssueRepository(),
+    billingCharges: new InMemoryBillingChargeRepository(),
+    invoices: new InMemoryInvoiceRepository(),
+    paymentTransactions: new InMemoryPaymentTransactionRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
     featureRegistry: new InMemoryFeatureRegistryRepository(),
     authSessions: new InMemoryAuthSessionRepository(),

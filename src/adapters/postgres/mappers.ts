@@ -1,6 +1,30 @@
 import type { RegisteredFeature } from '../../domain';
 import type { AuditEvent } from '../../domain/audit';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User, UserCredential } from '../../domain/types';
+import type {
+  Assessment,
+  AuthSession,
+  BackgroundJob,
+  BillingCharge,
+  CarePlan,
+  CareTask,
+  ComplianceIssue,
+  Facility,
+  Incident,
+  Invoice,
+  MedicationAdministration,
+  MedicationOrder,
+  MfaChallenge,
+  Organization,
+  PaymentTransaction,
+  PasswordResetRequest,
+  Permission,
+  Resident,
+  RoleTier,
+  ServicePlanRecord,
+  User,
+  UserCredential
+} from '../../domain/types';
+import type { AdlEntry } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -63,6 +87,161 @@ export function mapBackgroundJobRow(row: PostgresRow): BackgroundJob {
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
     lastError: row.last_error ? String(row.last_error) : undefined
+  };
+}
+
+export function mapAssessmentRow(row: PostgresRow): Assessment {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: String(row.resident_id),
+    type: String(row.type),
+    status: String(row.status) as Assessment['status'],
+    score: row.score === null || row.score === undefined ? undefined : Number(row.score),
+    answers: isRecord(row.answers) ? row.answers : {}
+  };
+}
+
+export function mapCarePlanRow(row: PostgresRow): CarePlan {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: String(row.resident_id),
+    goal: String(row.goal),
+    interventions: toStringArray(row.interventions),
+    outcome: String(row.outcome),
+    reviewDate: String(row.review_date),
+    assignedStaff: String(row.assigned_staff),
+    status: String(row.status) as CarePlan['status']
+  };
+}
+
+export function mapCareTaskRow(row: PostgresRow): CareTask {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: String(row.resident_id),
+    title: String(row.title),
+    taskType: String(row.task_type) as CareTask['taskType'],
+    dueAt: String(row.due_at),
+    assignedStaff: String(row.assigned_staff),
+    status: String(row.status) as CareTask['status']
+  };
+}
+
+export function mapAdlEntryRow(row: PostgresRow): AdlEntry {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: String(row.resident_id),
+    category: String(row.category),
+    outcome: String(row.outcome),
+    note: row.note ? String(row.note) : undefined,
+    recordedAt: String(row.recorded_at),
+    recordedBy: String(row.recorded_by)
+  };
+}
+
+export function mapServicePlanRow(row: PostgresRow): ServicePlanRecord {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: String(row.resident_id),
+    service: String(row.service),
+    schedule: String(row.schedule),
+    assignedStaff: String(row.assigned_staff),
+    exceptions: row.exceptions ? String(row.exceptions) : undefined,
+    status: String(row.status) as ServicePlanRecord['status']
+  };
+}
+
+export function mapMedicationOrderRow(row: PostgresRow): MedicationOrder {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: String(row.resident_id),
+    medication: String(row.medication),
+    dosage: String(row.dosage),
+    route: String(row.route),
+    schedule: String(row.schedule),
+    status: String(row.status) as MedicationOrder['status'],
+    instructions: row.instructions ? String(row.instructions) : undefined
+  };
+}
+
+export function mapMedicationAdministrationRow(row: PostgresRow): MedicationAdministration {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: String(row.resident_id),
+    medicationOrderId: String(row.medication_order_id),
+    action: String(row.action) as MedicationAdministration['action'],
+    reason: row.reason ? String(row.reason) : undefined,
+    outcome: row.outcome ? String(row.outcome) : undefined,
+    administeredAt: String(row.administered_at),
+    administeredBy: String(row.administered_by)
+  };
+}
+
+export function mapIncidentRow(row: PostgresRow): Incident {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: String(row.resident_id),
+    type: String(row.type) as Incident['type'],
+    severity: String(row.severity) as Incident['severity'],
+    status: String(row.status) as Incident['status'],
+    summary: String(row.summary),
+    investigation: row.investigation ? String(row.investigation) : undefined,
+    rootCause: row.root_cause ? String(row.root_cause) : undefined,
+    correctiveAction: row.corrective_action ? String(row.corrective_action) : undefined,
+    resolution: row.resolution ? String(row.resolution) : undefined,
+    occurredAt: String(row.occurred_at)
+  };
+}
+
+export function mapComplianceIssueRow(row: PostgresRow): ComplianceIssue {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: row.resident_id ? String(row.resident_id) : undefined,
+    issue: String(row.issue),
+    severity: String(row.severity) as ComplianceIssue['severity'],
+    status: String(row.status) as ComplianceIssue['status'],
+    resolutionLink: String(row.resolution_link)
+  };
+}
+
+export function mapBillingChargeRow(row: PostgresRow): BillingCharge {
+  return {
+    id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
+    type: String(row.type) as BillingCharge['type'], description: String(row.description), amountCents: Number(row.amount_cents),
+    status: String(row.status) as BillingCharge['status']
+  };
+}
+
+export function mapInvoiceRow(row: PostgresRow): Invoice {
+  return {
+    id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
+    invoiceNumber: String(row.invoice_number), balanceCents: Number(row.balance_cents), dueDate: String(row.due_date),
+    status: String(row.status) as Invoice['status']
+  };
+}
+
+export function mapPaymentTransactionRow(row: PostgresRow): PaymentTransaction {
+  return {
+    id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
+    invoiceId: row.invoice_id ? String(row.invoice_id) : undefined, type: String(row.type) as PaymentTransaction['type'],
+    amountCents: Number(row.amount_cents), method: String(row.method), postedAt: String(row.posted_at), postedBy: String(row.posted_by)
   };
 }
 
@@ -150,4 +329,8 @@ function toIsoString(value: unknown): string {
   }
 
   return String(value);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

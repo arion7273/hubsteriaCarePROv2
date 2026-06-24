@@ -27,6 +27,20 @@ The initial database target is PostgreSQL.
 - `database/migrations/0004_user_credentials.sql`
   - user credential hashes
   - no plain-text password storage
+- `database/migrations/0006_tasks_adls_services.sql`
+  - care tasks
+  - ADL entries
+  - service plans
+- `database/migrations/0007_emar_medications.sql`
+  - medication orders
+  - medication administrations
+- `database/migrations/0008_incidents_compliance.sql`
+  - incidents
+  - compliance issues
+- `database/migrations/0009_billing_financials.sql`
+  - billing charges
+  - invoices
+  - payment transactions
 
 Run migrations with:
 

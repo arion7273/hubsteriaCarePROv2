@@ -1,41 +1,101 @@
 import { assertFeatureRegistration, type AuditEvent, type RegisteredFeature } from '../../domain';
 import type {
+  AdlEntryRepository,
   AuditLogRepository,
+  AssessmentRepository,
   BackgroundJobRepository,
+  BillingChargeRepository,
+  ComplianceIssueRepository,
   AuthSessionRepository,
+  CarePlanRepository,
+  CareTaskRepository,
   FacilityRepository,
   FeatureRegistryRepository,
+  MedicationAdministrationRepository,
+  MedicationOrderRepository,
+  IncidentRepository,
+  InvoiceRepository,
   MfaChallengeRepository,
   OrganizationRepository,
   PasswordResetRepository,
+  PaymentTransactionRepository,
   ResidentRepository,
+  ServicePlanRepository,
   UserCredentialRepository,
   UserRepository
 } from '../../domain/repositories';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UserCredential, UUID } from '../../domain/types';
+import type {
+  AdlEntry,
+  Assessment,
+  AuthSession,
+  BackgroundJob,
+  BillingCharge,
+  CarePlan,
+  CareTask,
+  ComplianceIssue,
+  Facility,
+  Incident,
+  Invoice,
+  MedicationAdministration,
+  MedicationOrder,
+  MfaChallenge,
+  Organization,
+  PaymentTransaction,
+  PasswordResetRequest,
+  Resident,
+  RoleTier,
+  ServicePlanRecord,
+  User,
+  UserCredential,
+  UUID
+} from '../../domain/types';
 import {
+  assessmentStatements,
+  adlEntryStatements,
   auditLogStatements,
   backgroundJobStatements,
   authSessionStatements,
+  carePlanStatements,
+  careTaskStatements,
   facilityStatements,
   featureRegistryStatements,
+  medicationAdministrationStatements,
+  medicationOrderStatements,
+  complianceIssueStatements,
+  incidentStatements,
+  billingChargeStatements,
+  invoiceStatements,
   mfaChallengeStatements,
   organizationStatements,
   passwordResetStatements,
+  paymentTransactionStatements,
   residentStatements,
+  servicePlanStatements,
   userCredentialStatements,
   userStatements
 } from './statements';
 import {
+  mapAssessmentRow,
+  mapAdlEntryRow,
   mapAuditRow,
   mapBackgroundJobRow,
   mapAuthSessionRow,
+  mapCarePlanRow,
+  mapCareTaskRow,
   mapFacilityRow,
   mapFeatureRow,
+  mapMedicationAdministrationRow,
+  mapMedicationOrderRow,
+  mapComplianceIssueRow,
+  mapIncidentRow,
+  mapBillingChargeRow,
+  mapInvoiceRow,
   mapMfaChallengeRow,
   mapOrganizationRow,
   mapPasswordResetRequestRow,
+  mapPaymentTransactionRow,
   mapResidentRow,
+  mapServicePlanRow,
   mapUserCredentialRow,
   mapUserRow
 } from './mappers';
@@ -135,6 +195,105 @@ export class PostgresBackgroundJobRepository implements BackgroundJobRepository 
   async listQueued(limit: number): Promise<BackgroundJob[]> { return (await this.client.query(backgroundJobStatements.listQueued(limit))).rows.map(mapBackgroundJobRow); }
   async listByScope(scope: { organizationId?: UUID; facilityId?: UUID; residentId?: UUID }): Promise<BackgroundJob[]> { return (await this.client.query(backgroundJobStatements.listByScope(scope))).rows.map(mapBackgroundJobRow); }
   async save(job: BackgroundJob): Promise<BackgroundJob> { return requiredFirst(await this.client.query(backgroundJobStatements.upsert(job)), mapBackgroundJobRow); }
+}
+
+export class PostgresAssessmentRepository implements AssessmentRepository {
+  constructor(private readonly client: PostgresClient) {}
+
+  async getById(id: UUID): Promise<Assessment | null> {
+    return first(await this.client.query(assessmentStatements.selectById(id)), mapAssessmentRow);
+  }
+
+  async listByResident(residentId: UUID): Promise<Assessment[]> {
+    const result = await this.client.query(assessmentStatements.listByResident(residentId));
+    return result.rows.map(mapAssessmentRow);
+  }
+
+  async save(assessment: Assessment): Promise<Assessment> {
+    return requiredFirst(await this.client.query(assessmentStatements.upsert(assessment)), mapAssessmentRow);
+  }
+}
+
+export class PostgresCarePlanRepository implements CarePlanRepository {
+  constructor(private readonly client: PostgresClient) {}
+
+  async getById(id: UUID): Promise<CarePlan | null> {
+    return first(await this.client.query(carePlanStatements.selectById(id)), mapCarePlanRow);
+  }
+
+  async listByResident(residentId: UUID): Promise<CarePlan[]> {
+    const result = await this.client.query(carePlanStatements.listByResident(residentId));
+    return result.rows.map(mapCarePlanRow);
+  }
+
+  async save(carePlan: CarePlan): Promise<CarePlan> {
+    return requiredFirst(await this.client.query(carePlanStatements.upsert(carePlan)), mapCarePlanRow);
+  }
+}
+
+export class PostgresCareTaskRepository implements CareTaskRepository {
+  constructor(private readonly client: PostgresClient) {}
+  async getById(id: UUID): Promise<CareTask | null> { return first(await this.client.query(careTaskStatements.selectById(id)), mapCareTaskRow); }
+  async listByResident(residentId: UUID): Promise<CareTask[]> { return (await this.client.query(careTaskStatements.listByResident(residentId))).rows.map(mapCareTaskRow); }
+  async save(task: CareTask): Promise<CareTask> { return requiredFirst(await this.client.query(careTaskStatements.upsert(task)), mapCareTaskRow); }
+}
+
+export class PostgresAdlEntryRepository implements AdlEntryRepository {
+  constructor(private readonly client: PostgresClient) {}
+  async listByResident(residentId: UUID): Promise<AdlEntry[]> { return (await this.client.query(adlEntryStatements.listByResident(residentId))).rows.map(mapAdlEntryRow); }
+  async save(entry: AdlEntry): Promise<AdlEntry> { return requiredFirst(await this.client.query(adlEntryStatements.insert(entry)), mapAdlEntryRow); }
+}
+
+export class PostgresServicePlanRepository implements ServicePlanRepository {
+  constructor(private readonly client: PostgresClient) {}
+  async listByResident(residentId: UUID): Promise<ServicePlanRecord[]> { return (await this.client.query(servicePlanStatements.listByResident(residentId))).rows.map(mapServicePlanRow); }
+  async save(plan: ServicePlanRecord): Promise<ServicePlanRecord> { return requiredFirst(await this.client.query(servicePlanStatements.upsert(plan)), mapServicePlanRow); }
+}
+
+export class PostgresMedicationOrderRepository implements MedicationOrderRepository {
+  constructor(private readonly client: PostgresClient) {}
+  async getById(id: UUID): Promise<MedicationOrder | null> { return first(await this.client.query(medicationOrderStatements.selectById(id)), mapMedicationOrderRow); }
+  async listByResident(residentId: UUID): Promise<MedicationOrder[]> { return (await this.client.query(medicationOrderStatements.listByResident(residentId))).rows.map(mapMedicationOrderRow); }
+  async save(order: MedicationOrder): Promise<MedicationOrder> { return requiredFirst(await this.client.query(medicationOrderStatements.upsert(order)), mapMedicationOrderRow); }
+}
+
+export class PostgresMedicationAdministrationRepository implements MedicationAdministrationRepository {
+  constructor(private readonly client: PostgresClient) {}
+  async listByResident(residentId: UUID): Promise<MedicationAdministration[]> { return (await this.client.query(medicationAdministrationStatements.listByResident(residentId))).rows.map(mapMedicationAdministrationRow); }
+  async save(administration: MedicationAdministration): Promise<MedicationAdministration> { return requiredFirst(await this.client.query(medicationAdministrationStatements.insert(administration)), mapMedicationAdministrationRow); }
+}
+
+export class PostgresIncidentRepository implements IncidentRepository {
+  constructor(private readonly client: PostgresClient) {}
+  async getById(id: UUID): Promise<Incident | null> { return first(await this.client.query(incidentStatements.selectById(id)), mapIncidentRow); }
+  async listByResident(residentId: UUID): Promise<Incident[]> { return (await this.client.query(incidentStatements.listByResident(residentId))).rows.map(mapIncidentRow); }
+  async listByFacility(organizationId: UUID, facilityId: UUID): Promise<Incident[]> { return (await this.client.query(incidentStatements.listByFacility(organizationId, facilityId))).rows.map(mapIncidentRow); }
+  async save(incident: Incident): Promise<Incident> { return requiredFirst(await this.client.query(incidentStatements.upsert(incident)), mapIncidentRow); }
+}
+
+export class PostgresComplianceIssueRepository implements ComplianceIssueRepository {
+  constructor(private readonly client: PostgresClient) {}
+  async listByFacility(organizationId: UUID, facilityId: UUID): Promise<ComplianceIssue[]> { return (await this.client.query(complianceIssueStatements.listByFacility(organizationId, facilityId))).rows.map(mapComplianceIssueRow); }
+  async save(issue: ComplianceIssue): Promise<ComplianceIssue> { return requiredFirst(await this.client.query(complianceIssueStatements.upsert(issue)), mapComplianceIssueRow); }
+}
+
+export class PostgresBillingChargeRepository implements BillingChargeRepository {
+  constructor(private readonly client: PostgresClient) {}
+  async listByResident(residentId: UUID): Promise<BillingCharge[]> { return (await this.client.query(billingChargeStatements.listByResident(residentId))).rows.map(mapBillingChargeRow); }
+  async save(charge: BillingCharge): Promise<BillingCharge> { return requiredFirst(await this.client.query(billingChargeStatements.upsert(charge)), mapBillingChargeRow); }
+}
+
+export class PostgresInvoiceRepository implements InvoiceRepository {
+  constructor(private readonly client: PostgresClient) {}
+  async getById(id: UUID): Promise<Invoice | null> { return first(await this.client.query(invoiceStatements.selectById(id)), mapInvoiceRow); }
+  async listByResident(residentId: UUID): Promise<Invoice[]> { return (await this.client.query(invoiceStatements.listByResident(residentId))).rows.map(mapInvoiceRow); }
+  async save(invoice: Invoice): Promise<Invoice> { return requiredFirst(await this.client.query(invoiceStatements.upsert(invoice)), mapInvoiceRow); }
+}
+
+export class PostgresPaymentTransactionRepository implements PaymentTransactionRepository {
+  constructor(private readonly client: PostgresClient) {}
+  async listByResident(residentId: UUID): Promise<PaymentTransaction[]> { return (await this.client.query(paymentTransactionStatements.listByResident(residentId))).rows.map(mapPaymentTransactionRow); }
+  async save(transaction: PaymentTransaction): Promise<PaymentTransaction> { return requiredFirst(await this.client.query(paymentTransactionStatements.insert(transaction)), mapPaymentTransactionRow); }
 }
 
 export class PostgresAuditLogRepository implements AuditLogRepository {
