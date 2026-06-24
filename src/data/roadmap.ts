@@ -137,7 +137,7 @@ export const clinicalOperationsPhases: Phase[] = [
   {
     id: '7',
     title: 'Tasks, ADLs & Services',
-    status: 'future',
+    status: 'foundation',
     milestone: 'Caregiver Workflows',
     summary:
       'Task management, ADL tracking, service plans, missed-task engine, shift dashboard, and one-tap mobile completion.',

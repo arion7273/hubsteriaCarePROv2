@@ -287,4 +287,46 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Print Center Pro generates assessment reports, care plans, and progress reports/i)).toBeInTheDocument();
     expect(screen.getByText(/Notification Center Pro alerts staff when assessments are due/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 7 Tasks ADLs and Services caregiver workflows', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Tasks, ADLs & Services' })).toBeInTheDocument();
+    expect(screen.getAllByText('Open Tasks').length).toBeGreaterThan(0);
+
+    const taskTypesRegion = screen.getByLabelText('Task types');
+    ['One-Time', 'Daily', 'Weekly', 'Monthly', 'Custom Recurring'].forEach((type) => {
+      expect(within(taskTypesRegion).getByText(type)).toBeInTheDocument();
+    });
+
+    const adls = screen.getByLabelText('ADL categories');
+    ['Bathing', 'Grooming', 'Dressing', 'Toileting', 'Ambulation', 'Feeding', 'Transfers', 'Medication Reminders'].forEach(
+      (adl) => {
+        expect(within(adls).getByText(adl)).toBeInTheDocument();
+      }
+    );
+
+    const tasks = screen.getByLabelText('Caregiver tasks');
+    expect(within(tasks).getByText('Breakfast ADL documentation')).toBeInTheDocument();
+    expect(within(tasks).getByText('Weekly shower assistance')).toBeInTheDocument();
+    expect(within(tasks).getAllByText('Unassigned').length).toBeGreaterThan(0);
+  });
+
+  it('supports service plans, missed task engine, shift dashboard, and mobile completion', () => {
+    render(<App />);
+
+    expect(screen.getByText('Memory care evening support')).toBeInTheDocument();
+    expect(screen.getByText('Transfer assistance')).toBeInTheDocument();
+    expect(screen.getByText(/Detect missed tasks when completion is not recorded/i)).toBeInTheDocument();
+    expect(screen.getByText(/Notify assigned staff, then escalate to shift lead/i)).toBeInTheDocument();
+
+    const shift = screen.getByLabelText('Shift dashboard');
+    expect(within(shift).getByText('Assigned Residents')).toBeInTheDocument();
+    expect(within(shift).getAllByText('Overdue Tasks').length).toBeGreaterThan(0);
+
+    expect(screen.getByText('Tap complete')).toBeInTheDocument();
+    expect(screen.getByText('Save with audit trail')).toBeInTheDocument();
+    expect(screen.getByText(/Resident Command Center displays service plans, open tasks, ADL history/i)).toBeInTheDocument();
+    expect(screen.getByText(/Notification Center Pro alerts staff for late, missed, overdue, and unassigned tasks/i)).toBeInTheDocument();
+  });
 });

@@ -280,6 +280,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Assessment Builder', 'Notification Center Integration', 'Print Center Integration'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Task and ADL Tracking',
+    module: 'Tasks, ADLs & Services',
+    status: 'registered',
+    dependencies: ['Resident Command Center', 'Configuration Center', 'Audit Log Contract'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Missed Task Engine',
+    module: 'Tasks, ADLs & Services',
+    status: 'registered',
+    dependencies: ['Notification Center Integration', 'Task and ADL Tracking'],
+    version: '0.1.0'
   }
 ];
 

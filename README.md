@@ -13,6 +13,7 @@ This repository currently implements the first product foundation milestone:
 - Phase 5 Print Center Pro with PDF/CSV/Excel output, template builder, preview, CRUD templates, batch printing, and integration contracts
 - Phase 5.5 Configuration Center with centralized roles, permissions, templates, DigitalRX settings, facility settings, branding, feature toggles, and audit guardrails
 - Phase 6 Assessments & Care Plans Engine with assessment templates, scheduler, builder controls, scoring-driven suggestions, review queues, and resident-linked care plans
+- Phase 7 Tasks, ADLs & Services with recurring tasks, ADL tracking, resident service plans, missed-task detection, shift dashboards, and one-tap mobile completion
 - Roadmap registry for phases 0-20
 - Regression tests for the foundation shell
 

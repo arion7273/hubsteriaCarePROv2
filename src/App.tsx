@@ -23,6 +23,17 @@ import {
   carePlanItems
 } from './data/assessments';
 import {
+  adlCategories,
+  caregiverTasks,
+  missedTaskRules,
+  mobileCompletionSteps,
+  servicePlans,
+  shiftDashboard,
+  taskIntegrationRequirements,
+  taskMetrics,
+  taskTypes
+} from './data/tasks';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -146,6 +157,7 @@ function App() {
             'Print Center Pro',
             'Configuration Center',
             'Assessments & Care Plans',
+            'Tasks ADLs & Services',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -162,8 +174,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-6</strong>
-            <span>Clinical foundation active</span>
+            <strong>Phase 0-7</strong>
+            <span>Caregiver workflows active</span>
           </div>
         </div>
       </aside>
@@ -202,6 +214,9 @@ function App() {
               </a>
               <a className="button secondary" href="#assessments-care-plans">
                 Open Assessments
+              </a>
+              <a className="button secondary" href="#tasks-adls-services">
+                Open Tasks & ADLs
               </a>
             </div>
           </div>
@@ -841,6 +856,137 @@ function App() {
             </div>
             <ul className="check-list">
               {assessmentIntegrationRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className="content-card tasks-center" id="tasks-adls-services" aria-labelledby="tasks-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 7</p>
+              <h2 id="tasks-title">Tasks, ADLs & Services</h2>
+              <p>
+                Caregiver workflow management for recurring tasks, ADL logging, resident service plans,
+                missed-task detection, shift dashboards, and one-tap mobile completion.
+              </p>
+            </div>
+            <div className="tasks-status">
+              <span>Mobile mode</span>
+              <strong>One-tap completion</strong>
+            </div>
+          </div>
+
+          <div className="task-metric-grid">
+            {taskMetrics.map((metric) => (
+              <article className="task-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="tasks-layout">
+            <div className="task-panel">
+              <div className="card-heading">
+                <span>Task management</span>
+                <strong>Task types and current work</strong>
+              </div>
+              <div className="task-type-row" aria-label="Task types">
+                {taskTypes.map((type) => (
+                  <span key={type}>{type}</span>
+                ))}
+              </div>
+              <div className="caregiver-task-list" aria-label="Caregiver tasks">
+                {caregiverTasks.map((task) => (
+                  <article key={`${task.resident}-${task.title}`}>
+                    <div>
+                      <strong>{task.title}</strong>
+                      <span>
+                        {task.resident} | {task.type} | {task.schedule}
+                      </span>
+                    </div>
+                    <p>{task.assignedStaff}</p>
+                    <span className={`task-status-pill ${task.status.toLowerCase()}`}>{task.status}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="task-panel">
+              <div className="card-heading">
+                <span>ADL Tracking</span>
+                <strong>Activities of daily living</strong>
+              </div>
+              <div className="adl-grid" aria-label="ADL categories">
+                {adlCategories.map((adl) => (
+                  <span key={adl}>{adl}</span>
+                ))}
+              </div>
+              <div className="mobile-completion-card">
+                <div className="card-heading">
+                  <span>Mobile mode</span>
+                  <strong>One-tap completion workflow</strong>
+                </div>
+                <ol>
+                  {mobileCompletionSteps.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <div className="tasks-layout">
+            <div className="task-panel">
+              <div className="card-heading">
+                <span>Service Plans</span>
+                <strong>Resident service schedules</strong>
+              </div>
+              <div className="service-plan-list">
+                {servicePlans.map((plan) => (
+                  <article key={`${plan.resident}-${plan.service}`}>
+                    <strong>{plan.service}</strong>
+                    <p>
+                      {plan.resident} | {plan.schedule} | {plan.assignedStaff}
+                    </p>
+                    <span>{plan.exceptions}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="task-panel">
+              <div className="card-heading">
+                <span>Missed Task Engine</span>
+                <strong>Late, missed, and unassigned detection</strong>
+              </div>
+              <ul className="missed-task-list">
+                {missedTaskRules.map((rule) => (
+                  <li key={rule}>{rule}</li>
+                ))}
+              </ul>
+              <div className="shift-dashboard-grid" aria-label="Shift dashboard">
+                {shiftDashboard.map((item) => (
+                  <article key={item.label}>
+                    <span>{item.label}</span>
+                    <strong>{item.value}</strong>
+                    <small>{item.detail}</small>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="task-panel integration-panel">
+            <div className="card-heading">
+              <span>Task integration contract</span>
+              <strong>Resident, notification, print, configuration, and audit hooks</strong>
+            </div>
+            <ul className="check-list">
+              {taskIntegrationRequirements.map((requirement) => (
                 <li key={requirement}>{requirement}</li>
               ))}
             </ul>
