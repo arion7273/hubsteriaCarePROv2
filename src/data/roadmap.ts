@@ -55,7 +55,7 @@ export const foundationPhases: Phase[] = [
   {
     id: '2',
     title: 'Resident Command Center',
-    status: 'planned',
+    status: 'foundation',
     milestone: 'Resident Hub',
     summary:
       'Primary resident workspace connecting demographics, contacts, diagnoses, allergies, documents, timeline, and all future clinical modules.',

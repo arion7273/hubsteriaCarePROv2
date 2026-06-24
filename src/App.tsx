@@ -17,6 +17,7 @@ import {
   organizationMetrics,
   type DashboardMetric
 } from './data/platform';
+import { residentCommandCenter } from './data/resident';
 
 type DashboardScope = 'T1 Master' | 'T2 Organization' | 'T3 Facility';
 
@@ -74,7 +75,15 @@ function App() {
         </div>
 
         <nav className="nav-stack">
-          {['Command', 'Global Rules', 'Dashboards', 'Hierarchy', 'Feature Registry', 'Roadmap'].map((item) => (
+          {[
+            'Command',
+            'Global Rules',
+            'Dashboards',
+            'Resident Command Center',
+            'Hierarchy',
+            'Feature Registry',
+            'Roadmap'
+          ].map((item) => (
             <a href={`#${item.toLowerCase().replaceAll(' ', '-')}`} key={item}>
               {item}
             </a>
@@ -84,8 +93,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-1.5</strong>
-            <span>Foundation active</span>
+            <strong>Phase 0-2</strong>
+            <span>Resident core active</span>
           </div>
         </div>
       </aside>
@@ -106,6 +115,9 @@ function App() {
               </a>
               <a className="button secondary" href="#roadmap">
                 View Milestones
+              </a>
+              <a className="button secondary" href="#resident-command-center">
+                Open Resident Center
               </a>
             </div>
           </div>
@@ -233,6 +245,105 @@ function App() {
                 {action}
               </button>
             ))}
+          </div>
+        </section>
+
+        <section className="content-card resident-command-center" id="resident-command-center" aria-labelledby="resident-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 2</p>
+              <h2 id="resident-title">Resident Command Center</h2>
+              <p>
+                This becomes the primary resident workspace. Every future clinical, operational, billing,
+                notification, and print module must connect back to this resident context.
+              </p>
+            </div>
+            <div className="resident-scope">
+              <span>{residentCommandCenter.organization}</span>
+              <strong>{residentCommandCenter.facility}</strong>
+            </div>
+          </div>
+
+          <div className="resident-hero">
+            <div className="resident-photo" aria-hidden="true">
+              {residentCommandCenter.photoInitials}
+            </div>
+            <div className="resident-identity">
+              <span>Resident Profile</span>
+              <h3>{residentCommandCenter.name}</h3>
+              <p>
+                Room {residentCommandCenter.room} | Age {residentCommandCenter.age} |{' '}
+                {residentCommandCenter.levelOfCare}
+              </p>
+            </div>
+            <div className="risk-stack" aria-label="Resident risk indicators">
+              {residentCommandCenter.risks.map((risk) => (
+                <span className={`risk-pill ${risk.tone}`} key={risk.label}>
+                  {risk.label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="resident-quick-actions" aria-label="Resident quick actions">
+            {residentCommandCenter.quickActions.map((action) => (
+              <button type="button" key={action}>
+                {action}
+              </button>
+            ))}
+          </div>
+
+          <div className="resident-layout">
+            <div>
+              <h3>Profile sections</h3>
+              <div className="profile-section-grid">
+                {residentCommandCenter.profileSections.map((section) => (
+                  <article className="profile-section-card" key={section.title}>
+                    <h4>{section.title}</h4>
+                    <p>{section.summary}</p>
+                    <dl>
+                      {section.fields.map((field) => (
+                        <div key={field.label}>
+                          <dt>{field.label}</dt>
+                          <dd>{field.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <aside className="resident-timeline" aria-label="Resident timeline">
+              <div className="timeline-header">
+                <h3>Timeline</h3>
+                <span>Live history</span>
+              </div>
+              {residentCommandCenter.timeline.map((event) => (
+                <article className="timeline-event" key={`${event.type}-${event.title}`}>
+                  <span>{event.type}</span>
+                  <h4>{event.title}</h4>
+                  <p>{event.detail}</p>
+                  <time>{event.time}</time>
+                </article>
+              ))}
+            </aside>
+          </div>
+
+          <div className="module-connection-panel">
+            <div>
+              <p className="eyebrow">Resident Command Center rule</p>
+              <h3>Future modules connect here first</h3>
+              <p>
+                New modules must expose resident-aware entry points, timeline events, notification triggers,
+                audit records, and Print Center Pro output from the Resident Command Center.
+              </p>
+            </div>
+            <div className="module-chip-grid" aria-label="Connected future modules">
+              {residentCommandCenter.moduleConnections.map((module) => (
+                <span key={module}>{module}</span>
+              ))}
+            </div>
           </div>
         </section>
 

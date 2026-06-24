@@ -186,7 +186,7 @@ export const featureRegistry: FeatureRegistryItem[] = [
   {
     featureName: 'Resident Command Center Access Rule',
     module: 'Resident Core',
-    status: 'planned',
+    status: 'registered',
     dependencies: ['Resident Profile', 'Timeline', 'Quick Actions'],
     version: '0.1.0'
   },
