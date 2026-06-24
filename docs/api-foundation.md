@@ -117,8 +117,12 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - Wrong methods must return `405`.
 - Unknown routes must return `404`.
 - Rate-limited requests must return `429`.
+- Auth routes must use stricter rate limits than general API routes.
+- API responses must include security headers.
+- Browser callers must be limited by CORS allowlists.
+- Request bodies must be size-limited before JSON parsing.
 - Cookie-backed unsafe requests must include a CSRF token.
-- Request logs must redact passwords, MFA codes, tokens, API keys, and secrets.
+- Request logs must redact passwords, MFA codes, tokens, API keys, secrets, and PHI fields.
 
 ## Next implementation step
 

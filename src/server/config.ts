@@ -12,6 +12,9 @@ export type ServerConfig = {
   monitoringEndpoint?: string;
   errorTrackingDsn?: string;
   releaseVersion?: string;
+  corsAllowedOrigins: string[];
+  maxRequestBodyBytes: number;
+  authRateLimit: number;
   roleIds: Partial<Record<RoleTier, UUID>>;
 };
 
@@ -33,6 +36,9 @@ export function readServerConfig(env: NodeJS.ProcessEnv = process.env): ServerCo
     monitoringEndpoint: env.MONITORING_ENDPOINT,
     errorTrackingDsn: env.ERROR_TRACKING_DSN,
     releaseVersion: env.RELEASE_VERSION,
+    corsAllowedOrigins: parseList(env.CORS_ALLOWED_ORIGINS),
+    maxRequestBodyBytes: parsePositiveInteger(env.MAX_REQUEST_BODY_BYTES, 1_000_000),
+    authRateLimit: parsePositiveInteger(env.AUTH_RATE_LIMIT, 10),
     roleIds: {
       T1: env.ROLE_ID_T1,
       T2: env.ROLE_ID_T2,
@@ -66,11 +72,20 @@ function parseRepositoryMode(value: string | undefined): RepositoryMode {
 }
 
 function parsePort(value: string | undefined): number {
+  return parsePositiveInteger(value, 3000);
+}
+
+function parsePositiveInteger(value: string | undefined, fallback: number): number {
   const parsed = Number(value);
 
-  if (Number.isInteger(parsed) && parsed > 0) {
-    return parsed;
-  }
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
 
-  return 3000;
+function parseList(value: string | undefined): string[] {
+  return value
+    ? value
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
 }

@@ -1,4 +1,5 @@
 import { createNodeApiServer } from '../api';
+import { createAuthRateLimitMiddleware } from '../api/middleware';
 import { readServerConfig } from './config';
 import { initializeObservability } from './observability';
 import { createRuntimeServices, seedDemoMasterAdmin } from './services';
@@ -6,7 +7,15 @@ import { createRuntimeServices, seedDemoMasterAdmin } from './services';
 const config = readServerConfig();
 initializeObservability(config);
 const services = createRuntimeServices(config);
-const server = createNodeApiServer(services);
+const server = createNodeApiServer(services, {
+  corsAllowedOrigins: config.corsAllowedOrigins,
+  maxBodyBytes: config.maxRequestBodyBytes,
+  middlewares: [
+    createAuthRateLimitMiddleware({
+      limit: config.authRateLimit
+    })
+  ]
+});
 
 if (config.repositoryMode === 'memory') {
   await seedDemoMasterAdmin(services);

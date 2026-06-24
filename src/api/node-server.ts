@@ -9,12 +9,29 @@ import { createApiRouter } from './router';
 
 export type NodeApiServerOptions = {
   middlewares?: ApiMiddleware[];
+  corsAllowedOrigins?: string[];
+  maxBodyBytes?: number;
 };
+
+const DEFAULT_MAX_BODY_BYTES = 1_000_000;
 
 export function createNodeApiServer(services: ApiServices, options: NodeApiServerOptions = {}): Server {
   const router = createApiRouter(services, [createRequestIdMiddleware(randomUUID), ...(options.middlewares ?? [])]);
 
   return createServer(async (request, response) => {
+    applySecurityHeaders(response);
+
+    if (!applyCors(request, response, options.corsAllowedOrigins)) {
+      writeJson(response, 403, fail('cors_origin_denied', 'Origin is not allowed', 403));
+      return;
+    }
+
+    if (request.method === 'OPTIONS') {
+      response.statusCode = 204;
+      response.end();
+      return;
+    }
+
     if (request.url === '/healthz') {
       writeJson(response, 200, { ok: true });
       return;
@@ -25,7 +42,16 @@ export function createNodeApiServer(services: ApiServices, options: NodeApiServe
       return;
     }
 
-    const apiRequest = await toApiRequest(request);
+    const apiRequest = await toApiRequest(request, options.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES).catch((error) => {
+      if (error instanceof RequestBodyTooLargeError) {
+        return {
+          ok: false as const,
+          response: fail('payload_too_large', 'Request body is too large', 413)
+        };
+      }
+
+      throw error;
+    });
 
     if (!apiRequest.ok) {
       writeApiResponse(response, apiRequest.response);
@@ -36,7 +62,7 @@ export function createNodeApiServer(services: ApiServices, options: NodeApiServe
   });
 }
 
-async function toApiRequest(request: IncomingMessage): Promise<
+async function toApiRequest(request: IncomingMessage, maxBodyBytes: number): Promise<
   | {
       ok: true;
       request: ApiRequest;
@@ -56,7 +82,7 @@ async function toApiRequest(request: IncomingMessage): Promise<
   }
 
   const url = new URL(request.url ?? '/', 'http://localhost');
-  const rawBody = await readBody(request);
+  const rawBody = await readBody(request, maxBodyBytes);
   const headers = normalizeHeaders(request);
 
   if (rawBody.length > 0 && !headers['content-type']?.includes('application/json')) {
@@ -95,14 +121,28 @@ function normalizeHeaders(request: IncomingMessage): Record<string, string | und
   );
 }
 
-function readBody(request: IncomingMessage): Promise<string> {
+function readBody(request: IncomingMessage, maxBodyBytes: number): Promise<string> {
   return new Promise((resolve, reject) => {
     let body = '';
+    let tooLarge = false;
     request.setEncoding('utf8');
     request.on('data', (chunk) => {
+      if (tooLarge) {
+        return;
+      }
       body += chunk;
+      if (Buffer.byteLength(body, 'utf8') > maxBodyBytes) {
+        tooLarge = true;
+      }
     });
-    request.on('end', () => resolve(body));
+    request.on('end', () => {
+      if (tooLarge) {
+        reject(new RequestBodyTooLargeError());
+        return;
+      }
+
+      resolve(body);
+    });
     request.on('error', reject);
   });
 }
@@ -124,3 +164,29 @@ function writeJson(response: ServerResponse, status: number, payload: unknown): 
   response.setHeader('content-type', 'application/json; charset=utf-8');
   response.end(JSON.stringify(payload));
 }
+
+function applySecurityHeaders(response: ServerResponse): void {
+  response.setHeader('x-content-type-options', 'nosniff');
+  response.setHeader('x-frame-options', 'DENY');
+  response.setHeader('referrer-policy', 'strict-origin-when-cross-origin');
+  response.setHeader('permissions-policy', 'camera=(), microphone=(), geolocation=()');
+  response.setHeader('cross-origin-resource-policy', 'same-site');
+  response.setHeader('content-security-policy', "default-src 'none'; frame-ancestors 'none'");
+}
+
+function applyCors(request: IncomingMessage, response: ServerResponse, allowedOrigins: string[] | undefined): boolean {
+  const origin = request.headers.origin;
+  if (!origin) return true;
+
+  if (!allowedOrigins?.length || !allowedOrigins.includes(origin)) {
+    return false;
+  }
+
+  response.setHeader('access-control-allow-origin', origin);
+  response.setHeader('vary', 'Origin');
+  response.setHeader('access-control-allow-methods', 'GET,POST,PATCH,DELETE,OPTIONS');
+  response.setHeader('access-control-allow-headers', 'content-type,x-session-id,x-csrf-token');
+  return true;
+}
+
+class RequestBodyTooLargeError extends Error {}
