@@ -26,6 +26,7 @@ Backend-facing TypeScript contracts live in `src/domain`.
 - `in-memory-repositories.ts` provides executable in-memory adapters for tests and local service development.
 - `backend-service.ts` provides tenant-safe service operations that enforce permissions and append audit events.
 - `auth-service.ts` provides login, MFA verification, logout, and password reset request workflows with audit writes.
+- `src/api` provides framework-agnostic API handler contracts for auth, tenant admin, and feature registry operations.
 - `database/migrations` contains the initial PostgreSQL schema and permission seed data.
 
 ## Access rules
