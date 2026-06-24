@@ -1,5 +1,21 @@
 import type { RegisteredFeature } from '../domain';
-import { AuthService, BackendFoundationService, type AccessContext, type BackgroundJob, type BackendRepositories, type Facility, type Organization, type Resident, type User, type UUID } from '../domain';
+import {
+  AuthService,
+  BackendFoundationService,
+  type AccessContext,
+  type AiGenerationJobInput,
+  type BackgroundJob,
+  type BackendRepositories,
+  type DigitalRxSyncJobInput,
+  type Facility,
+  type NotificationJobInput,
+  type Organization,
+  type PrintJobInput,
+  type Resident,
+  type User,
+  type UUID,
+  type WorkflowActionJobInput
+} from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -57,6 +73,11 @@ export type UpdateUserBody = {
 export type EnqueueBackgroundJobBody = Omit<BackgroundJob, 'id' | 'status' | 'attempts' | 'createdAt' | 'updatedAt'>;
 export type FailBackgroundJobBody = { jobId: UUID; error: string };
 export type CompleteBackgroundJobBody = { jobId: UUID };
+export type EnqueueNotificationJobBody = NotificationJobInput;
+export type EnqueuePrintJobBody = PrintJobInput;
+export type EnqueueDigitalRxSyncJobBody = DigitalRxSyncJobInput;
+export type EnqueueAiGenerationJobBody = AiGenerationJobInput;
+export type EnqueueWorkflowActionJobBody = WorkflowActionJobInput;
 
 export async function loginHandler(services: ApiServices, request: ApiRequest<LoginBody>): Promise<ApiResponse> {
   return toApiResponse(async () => {
@@ -267,6 +288,41 @@ export async function listBackgroundJobsHandler(services: ApiServices, request: 
       residentId: request.query?.residentId
     })
   );
+}
+
+export async function enqueueNotificationJobHandler(services: ApiServices, request: ApiRequest<EnqueueNotificationJobBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.enqueueNotificationJob(context, request.body);
+  }, 201);
+}
+
+export async function enqueuePrintJobHandler(services: ApiServices, request: ApiRequest<EnqueuePrintJobBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.enqueuePrintJob(context, request.body);
+  }, 201);
+}
+
+export async function enqueueDigitalRxSyncJobHandler(services: ApiServices, request: ApiRequest<EnqueueDigitalRxSyncJobBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.enqueueDigitalRxSyncJob(context, request.body);
+  }, 201);
+}
+
+export async function enqueueAiGenerationJobHandler(services: ApiServices, request: ApiRequest<EnqueueAiGenerationJobBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.enqueueAiGenerationJob(context, request.body);
+  }, 201);
+}
+
+export async function enqueueWorkflowActionJobHandler(services: ApiServices, request: ApiRequest<EnqueueWorkflowActionJobBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.enqueueWorkflowActionJob(context, request.body);
+  }, 201);
 }
 
 export async function resolveContext(services: ApiServices, sessionId: UUID | undefined): Promise<AccessContext> {

@@ -2,6 +2,11 @@ import {
   completeBackgroundJobHandler,
   createFacilityHandler,
   enqueueBackgroundJobHandler,
+  enqueueAiGenerationJobHandler,
+  enqueueDigitalRxSyncJobHandler,
+  enqueueNotificationJobHandler,
+  enqueuePrintJobHandler,
+  enqueueWorkflowActionJobHandler,
   failBackgroundJobHandler,
   createOrganizationHandler,
   createResidentHandler,
@@ -35,6 +40,11 @@ import {
   isCompleteBackgroundJobBody,
   isCreateFacilityBody,
   isEnqueueBackgroundJobBody,
+  isEnqueueAiGenerationJobBody,
+  isEnqueueDigitalRxSyncJobBody,
+  isEnqueueNotificationJobBody,
+  isEnqueuePrintJobBody,
+  isEnqueueWorkflowActionJobBody,
   isFailBackgroundJobBody,
   isCreateOrganizationBody,
   isCreateResidentBody,
@@ -181,7 +191,12 @@ const routeConfigs: RouteConfig[] = [
   { method: 'GET', path: '/background-jobs', handler: listBackgroundJobsHandler },
   { method: 'POST', path: '/background-jobs/lease', handler: leaseBackgroundJobsHandler },
   { method: 'PATCH', path: '/background-jobs/complete', validate: isCompleteBackgroundJobBody, handler: completeBackgroundJobHandler as RouteHandler },
-  { method: 'PATCH', path: '/background-jobs/fail', validate: isFailBackgroundJobBody, handler: failBackgroundJobHandler as RouteHandler }
+  { method: 'PATCH', path: '/background-jobs/fail', validate: isFailBackgroundJobBody, handler: failBackgroundJobHandler as RouteHandler },
+  { method: 'POST', path: '/jobs/notifications', validate: isEnqueueNotificationJobBody, handler: enqueueNotificationJobHandler as RouteHandler },
+  { method: 'POST', path: '/jobs/print', validate: isEnqueuePrintJobBody, handler: enqueuePrintJobHandler as RouteHandler },
+  { method: 'POST', path: '/jobs/digitalrx', validate: isEnqueueDigitalRxSyncJobBody, handler: enqueueDigitalRxSyncJobHandler as RouteHandler },
+  { method: 'POST', path: '/jobs/ai', validate: isEnqueueAiGenerationJobBody, handler: enqueueAiGenerationJobHandler as RouteHandler },
+  { method: 'POST', path: '/jobs/workflow-actions', validate: isEnqueueWorkflowActionJobBody, handler: enqueueWorkflowActionJobHandler as RouteHandler }
 ];
 
 export function createApiRouter(services: ApiServices, middlewares: ApiMiddleware[] = []) {

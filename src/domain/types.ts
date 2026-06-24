@@ -59,6 +59,53 @@ export type BackgroundJob = {
   lastError?: string;
 };
 
+export type NotificationJobInput = {
+  organizationId?: UUID;
+  facilityId?: UUID;
+  residentId?: UUID;
+  channel: 'in_app' | 'email' | 'sms' | 'push';
+  template: string;
+  recipient: string;
+  payload: Record<string, unknown>;
+  priority?: BackgroundJob['priority'];
+};
+
+export type PrintJobInput = {
+  organizationId?: UUID;
+  facilityId?: UUID;
+  residentId?: UUID;
+  template: string;
+  format: 'pdf' | 'csv' | 'excel';
+  recordIds: UUID[];
+  priority?: BackgroundJob['priority'];
+};
+
+export type DigitalRxSyncJobInput = {
+  organizationId: UUID;
+  event: 'order_created' | 'order_updated' | 'order_discontinued' | 'refill_updated';
+  payload: Record<string, unknown>;
+  priority?: BackgroundJob['priority'];
+};
+
+export type AiGenerationJobInput = {
+  organizationId?: UUID;
+  facilityId?: UUID;
+  residentId?: UUID;
+  task: 'resident_summary' | 'compliance_insight' | 'family_update_draft' | 'knowledge_answer';
+  payload: Record<string, unknown>;
+  priority?: BackgroundJob['priority'];
+};
+
+export type WorkflowActionJobInput = {
+  organizationId?: UUID;
+  facilityId?: UUID;
+  residentId?: UUID;
+  trigger: string;
+  action: string;
+  payload: Record<string, unknown>;
+  priority?: BackgroundJob['priority'];
+};
+
 export type User = {
   id: UUID;
   email: string;

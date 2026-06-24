@@ -2,7 +2,20 @@ import { createAuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
 import type { BackendRepositories } from './repositories';
 import { requirePermission } from './access-control';
-import type { AccessContext, BackgroundJob, Facility, Organization, Resident, User, UUID } from './types';
+import type {
+  AccessContext,
+  AiGenerationJobInput,
+  BackgroundJob,
+  DigitalRxSyncJobInput,
+  Facility,
+  NotificationJobInput,
+  Organization,
+  PrintJobInput,
+  Resident,
+  User,
+  UUID,
+  WorkflowActionJobInput
+} from './types';
 
 export type IdFactory = () => UUID;
 export type Clock = () => Date;
@@ -446,6 +459,88 @@ export class BackendFoundationService {
       assertAllowed(requirePermission(context, { scope: 'platform' }, 'platform:manage'));
     }
     return this.repositories.backgroundJobs.listByScope(scope);
+  }
+
+  enqueueNotificationJob(context: AccessContext, input: NotificationJobInput): Promise<BackgroundJob> {
+    return this.enqueueBackgroundJob(context, {
+      organizationId: input.organizationId,
+      facilityId: input.facilityId,
+      residentId: input.residentId,
+      type: 'notification',
+      priority: input.priority ?? 'normal',
+      maxAttempts: 3,
+      availableAt: this.clock().toISOString(),
+      payload: {
+        channel: input.channel,
+        template: input.template,
+        recipient: input.recipient,
+        ...input.payload
+      }
+    });
+  }
+
+  enqueuePrintJob(context: AccessContext, input: PrintJobInput): Promise<BackgroundJob> {
+    return this.enqueueBackgroundJob(context, {
+      organizationId: input.organizationId,
+      facilityId: input.facilityId,
+      residentId: input.residentId,
+      type: 'print',
+      priority: input.priority ?? 'normal',
+      maxAttempts: 3,
+      availableAt: this.clock().toISOString(),
+      payload: {
+        template: input.template,
+        format: input.format,
+        recordIds: input.recordIds
+      }
+    });
+  }
+
+  enqueueDigitalRxSyncJob(context: AccessContext, input: DigitalRxSyncJobInput): Promise<BackgroundJob> {
+    return this.enqueueBackgroundJob(context, {
+      organizationId: input.organizationId,
+      type: 'digitalrx_sync',
+      priority: input.priority ?? 'high',
+      maxAttempts: 5,
+      availableAt: this.clock().toISOString(),
+      payload: {
+        event: input.event,
+        ...input.payload
+      }
+    });
+  }
+
+  enqueueAiGenerationJob(context: AccessContext, input: AiGenerationJobInput): Promise<BackgroundJob> {
+    return this.enqueueBackgroundJob(context, {
+      organizationId: input.organizationId,
+      facilityId: input.facilityId,
+      residentId: input.residentId,
+      type: 'ai_generation',
+      priority: input.priority ?? 'low',
+      maxAttempts: 2,
+      availableAt: this.clock().toISOString(),
+      payload: {
+        task: input.task,
+        ...input.payload
+      }
+    });
+  }
+
+  enqueueWorkflowActionJob(context: AccessContext, input: WorkflowActionJobInput): Promise<BackgroundJob> {
+    return this.enqueueBackgroundJob(context, {
+      organizationId: input.organizationId,
+      facilityId: input.facilityId,
+      residentId: input.residentId,
+      type: 'workflow_action',
+      priority: input.priority ?? 'normal',
+      maxAttempts: 3,
+      availableAt: this.clock().toISOString(),
+      payload: {
+        trigger: input.trigger,
+        action: input.action,
+        ...input.payload
+      }
+    });
   }
 
   async createUser(

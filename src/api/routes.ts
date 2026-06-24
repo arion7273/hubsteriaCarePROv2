@@ -138,5 +138,10 @@ export const apiRoutes: ApiRouteDefinition[] = [
   { method: 'GET', path: '/background-jobs', authRequired: true, description: 'List background jobs by scope' },
   { method: 'POST', path: '/background-jobs/lease', authRequired: true, description: 'Lease queued background jobs' },
   { method: 'PATCH', path: '/background-jobs/complete', authRequired: true, description: 'Complete background job' },
-  { method: 'PATCH', path: '/background-jobs/fail', authRequired: true, description: 'Fail background job' }
+  { method: 'PATCH', path: '/background-jobs/fail', authRequired: true, description: 'Fail background job' },
+  { method: 'POST', path: '/jobs/notifications', authRequired: true, description: 'Enqueue notification job' },
+  { method: 'POST', path: '/jobs/print', authRequired: true, description: 'Enqueue print job' },
+  { method: 'POST', path: '/jobs/digitalrx', authRequired: true, description: 'Enqueue DigitalRX sync job' },
+  { method: 'POST', path: '/jobs/ai', authRequired: true, description: 'Enqueue AI generation job' },
+  { method: 'POST', path: '/jobs/workflow-actions', authRequired: true, description: 'Enqueue workflow action job' }
 ];

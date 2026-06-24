@@ -221,6 +221,15 @@ describe('BackendFoundationService', () => {
     await expect(repositories.auditLogs.listByEntity('BackgroundJob', job.id)).resolves.toHaveLength(2);
   });
 
+  it('enqueues typed notification print digitalrx ai and workflow jobs', async () => {
+    const { service } = createTestService();
+    await expect(service.enqueueNotificationJob({ user: t1User }, { channel: 'sms', template: 'Medication Refused', recipient: 'admin@example.com', payload: { residentId: 'resident-1' } })).resolves.toMatchObject({ type: 'notification' });
+    await expect(service.enqueuePrintJob({ user: t1User }, { template: 'Resident Packet', format: 'pdf', recordIds: ['resident-1'] })).resolves.toMatchObject({ type: 'print' });
+    await expect(service.enqueueDigitalRxSyncJob({ user: t1User }, { organizationId: 'org-1', event: 'refill_updated', payload: { refillId: 'refill-1' } })).resolves.toMatchObject({ type: 'digitalrx_sync' });
+    await expect(service.enqueueAiGenerationJob({ user: t1User }, { task: 'resident_summary', payload: { residentId: 'resident-1' } })).resolves.toMatchObject({ type: 'ai_generation' });
+    await expect(service.enqueueWorkflowActionJob({ user: t1User }, { trigger: 'Assessment Due', action: 'Create Task', payload: { residentId: 'resident-1' } })).resolves.toMatchObject({ type: 'workflow_action' });
+  });
+
   it('denies resident creation across facility boundaries', async () => {
     const { service } = createTestService();
 
