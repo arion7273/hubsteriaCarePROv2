@@ -350,6 +350,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Secure Messaging and Shift Handoff', 'Configuration Center'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Family Portal Dashboard',
+    module: 'Family Portal',
+    status: 'registered',
+    dependencies: ['Resident Command Center', 'Role-Based Permissions', 'Configuration Center'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Family Messaging and Notifications',
+    module: 'Family Portal',
+    status: 'registered',
+    dependencies: ['Communication Center', 'Notification Center Integration', 'Audit Log Contract'],
+    version: '0.1.0'
   }
 ];
 

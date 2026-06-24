@@ -2747,6 +2747,180 @@ p {
   background: var(--surface);
 }
 
+.family-center {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.family-status {
+  display: grid;
+  gap: 0.2rem;
+  min-width: min(100%, 17rem);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.family-status span {
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.family-status strong {
+  color: var(--primary-strong);
+}
+
+.family-metric-grid,
+.family-layout,
+.family-dashboard-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.family-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.family-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.family-dashboard-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.family-metric-card,
+.family-panel,
+.family-dashboard-grid article,
+.family-message-list article,
+.family-notification-list article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.family-metric-card,
+.family-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.family-metric-card span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.family-metric-card strong {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  letter-spacing: -0.05em;
+}
+
+.family-metric-card small {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.family-dashboard-grid article {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.family-dashboard-grid article > div {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.family-dashboard-grid p,
+.family-message-list p,
+.family-notification-list p {
+  margin: 0;
+}
+
+.family-access-pill,
+.family-message-status {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.family-access-pill.allowed,
+.family-message-status.read {
+  background: #ddf6ed;
+  color: var(--success);
+}
+
+.family-access-pill.limited,
+.family-message-status.unread,
+.family-message-status.needs-reply {
+  background: #fff4da;
+  color: var(--warning);
+}
+
+.family-access-pill.blocked {
+  background: #ffe4e2;
+  color: var(--danger);
+}
+
+.family-message-list,
+.family-notification-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.family-message-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.family-message-list span:not(.family-message-status),
+.family-notification-list small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.family-notification-list article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.family-notification-list article > span {
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+}
+
+.family-permission-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
 .role-grid,
 .roadmap-grid {
   display: grid;
@@ -2902,6 +3076,8 @@ summary {
   .incident-metric-grid,
   .incident-workflow,
   .communication-metric-grid,
+  .family-metric-grid,
+  .family-dashboard-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -2925,6 +3101,7 @@ summary {
   .digitalrx-layout,
   .incidents-layout,
   .communication-layout,
+  .family-layout,
   .module-connection-panel,
   .notification-layout,
   .notification-bottom-grid,
@@ -2971,6 +3148,8 @@ summary {
   .incident-metric-grid,
   .incident-workflow,
   .communication-metric-grid,
+  .family-metric-grid,
+  .family-dashboard-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -3056,6 +3235,8 @@ summary {
   .compliance-list article,
   .message-thread-list article,
   .announcement-list article,
+  .family-message-list article,
+  .family-notification-list article,
   .sync-field-list article,
   .refill-list article,
   .configuration-audit-list article,

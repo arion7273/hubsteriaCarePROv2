@@ -184,7 +184,7 @@ export const enterprisePhases: Phase[] = [
   {
     id: '12',
     title: 'Family Portal',
-    status: 'future',
+    status: 'foundation',
     milestone: 'Family Transparency',
     summary: 'Family dashboards, care updates, documents, messages, appointments, billing, and role-based notifications.',
     deliverables: ['Family dashboard', 'Secure messaging', 'Document access', 'Family notifications']

@@ -71,6 +71,14 @@ import {
   shiftHandoffs
 } from './data/communication';
 import {
+  familyDashboardCards,
+  familyIntegrationRequirements,
+  familyMessages,
+  familyMetrics,
+  familyNotifications,
+  familyPermissionRules
+} from './data/family';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -199,6 +207,7 @@ function App() {
             'DigitalRX Hub',
             'Incidents & Compliance',
             'Communication Center',
+            'Family Portal',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -217,7 +226,9 @@ function App() {
                           ? '#incidents-compliance-center'
                           : item === 'Communication Center'
                             ? '#communication-center'
-                            : `#${item.toLowerCase().replaceAll(' ', '-')}`
+                            : item === 'Family Portal'
+                              ? '#family-portal'
+                              : `#${item.toLowerCase().replaceAll(' ', '-')}`
               }
               key={item}
             >
@@ -229,8 +240,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-11</strong>
-            <span>Communication active</span>
+            <strong>Phase 0-12</strong>
+            <span>Family portal active</span>
           </div>
         </div>
       </aside>
@@ -284,6 +295,9 @@ function App() {
               </a>
               <a className="button secondary" href="#communication-center">
                 Open Communication
+              </a>
+              <a className="button secondary" href="#family-portal">
+                Open Family Portal
               </a>
             </div>
           </div>
@@ -1596,6 +1610,121 @@ function App() {
                 ))}
               </ul>
             </div>
+          </div>
+        </section>
+
+        <section className="content-card family-center" id="family-portal" aria-labelledby="family-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 12</p>
+              <h2 id="family-title">Family Portal</h2>
+              <p>
+                Permissioned family transparency with resident overviews, approved care updates, documents,
+                secure messages, appointments, billing visibility, and family-specific notifications.
+              </p>
+            </div>
+            <div className="family-status">
+              <span>Family transparency</span>
+              <strong>Role-based access</strong>
+            </div>
+          </div>
+
+          <div className="family-metric-grid">
+            {familyMetrics.map((metric) => (
+              <article className="family-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="family-layout">
+            <div className="family-panel">
+              <div className="card-heading">
+                <span>Family Dashboard</span>
+                <strong>Resident transparency surfaces</strong>
+              </div>
+              <div className="family-dashboard-grid" aria-label="Family dashboard cards">
+                {familyDashboardCards.map((card) => (
+                  <article key={card.title}>
+                    <div>
+                      <strong>{card.title}</strong>
+                      <span className={`family-access-pill ${card.visibility.toLowerCase()}`}>{card.visibility}</span>
+                    </div>
+                    <p>{card.summary}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="family-panel">
+              <div className="card-heading">
+                <span>Family Communication</span>
+                <strong>Secure family messaging</strong>
+              </div>
+              <div className="family-message-list" aria-label="Family messages">
+                {familyMessages.map((message) => (
+                  <article key={`${message.resident}-${message.subject}`}>
+                    <div>
+                      <strong>{message.subject}</strong>
+                      <span>
+                        {message.resident} | {message.participants}
+                      </span>
+                    </div>
+                    <p>{message.lastActivity}</p>
+                    <span className={`family-message-status ${message.status.toLowerCase().replaceAll(' ', '-')}`}>
+                      {message.status}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="family-layout">
+            <div className="family-panel">
+              <div className="card-heading">
+                <span>Family Notifications</span>
+                <strong>Medication, incident, appointment, document alerts</strong>
+              </div>
+              <div className="family-notification-list" aria-label="Family notifications">
+                {familyNotifications.map((notification) => (
+                  <article key={`${notification.type}-${notification.resident}`}>
+                    <span>{notification.type}</span>
+                    <div>
+                      <strong>{notification.resident}</strong>
+                      <p>{notification.message}</p>
+                    </div>
+                    <small>{notification.channel}</small>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="family-panel">
+              <div className="card-heading">
+                <span>Role-based permissions</span>
+                <strong>Resident-scoped family access</strong>
+              </div>
+              <ul className="family-permission-list">
+                {familyPermissionRules.map((rule) => (
+                  <li key={rule}>{rule}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="family-panel integration-panel">
+            <div className="card-heading">
+              <span>Family portal integration contract</span>
+              <strong>Communication, notification, resident, configuration, print, and audit hooks</strong>
+            </div>
+            <ul className="check-list">
+              {familyIntegrationRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
           </div>
         </section>
 

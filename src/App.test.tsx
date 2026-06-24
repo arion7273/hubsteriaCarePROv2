@@ -483,4 +483,40 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Resident Command Center displays resident-linked messages/i)).toBeInTheDocument();
     expect(screen.getByText(/All messages, announcements, handoffs, read receipts, escalations, and edits/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 12 Family Portal dashboard messaging and visibility controls', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Family Portal' })).toBeInTheDocument();
+    expect(screen.getAllByText('Family Users').length).toBeGreaterThan(0);
+
+    const dashboard = screen.getByLabelText('Family dashboard cards');
+    ['Resident Overview', 'Care Updates', 'Documents', 'Messages', 'Appointments', 'Billing'].forEach((card) => {
+      expect(within(dashboard).getByText(card)).toBeInTheDocument();
+    });
+    expect(within(dashboard).getAllByText('Limited').length).toBeGreaterThan(0);
+
+    const messages = screen.getByLabelText('Family messages');
+    expect(within(messages).getByText('Weekly care update request')).toBeInTheDocument();
+    expect(within(messages).getByText('Document signature follow-up')).toBeInTheDocument();
+    expect(within(messages).getByText('Needs Reply')).toBeInTheDocument();
+  });
+
+  it('supports family notifications permissions and integration contracts', () => {
+    render(<App />);
+
+    const notifications = screen.getByLabelText('Family notifications');
+    ['Medication Update', 'Incident Alert', 'Appointment', 'Document Request'].forEach((type) => {
+      expect(within(notifications).getByText(type)).toBeInTheDocument();
+    });
+    expect(within(notifications).getByText(/Updated consent form requires responsible-party signature/i)).toBeInTheDocument();
+
+    expect(screen.getByText(/Family members only see residents they are explicitly linked to/i)).toBeInTheDocument();
+    expect(screen.getByText(/Clinical notes require staff approval before family visibility/i)).toBeInTheDocument();
+    expect(screen.getByText(/Billing access depends on responsible-party and payer permissions/i)).toBeInTheDocument();
+
+    expect(screen.getByText(/Communication Center powers secure family messaging and read receipts/i)).toBeInTheDocument();
+    expect(screen.getByText(/Notification Center Pro sends family medication updates, incident alerts/i)).toBeInTheDocument();
+    expect(screen.getByText(/Resident Command Center controls which resident updates, documents, and timeline events become family-visible/i)).toBeInTheDocument();
+  });
 });
