@@ -1,5 +1,5 @@
 import type { RegisteredFeature } from '../domain';
-import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type UUID } from '../domain';
+import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type Resident, type UUID } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -27,6 +27,13 @@ export type CreateOrganizationBody = {
 export type CreateFacilityBody = {
   organizationId: UUID;
   name: string;
+};
+
+export type CreateResidentBody = Omit<Resident, 'id' | 'status'>;
+
+export type UpdateResidentBody = {
+  residentId: UUID;
+  updates: Partial<Omit<Resident, 'id' | 'organizationId' | 'facilityId'>>;
 };
 
 export async function loginHandler(services: ApiServices, request: ApiRequest<LoginBody>): Promise<ApiResponse> {
@@ -84,6 +91,45 @@ export async function registerFeatureHandler(services: ApiServices, request: Api
 
 export async function listFeaturesHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
   return withContext(services, request, async () => services.repositories.featureRegistry.list());
+}
+
+export async function createResidentHandler(services: ApiServices, request: ApiRequest<CreateResidentBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.createResident(context, request.body);
+  }, 201);
+}
+
+export async function listResidentsHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const organizationId = request.query?.organizationId;
+    const facilityId = request.query?.facilityId;
+
+    if (!organizationId || !facilityId) {
+      throw new Error('organizationId and facilityId are required');
+    }
+
+    return services.backend.listResidentsByFacility(context, { organizationId, facilityId });
+  });
+}
+
+export async function getResidentHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const residentId = request.query?.residentId;
+
+    if (!residentId) {
+      throw new Error('residentId is required');
+    }
+
+    return services.backend.getResident(context, residentId);
+  });
+}
+
+export async function updateResidentHandler(services: ApiServices, request: ApiRequest<UpdateResidentBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.updateResident(context, request.body.residentId, request.body.updates);
+  });
 }
 
 export async function resolveContext(services: ApiServices, sessionId: UUID | undefined): Promise<AccessContext> {

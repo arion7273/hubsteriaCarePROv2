@@ -6,6 +6,7 @@ export type ApiRequest<TBody = unknown> = {
   method: HttpMethod;
   path: string;
   body?: TBody;
+  query?: Record<string, string | undefined>;
   sessionId?: UUID;
   headers?: Record<string, string | undefined>;
   ip?: string;

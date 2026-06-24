@@ -1,7 +1,7 @@
 import type { RegisteredFeature } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
-import type { CreateFacilityBody, CreateOrganizationBody, LoginBody, VerifyMfaBody } from './handlers';
+import type { CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, LoginBody, UpdateResidentBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -67,10 +67,41 @@ export function isRegisteredFeatureBody(body: unknown): body is RegisteredFeatur
   );
 }
 
+export function isCreateResidentBody(body: unknown): body is CreateResidentBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.organizationId) &&
+    isNonEmptyString(body.facilityId) &&
+    isNonEmptyString(body.firstName) &&
+    isNonEmptyString(body.lastName) &&
+    optionalString(body.preferredName) &&
+    optionalString(body.room) &&
+    optionalString(body.levelOfCare)
+  );
+}
+
+export function isUpdateResidentBody(body: unknown): body is UpdateResidentBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.residentId) &&
+    isRecord(body.updates) &&
+    optionalString(body.updates.firstName) &&
+    optionalString(body.updates.lastName) &&
+    optionalString(body.updates.preferredName) &&
+    optionalString(body.updates.room) &&
+    optionalString(body.updates.levelOfCare) &&
+    (body.updates.status === undefined || ['active', 'discharged', 'inactive'].includes(String(body.updates.status)))
+  );
+}
+
 function isRecord(body: unknown): body is Record<string, unknown> {
   return typeof body === 'object' && body !== null && !Array.isArray(body);
 }
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
+}
+
+function optionalString(value: unknown): boolean {
+  return value === undefined || typeof value === 'string';
 }

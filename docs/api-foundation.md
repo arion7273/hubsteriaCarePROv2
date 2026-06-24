@@ -47,6 +47,10 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - `POST /facilities`
 - `POST /feature-registry`
 - `GET /feature-registry`
+- `POST /residents`
+- `GET /residents`
+- `GET /residents/get`
+- `PATCH /residents`
 
 ## Security requirements
 
@@ -56,6 +60,7 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - Domain services enforce tenant scope and permissions.
 - Domain services write audit events for significant actions.
 - Invalid login must return a generic invalid credentials response.
+- Resident APIs must enforce organization and facility scope.
 - Invalid request bodies must return `400`.
 - Wrong methods must return `405`.
 - Unknown routes must return `404`.

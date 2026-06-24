@@ -1,4 +1,4 @@
-import type { AuditEvent, AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, User, UUID } from '../../domain';
+import type { AuditEvent, AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -97,6 +97,71 @@ export const userStatements = {
         RETURNING id
       `,
       values: [user.id, user.organizationId ?? null, user.facilityIds[0] ?? null, user.email, roleId, user.status]
+    };
+  }
+};
+
+export const residentStatements = {
+  selectById(id: UUID): SqlStatement {
+    return {
+      text: `
+        SELECT id, organization_id, facility_id, preferred_name, first_name, last_name, room, level_of_care, status
+        FROM residents
+        WHERE id = $1
+      `,
+      values: [id]
+    };
+  },
+
+  listByFacility(organizationId: UUID, facilityId: UUID): SqlStatement {
+    return {
+      text: `
+        SELECT id, organization_id, facility_id, preferred_name, first_name, last_name, room, level_of_care, status
+        FROM residents
+        WHERE organization_id = $1
+          AND facility_id = $2
+        ORDER BY last_name, first_name
+      `,
+      values: [organizationId, facilityId]
+    };
+  },
+
+  upsert(resident: Resident): SqlStatement {
+    return {
+      text: `
+        INSERT INTO residents (
+          id,
+          organization_id,
+          facility_id,
+          preferred_name,
+          first_name,
+          last_name,
+          room,
+          level_of_care,
+          status
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        ON CONFLICT (id) DO UPDATE
+        SET preferred_name = EXCLUDED.preferred_name,
+            first_name = EXCLUDED.first_name,
+            last_name = EXCLUDED.last_name,
+            room = EXCLUDED.room,
+            level_of_care = EXCLUDED.level_of_care,
+            status = EXCLUDED.status,
+            updated_at = now()
+        RETURNING id, organization_id, facility_id, preferred_name, first_name, last_name, room, level_of_care, status
+      `,
+      values: [
+        resident.id,
+        resident.organizationId,
+        resident.facilityId,
+        resident.preferredName ?? null,
+        resident.firstName,
+        resident.lastName,
+        resident.room ?? null,
+        resident.levelOfCare ?? null,
+        resident.status
+      ]
     };
   }
 };

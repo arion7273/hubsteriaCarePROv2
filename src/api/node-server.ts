@@ -80,6 +80,7 @@ async function toApiRequest(request: IncomingMessage): Promise<
     request: {
       method,
       path: url.pathname,
+      query: Object.fromEntries(url.searchParams.entries()),
       body: parsedBody,
       sessionId: headers['x-session-id'],
       headers,

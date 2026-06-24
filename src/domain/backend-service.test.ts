@@ -20,8 +20,18 @@ const t2User: User = {
   status: 'active'
 };
 
+const t3User: User = {
+  id: 'user-facility',
+  email: 'facility@example.com',
+  roleTier: 'T3',
+  organizationId: 'org-1',
+  facilityIds: ['facility-1'],
+  permissions: [],
+  status: 'active'
+};
+
 function createTestService() {
-  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'feature-audit'];
+  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'audit-4', 'feature-audit'];
   const repositories = createInMemoryBackendRepositories();
   const service = new BackendFoundationService(
     repositories,
@@ -98,5 +108,66 @@ describe('BackendFoundationService', () => {
     expect(feature.featureName).toBe('Tenant Isolation Guard');
     await expect(repositories.featureRegistry.list()).resolves.toHaveLength(1);
     await expect(repositories.auditLogs.listByEntity('Feature', 'Tenant Isolation Guard')).resolves.toHaveLength(1);
+  });
+
+  it('creates, lists, reads, and updates residents with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+
+    const resident = await service.createResident(
+      {
+        user: {
+          ...t3User,
+          permissions: ['resident:write']
+        }
+      },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        firstName: 'Maria',
+        lastName: 'Alvarez',
+        preferredName: 'Maria',
+        room: '214B',
+        levelOfCare: 'Memory Care'
+      }
+    );
+
+    expect(resident).toMatchObject({
+      id: 'resident-1',
+      firstName: 'Maria',
+      status: 'active'
+    });
+
+    await expect(service.listResidentsByFacility({ user: t3User }, { organizationId: 'org-1', facilityId: 'facility-1' })).resolves.toHaveLength(1);
+    await expect(service.getResident({ user: t3User }, 'resident-1')).resolves.toMatchObject({ lastName: 'Alvarez' });
+
+    await expect(
+      service.updateResident(
+        {
+          user: {
+            ...t3User,
+            permissions: ['resident:write']
+          }
+        },
+        'resident-1',
+        { room: '215A' }
+      )
+    ).resolves.toMatchObject({ room: '215A' });
+
+    await expect(repositories.auditLogs.listByEntity('Resident', 'resident-1')).resolves.toHaveLength(2);
+  });
+
+  it('denies resident creation across facility boundaries', async () => {
+    const { service } = createTestService();
+
+    await expect(
+      service.createResident({ user: t3User }, {
+        organizationId: 'org-1',
+        facilityId: 'facility-2',
+        firstName: 'Blocked',
+        lastName: 'Resident'
+      })
+    ).rejects.toThrow('Cross-facility access denied');
   });
 });

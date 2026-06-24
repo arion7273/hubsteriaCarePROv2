@@ -8,8 +8,10 @@ import {
   mapFacilityRow,
   mapFeatureRow,
   mapOrganizationRow,
+  mapResidentRow,
   mapUserRow,
   organizationStatements,
+  residentStatements,
   userStatements
 } from '.';
 
@@ -37,6 +39,14 @@ describe('Postgres statement builders', () => {
     expect(byEmail.text).toContain('LEFT JOIN permissions p ON p.id = rp.permission_id');
     expect(byEmail.text).toContain('u.email = $1');
     expect(byEmail.values).toEqual(['admin@example.com']);
+  });
+
+  it('uses tenant-scoped resident statements', () => {
+    const list = residentStatements.listByFacility('org-1', 'facility-1');
+
+    expect(list.text).toContain('WHERE organization_id = $1');
+    expect(list.text).toContain('AND facility_id = $2');
+    expect(list.values).toEqual(['org-1', 'facility-1']);
   });
 
   it('serializes feature dependencies and audit states as JSON', () => {
@@ -113,6 +123,30 @@ describe('Postgres row mappers', () => {
       organizationId: 'org-1',
       facilityIds: ['facility-1'],
       permissions: ['resident:read'],
+      status: 'active'
+    });
+
+    expect(
+      mapResidentRow({
+        id: 'resident-1',
+        organization_id: 'org-1',
+        facility_id: 'facility-1',
+        first_name: 'Maria',
+        last_name: 'Alvarez',
+        preferred_name: 'Maria',
+        room: '214B',
+        level_of_care: 'Memory Care',
+        status: 'active'
+      })
+    ).toEqual({
+      id: 'resident-1',
+      organizationId: 'org-1',
+      facilityId: 'facility-1',
+      firstName: 'Maria',
+      lastName: 'Alvarez',
+      preferredName: 'Maria',
+      room: '214B',
+      levelOfCare: 'Memory Care',
       status: 'active'
     });
 

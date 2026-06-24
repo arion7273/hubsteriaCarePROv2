@@ -59,6 +59,9 @@ The current backend foundation includes executable service-layer behavior for:
 - Creating organizations
 - Creating facilities
 - Registering features
+- Creating residents
+- Reading residents
+- Updating residents
 - Authenticating users
 - Creating MFA challenges
 - Revoking sessions on logout

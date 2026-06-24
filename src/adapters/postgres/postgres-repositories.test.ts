@@ -7,6 +7,7 @@ import {
   PostgresFeatureRegistryRepository,
   PostgresOrganizationRepository,
   PostgresPasswordResetRepository,
+  PostgresResidentRepository,
   PostgresUserRepository,
   type PostgresClient,
   type PostgresRow,
@@ -104,6 +105,34 @@ describe('Postgres repository classes', () => {
 
     expect(client.statements[0].text).toContain('INSERT INTO audit_logs');
     expect(client.statements[0].text).not.toMatch(/\bUPDATE\b|\bDELETE\b/i);
+  });
+
+  it('maps resident repository operations through tenant-filtered statements', async () => {
+    const client = new FakePostgresClient([
+      {
+        id: 'resident-1',
+        organization_id: 'org-1',
+        facility_id: 'facility-1',
+        first_name: 'Maria',
+        last_name: 'Alvarez',
+        preferred_name: 'Maria',
+        room: '214B',
+        level_of_care: 'Memory Care',
+        status: 'active'
+      }
+    ]);
+    const repository = new PostgresResidentRepository(client);
+
+    await expect(repository.listByFacility('org-1', 'facility-1')).resolves.toEqual([
+      expect.objectContaining({
+        id: 'resident-1',
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        firstName: 'Maria'
+      })
+    ]);
+    expect(client.statements[0].text).toContain('WHERE organization_id = $1');
+    expect(client.statements[0].text).toContain('AND facility_id = $2');
   });
 
   it('validates and maps feature registry repository operations', async () => {

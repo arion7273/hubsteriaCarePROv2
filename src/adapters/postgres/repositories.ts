@@ -7,9 +7,10 @@ import type {
   MfaChallengeRepository,
   OrganizationRepository,
   PasswordResetRepository,
+  ResidentRepository,
   UserRepository
 } from '../../domain/repositories';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, RoleTier, User, UUID } from '../../domain/types';
+import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UUID } from '../../domain/types';
 import {
   auditLogStatements,
   authSessionStatements,
@@ -18,6 +19,7 @@ import {
   mfaChallengeStatements,
   organizationStatements,
   passwordResetStatements,
+  residentStatements,
   userStatements
 } from './statements';
 import {
@@ -28,6 +30,7 @@ import {
   mapMfaChallengeRow,
   mapOrganizationRow,
   mapPasswordResetRequestRow,
+  mapResidentRow,
   mapUserRow
 } from './mappers';
 import type { PostgresClient, PostgresRow } from './types';
@@ -94,6 +97,23 @@ export class PostgresUserRepository implements UserRepository {
     }
 
     return saved;
+  }
+}
+
+export class PostgresResidentRepository implements ResidentRepository {
+  constructor(private readonly client: PostgresClient) {}
+
+  async getById(id: UUID): Promise<Resident | null> {
+    return first(await this.client.query(residentStatements.selectById(id)), mapResidentRow);
+  }
+
+  async listByFacility(organizationId: UUID, facilityId: UUID): Promise<Resident[]> {
+    const result = await this.client.query(residentStatements.listByFacility(organizationId, facilityId));
+    return result.rows.map(mapResidentRow);
+  }
+
+  async save(resident: Resident): Promise<Resident> {
+    return requiredFirst(await this.client.query(residentStatements.upsert(resident)), mapResidentRow);
   }
 }
 

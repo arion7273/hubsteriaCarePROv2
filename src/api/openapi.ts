@@ -88,6 +88,48 @@ export const openApiDocument = {
           '400': { description: 'Invalid feature registration' }
         }
       }
+    },
+    '/residents': {
+      get: {
+        summary: 'List residents by facility',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'Resident list' },
+          '403': { description: 'Insufficient permissions or tenant mismatch' }
+        }
+      },
+      post: {
+        summary: 'Create resident',
+        security: [{ session: [] }],
+        requestBody: {
+          required: true
+        },
+        responses: {
+          '201': { description: 'Resident created' },
+          '403': { description: 'Insufficient permissions or tenant mismatch' }
+        }
+      },
+      patch: {
+        summary: 'Update resident',
+        security: [{ session: [] }],
+        requestBody: {
+          required: true
+        },
+        responses: {
+          '200': { description: 'Resident updated' },
+          '404': { description: 'Resident not found' }
+        }
+      }
+    },
+    '/residents/get': {
+      get: {
+        summary: 'Get resident by ID',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'Resident record' },
+          '404': { description: 'Resident not found' }
+        }
+      }
     }
   },
   components: {

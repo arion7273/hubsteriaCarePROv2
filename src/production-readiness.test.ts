@@ -53,7 +53,10 @@ describe('production readiness workflow', () => {
     expect(backend).toContain('Immutable audit logs');
     expect(backend).toContain('npm run api:dev');
     expect(api).toContain('POST /auth/login');
+    expect(api).toContain('POST /residents');
+    expect(api).toContain('PATCH /residents');
     expect(api).toContain('Protected routes require a valid session');
+    expect(api).toContain('Resident APIs must enforce organization and facility scope');
     expect(api).toContain('OpenAPI documentation');
     expect(api).toContain('framework-agnostic dispatcher');
     expect(api).toContain('Invalid request bodies must return `400`');

@@ -1,6 +1,6 @@
 import type { RegisteredFeature } from '../../domain';
 import type { AuditEvent } from '../../domain/audit';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, RoleTier, User } from '../../domain/types';
+import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -29,6 +29,21 @@ export function mapUserRow(row: PostgresRow): User {
     facilityIds: toStringArray(row.facility_ids),
     permissions: toStringArray(row.permissions) as Permission[],
     status: row.status === 'inactive' ? 'inactive' : 'active'
+  };
+}
+
+export function mapResidentRow(row: PostgresRow): Resident {
+  const status = ['discharged', 'inactive'].includes(String(row.status)) ? String(row.status) : 'active';
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    firstName: String(row.first_name),
+    lastName: String(row.last_name),
+    preferredName: row.preferred_name ? String(row.preferred_name) : undefined,
+    room: row.room ? String(row.room) : undefined,
+    levelOfCare: row.level_of_care ? String(row.level_of_care) : undefined,
+    status: status as Resident['status']
   };
 }
 

@@ -35,7 +35,20 @@ const t1User: User = {
 };
 
 function createApiServices(): ApiServices {
-  const ids = ['session-1', 'mfa-1', 'audit-login', 'audit-mfa', 'org-1', 'audit-org', 'facility-1', 'audit-facility', 'audit-feature'];
+  const ids = [
+    'session-1',
+    'mfa-1',
+    'audit-login',
+    'audit-mfa',
+    'org-1',
+    'audit-org',
+    'facility-1',
+    'audit-facility',
+    'resident-1',
+    'audit-resident',
+    'audit-resident-update',
+    'audit-feature'
+  ];
   const repositories = createInMemoryBackendRepositories();
   const auth = new AuthService(
     repositories,
@@ -103,7 +116,9 @@ describe('API foundation handlers', () => {
       expect.arrayContaining([
         expect.objectContaining({ method: 'POST', path: '/auth/login', authRequired: false }),
         expect.objectContaining({ method: 'POST', path: '/organizations', authRequired: true }),
-        expect.objectContaining({ method: 'GET', path: '/feature-registry', authRequired: true })
+        expect.objectContaining({ method: 'GET', path: '/feature-registry', authRequired: true }),
+        expect.objectContaining({ method: 'POST', path: '/residents', authRequired: true }),
+        expect.objectContaining({ method: 'PATCH', path: '/residents', authRequired: true })
       ])
     );
   });
@@ -113,6 +128,7 @@ describe('API foundation handlers', () => {
     expect(openApiDocument.info.title).toBe('HubsteriaCarePRO API');
     expect(openApiDocument.paths).toHaveProperty('/auth/login');
     expect(openApiDocument.paths).toHaveProperty('/organizations');
+    expect(openApiDocument.paths).toHaveProperty('/residents');
     expect(openApiDocument.components.securitySchemes.session.name).toBe('X-Session-Id');
   });
 
@@ -227,6 +243,72 @@ describe('API foundation handlers', () => {
 
     expect(listed).toMatchObject({ ok: true });
     expect(listed.ok && listed.data).toHaveLength(1);
+  });
+
+  it('creates, lists, reads, and updates residents through the API router', async () => {
+    const services = createApiServices();
+    const router = createApiRouter(services);
+    const sessionId = await createVerifiedSession(services);
+    await router.handle({
+      method: 'POST',
+      path: '/organizations',
+      sessionId,
+      body: { name: 'Northstar Senior Living' }
+    });
+    await router.handle({
+      method: 'POST',
+      path: '/facilities',
+      sessionId,
+      body: { organizationId: 'org-1', name: 'Cedar Grove' }
+    });
+
+    const created = await router.handle({
+      method: 'POST',
+      path: '/residents',
+      sessionId,
+      body: {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        firstName: 'Maria',
+        lastName: 'Alvarez',
+        room: '214B'
+      }
+    });
+
+    expect(created).toMatchObject({ ok: true, status: 201 });
+
+    const listed = await router.handle({
+      method: 'GET',
+      path: '/residents',
+      sessionId,
+      query: {
+        organizationId: 'org-1',
+        facilityId: 'facility-1'
+      }
+    });
+
+    expect(listed.ok && listed.data).toHaveLength(1);
+
+    const read = await router.handle({
+      method: 'GET',
+      path: '/residents/get',
+      sessionId,
+      query: { residentId: 'resident-1' }
+    });
+
+    expect(read).toMatchObject({ ok: true, data: expect.objectContaining({ firstName: 'Maria' }) });
+
+    const updated = await router.handle({
+      method: 'PATCH',
+      path: '/residents',
+      sessionId,
+      body: {
+        residentId: 'resident-1',
+        updates: { room: '215A' }
+      }
+    });
+
+    expect(updated).toMatchObject({ ok: true, data: expect.objectContaining({ room: '215A' }) });
   });
 
   it('dispatches requests through the API router', async () => {

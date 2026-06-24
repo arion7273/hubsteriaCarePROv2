@@ -1,11 +1,15 @@
 import {
   createFacilityHandler,
   createOrganizationHandler,
+  createResidentHandler,
+  getResidentHandler,
   listFeaturesHandler,
+  listResidentsHandler,
   loginHandler,
   logoutHandler,
   passwordResetHandler,
   registerFeatureHandler,
+  updateResidentHandler,
   verifyMfaHandler,
   type ApiServices
 } from './handlers';
@@ -16,9 +20,11 @@ import { apiRoutes } from './routes';
 import {
   isCreateFacilityBody,
   isCreateOrganizationBody,
+  isCreateResidentBody,
   isLoginBody,
   isPasswordResetBody,
   isRegisteredFeatureBody,
+  isUpdateResidentBody,
   isVerifyMfaBody,
   validateRequestBody
 } from './validation';
@@ -78,6 +84,28 @@ const routeConfigs: RouteConfig[] = [
     method: 'GET',
     path: '/feature-registry',
     handler: listFeaturesHandler
+  },
+  {
+    method: 'POST',
+    path: '/residents',
+    validate: isCreateResidentBody,
+    handler: createResidentHandler as RouteHandler
+  },
+  {
+    method: 'GET',
+    path: '/residents',
+    handler: listResidentsHandler
+  },
+  {
+    method: 'GET',
+    path: '/residents/get',
+    handler: getResidentHandler
+  },
+  {
+    method: 'PATCH',
+    path: '/residents',
+    validate: isUpdateResidentBody,
+    handler: updateResidentHandler as RouteHandler
   }
 ];
 

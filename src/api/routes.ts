@@ -55,5 +55,29 @@ export const apiRoutes: ApiRouteDefinition[] = [
     path: '/feature-registry',
     authRequired: true,
     description: 'List registered features'
+  },
+  {
+    method: 'POST',
+    path: '/residents',
+    authRequired: true,
+    description: 'Create resident'
+  },
+  {
+    method: 'GET',
+    path: '/residents',
+    authRequired: true,
+    description: 'List residents by facility'
+  },
+  {
+    method: 'GET',
+    path: '/residents/get',
+    authRequired: true,
+    description: 'Get resident by ID'
+  },
+  {
+    method: 'PATCH',
+    path: '/residents',
+    authRequired: true,
+    description: 'Update resident'
   }
 ];

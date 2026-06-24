@@ -30,6 +30,18 @@ export type Facility = {
   status: 'active' | 'suspended';
 };
 
+export type Resident = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  firstName: string;
+  lastName: string;
+  preferredName?: string;
+  room?: string;
+  levelOfCare?: string;
+  status: 'active' | 'discharged' | 'inactive';
+};
+
 export type User = {
   id: UUID;
   email: string;
