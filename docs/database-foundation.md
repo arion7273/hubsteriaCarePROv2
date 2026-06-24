@@ -75,6 +75,8 @@ Implement PostgreSQL repository adapters for `src/domain/repositories.ts`, then 
 
 See `docs/postgres-adapters.md` for the statement builders and row mappers that should be used by concrete PostgreSQL repository classes.
 
+See `docs/postgres-integration-tests.md` for optional real database integration test setup.
+
 ## Authentication persistence rules
 
 - Sessions must expire.
