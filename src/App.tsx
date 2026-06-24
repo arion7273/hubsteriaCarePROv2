@@ -96,6 +96,14 @@ import {
   workflowTemplates
 } from './data/workflows';
 import {
+  academyIntegrationRequirements,
+  academyMetrics,
+  aiHelpExamples,
+  certifications,
+  learningPaths,
+  trainingResources
+} from './data/academy';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -227,6 +235,7 @@ function App() {
             'Family Portal',
             'Billing Center',
             'Workflow Automation',
+            'Hubsteria Academy',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -251,7 +260,9 @@ function App() {
                                 ? '#billing-center'
                                 : item === 'Workflow Automation'
                                   ? '#workflow-automation-engine'
-                                  : `#${item.toLowerCase().replaceAll(' ', '-')}`
+                                  : item === 'Hubsteria Academy'
+                                    ? '#hubsteria-academy'
+                                    : `#${item.toLowerCase().replaceAll(' ', '-')}`
               }
               key={item}
             >
@@ -263,8 +274,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-14</strong>
-            <span>Automation active</span>
+            <strong>Phase 0-15</strong>
+            <span>Academy active</span>
           </div>
         </div>
       </aside>
@@ -327,6 +338,9 @@ function App() {
               </a>
               <a className="button secondary" href="#workflow-automation-engine">
                 Open Automation
+              </a>
+              <a className="button secondary" href="#hubsteria-academy">
+                Open Academy
               </a>
             </div>
           </div>
@@ -1988,6 +2002,129 @@ function App() {
             </div>
             <ul className="check-list">
               {workflowIntegrationRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className="content-card academy-center" id="hubsteria-academy" aria-labelledby="academy-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 15</p>
+              <h2 id="academy-title">Hubsteria Academy</h2>
+              <p>
+                Training center with knowledge base articles, videos, interactive walkthroughs, role-based
+                learning paths, certifications, expiring certification tracking, and AI help guidance.
+              </p>
+            </div>
+            <div className="academy-status">
+              <span>Training center</span>
+              <strong>Role-based learning</strong>
+            </div>
+          </div>
+
+          <div className="academy-metric-grid">
+            {academyMetrics.map((metric) => (
+              <article className="academy-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="academy-layout">
+            <div className="academy-panel">
+              <div className="card-heading">
+                <span>Training Center</span>
+                <strong>Knowledge base, videos, walkthroughs</strong>
+              </div>
+              <div className="training-resource-list" aria-label="Training resources">
+                {trainingResources.map((resource) => (
+                  <article key={resource.title}>
+                    <div>
+                      <strong>{resource.title}</strong>
+                      <span>
+                        {resource.type} | {resource.audience}
+                      </span>
+                    </div>
+                    <span className={`academy-status-pill ${resource.status.toLowerCase().replaceAll(' ', '-')}`}>
+                      {resource.status}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="academy-panel">
+              <div className="card-heading">
+                <span>Role-Based Learning Paths</span>
+                <strong>Guided onboarding by role</strong>
+              </div>
+              <div className="learning-path-list" aria-label="Learning paths">
+                {learningPaths.map((path) => (
+                  <article key={path.role}>
+                    <div className="learning-path-header">
+                      <strong>{path.role}</strong>
+                      <span>{path.progress}</span>
+                    </div>
+                    <div className="academy-chip-row">
+                      {path.courses.map((course) => (
+                        <span key={course}>{course}</span>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="academy-layout">
+            <div className="academy-panel">
+              <div className="card-heading">
+                <span>Certifications</span>
+                <strong>Completed and expiring credentials</strong>
+              </div>
+              <div className="certification-list" aria-label="Certifications">
+                {certifications.map((certification) => (
+                  <article key={`${certification.name}-${certification.holder}`}>
+                    <div>
+                      <strong>{certification.name}</strong>
+                      <span>{certification.holder}</span>
+                    </div>
+                    <p>{certification.expires}</p>
+                    <span className={`academy-status-pill ${certification.status.toLowerCase().replaceAll(' ', '-')}`}>
+                      {certification.status}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="academy-panel">
+              <div className="card-heading">
+                <span>AI Help Assistant</span>
+                <strong>Immediate workflow guidance</strong>
+              </div>
+              <div className="ai-help-list" aria-label="AI help examples">
+                {aiHelpExamples.map((example) => (
+                  <article key={example.question}>
+                    <strong>{example.question}</strong>
+                    <p>{example.answer}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="academy-panel integration-panel">
+            <div className="card-heading">
+              <span>Academy integration contract</span>
+              <strong>Configuration, notifications, dashboards, help, and audit hooks</strong>
+            </div>
+            <ul className="check-list">
+              {academyIntegrationRequirements.map((requirement) => (
                 <li key={requirement}>{requirement}</li>
               ))}
             </ul>

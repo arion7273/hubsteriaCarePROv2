@@ -208,7 +208,7 @@ export const enterprisePhases: Phase[] = [
   {
     id: '15',
     title: 'Hubsteria Academy',
-    status: 'future',
+    status: 'foundation',
     milestone: 'Training & Guidance',
     summary: 'Knowledge base, videos, walkthroughs, role learning paths, certifications, and AI help assistant.',
     deliverables: ['Training center', 'Certifications', 'Learning paths', 'AI help']

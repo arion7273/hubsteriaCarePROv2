@@ -598,4 +598,41 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Workflow actions can create tasks, notify families, notify pharmacies/i)).toBeInTheDocument();
     expect(screen.getByText(/Every automation trigger, condition result, action, failure, pause/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 15 Hubsteria Academy training resources and learning paths', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Hubsteria Academy' })).toBeInTheDocument();
+    expect(screen.getByText('Completed Courses')).toBeInTheDocument();
+    expect(screen.getByText('Expiring Certifications')).toBeInTheDocument();
+
+    const resources = screen.getByLabelText('Training resources');
+    expect(within(resources).getByText('How do I document a medication refusal?')).toBeInTheDocument();
+    expect(within(resources).getByText('Mobile med pass walkthrough')).toBeInTheDocument();
+    expect(within(resources).getByText('Incident documentation fundamentals')).toBeInTheDocument();
+
+    const paths = screen.getByLabelText('Learning paths');
+    ['Caregiver', 'Medication Manager', 'Facility Administrator', 'Family Member'].forEach((role) => {
+      expect(within(paths).getByText(role)).toBeInTheDocument();
+    });
+    expect(within(paths).getByText('ADL documentation')).toBeInTheDocument();
+    expect(within(paths).getByText('Barcode verification')).toBeInTheDocument();
+  });
+
+  it('tracks Academy certifications AI help and integration requirements', () => {
+    render(<App />);
+
+    const certs = screen.getByLabelText('Certifications');
+    expect(within(certs).getByText('Medication Administration Safety')).toBeInTheDocument();
+    expect(within(certs).getByText('Dementia Care Essentials')).toBeInTheDocument();
+    expect(within(certs).getByText('Expiring')).toBeInTheDocument();
+
+    const aiHelp = screen.getByLabelText('AI help examples');
+    expect(within(aiHelp).getByText('How do I document a medication refusal?')).toBeInTheDocument();
+    expect(within(aiHelp).getByText(/Open the resident med pass card, select Refused/i)).toBeInTheDocument();
+
+    expect(screen.getByText(/Configuration Center owns role-based learning paths/i)).toBeInTheDocument();
+    expect(screen.getByText(/Notification Center Pro alerts staff and administrators when required training/i)).toBeInTheDocument();
+    expect(screen.getByText(/All course completions, certification changes, AI help searches/i)).toBeInTheDocument();
+  });
 });

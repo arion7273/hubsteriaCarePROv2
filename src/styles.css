@@ -3273,6 +3273,174 @@ p {
   font-weight: 800;
 }
 
+.academy-center {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.academy-status {
+  display: grid;
+  gap: 0.2rem;
+  min-width: min(100%, 17rem);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.academy-status span {
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.academy-status strong {
+  color: var(--primary-strong);
+}
+
+.academy-metric-grid,
+.academy-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.academy-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.academy-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.academy-metric-card,
+.academy-panel,
+.training-resource-list article,
+.learning-path-list article,
+.certification-list article,
+.ai-help-list article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.academy-metric-card,
+.academy-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.academy-metric-card span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.academy-metric-card strong {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  letter-spacing: -0.05em;
+}
+
+.academy-metric-card small {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.training-resource-list,
+.learning-path-list,
+.certification-list,
+.ai-help-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.training-resource-list article,
+.certification-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.certification-list article {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.training-resource-list span:not(.academy-status-pill),
+.certification-list span:not(.academy-status-pill) {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.academy-status-pill {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.academy-status-pill.completed {
+  background: #ddf6ed;
+  color: var(--success);
+}
+
+.academy-status-pill.in-progress,
+.academy-status-pill.not-started {
+  background: #e8eef9;
+  color: #355985;
+}
+
+.academy-status-pill.expiring {
+  background: #fff4da;
+  color: var(--warning);
+}
+
+.learning-path-list article,
+.ai-help-list article {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.learning-path-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.learning-path-header span {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.academy-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.academy-chip-row span {
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 0.55rem 0.75rem;
+}
+
+.certification-list p,
+.ai-help-list p {
+  margin: 0;
+}
+
 .role-grid,
 .roadmap-grid {
   display: grid;
@@ -3435,6 +3603,7 @@ summary {
   .aging-grid,
   .workflow-metric-grid,
   .workflow-builder-grid,
+  .academy-metric-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -3461,6 +3630,7 @@ summary {
   .family-layout,
   .billing-layout,
   .workflow-layout,
+  .academy-layout,
   .module-connection-panel,
   .notification-layout,
   .notification-bottom-grid,
@@ -3514,6 +3684,7 @@ summary {
   .aging-grid,
   .workflow-metric-grid,
   .workflow-builder-grid,
+  .academy-metric-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -3605,6 +3776,8 @@ summary {
   .invoice-list article,
   .payment-list article,
   .workflow-template-list article,
+  .training-resource-list article,
+  .certification-list article,
   .sync-field-list article,
   .refill-list article,
   .configuration-audit-list article,

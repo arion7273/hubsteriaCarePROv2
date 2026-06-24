@@ -392,6 +392,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Workflow Automation Builder', 'Resident Command Center', 'Task and ADL Tracking'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Training Center and Learning Paths',
+    module: 'Hubsteria Academy',
+    status: 'registered',
+    dependencies: ['Configuration Center', 'User Roles', 'Notification Center Integration'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Certifications and AI Help',
+    module: 'Hubsteria Academy',
+    status: 'registered',
+    dependencies: ['Training Center and Learning Paths', 'Audit Log Contract'],
+    version: '0.1.0'
   }
 ];
 
