@@ -16,6 +16,7 @@ import type {
   IncidentRepository,
   InvoiceRepository,
   MfaChallengeRepository,
+  OperationalRecordRepository,
   OrganizationRepository,
   PasswordResetRepository,
   PaymentTransactionRepository,
@@ -49,6 +50,7 @@ import type {
   UserCredential,
   UUID
 } from '../../domain/types';
+import type { AuthSession, BackgroundJob, Facility, MfaChallenge, OperationalRecord, Organization, PasswordResetRequest, Resident, RoleTier, User, UserCredential, UUID } from '../../domain/types';
 import {
   assessmentStatements,
   adlEntryStatements,
@@ -66,6 +68,7 @@ import {
   billingChargeStatements,
   invoiceStatements,
   mfaChallengeStatements,
+  operationalRecordStatements,
   organizationStatements,
   passwordResetStatements,
   paymentTransactionStatements,
@@ -91,6 +94,7 @@ import {
   mapBillingChargeRow,
   mapInvoiceRow,
   mapMfaChallengeRow,
+  mapOperationalRecordRow,
   mapOrganizationRow,
   mapPasswordResetRequestRow,
   mapPaymentTransactionRow,
@@ -294,6 +298,23 @@ export class PostgresPaymentTransactionRepository implements PaymentTransactionR
   constructor(private readonly client: PostgresClient) {}
   async listByResident(residentId: UUID): Promise<PaymentTransaction[]> { return (await this.client.query(paymentTransactionStatements.listByResident(residentId))).rows.map(mapPaymentTransactionRow); }
   async save(transaction: PaymentTransaction): Promise<PaymentTransaction> { return requiredFirst(await this.client.query(paymentTransactionStatements.insert(transaction)), mapPaymentTransactionRow); }
+}
+
+export class PostgresOperationalRecordRepository implements OperationalRecordRepository {
+  constructor(private readonly client: PostgresClient) {}
+
+  async getById(id: UUID): Promise<OperationalRecord | null> {
+    return first(await this.client.query(operationalRecordStatements.selectById(id)), mapOperationalRecordRow);
+  }
+
+  async listByScope(scope: { organizationId: UUID; facilityId?: UUID; residentId?: UUID; module?: OperationalRecord['module'] }): Promise<OperationalRecord[]> {
+    const result = await this.client.query(operationalRecordStatements.listByScope(scope));
+    return result.rows.map(mapOperationalRecordRow);
+  }
+
+  async save(record: OperationalRecord): Promise<OperationalRecord> {
+    return requiredFirst(await this.client.query(operationalRecordStatements.upsert(record)), mapOperationalRecordRow);
+  }
 }
 
 export class PostgresAuditLogRepository implements AuditLogRepository {

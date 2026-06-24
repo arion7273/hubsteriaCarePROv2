@@ -18,6 +18,7 @@ import type {
   IncidentRepository,
   InvoiceRepository,
   MfaChallengeRepository,
+  OperationalRecordRepository,
   OrganizationRepository,
   PasswordResetRepository,
   PaymentTransactionRepository,
@@ -50,6 +51,7 @@ import type {
   UserCredential,
   UUID
 } from './types';
+import type { AuthSession, BackgroundJob, Facility, MfaChallenge, OperationalRecord, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -319,6 +321,28 @@ export class InMemoryPaymentTransactionRepository implements PaymentTransactionR
   async save(transaction: PaymentTransaction): Promise<PaymentTransaction> {
     this.transactions.set(transaction.id, transaction);
     return transaction;
+export class InMemoryOperationalRecordRepository implements OperationalRecordRepository {
+  private readonly records = new Map<UUID, OperationalRecord>();
+
+  async getById(id: UUID): Promise<OperationalRecord | null> {
+    return this.records.get(id) ?? null;
+  }
+
+  async listByScope(scope: { organizationId: UUID; facilityId?: UUID; residentId?: UUID; module?: OperationalRecord['module'] }): Promise<OperationalRecord[]> {
+    return [...this.records.values()]
+      .filter(
+        (record) =>
+          record.organizationId === scope.organizationId &&
+          (!scope.facilityId || record.facilityId === scope.facilityId) &&
+          (!scope.residentId || record.residentId === scope.residentId) &&
+          (!scope.module || record.module === scope.module)
+      )
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  async save(record: OperationalRecord): Promise<OperationalRecord> {
+    this.records.set(record.id, record);
+    return record;
   }
 }
 
@@ -425,6 +449,7 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     billingCharges: new InMemoryBillingChargeRepository(),
     invoices: new InMemoryInvoiceRepository(),
     paymentTransactions: new InMemoryPaymentTransactionRepository(),
+    operationalRecords: new InMemoryOperationalRecordRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
     featureRegistry: new InMemoryFeatureRegistryRepository(),
     authSessions: new InMemoryAuthSessionRepository(),

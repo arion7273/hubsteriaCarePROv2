@@ -19,6 +19,7 @@ import type {
   MedicationAdministration,
   MedicationOrder,
   NotificationJobInput,
+  OperationalRecord,
   Organization,
   PaymentTransaction,
   PrintJobInput,
@@ -839,6 +840,60 @@ export class BackendFoundationService {
   async listPaymentTransactionsByResident(context: AccessContext, residentId: UUID): Promise<PaymentTransaction[]> {
     await this.getResident(context, residentId);
     return this.repositories.paymentTransactions.listByResident(residentId);
+  async createOperationalRecord(
+    context: AccessContext,
+    input: Omit<OperationalRecord, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<OperationalRecord> {
+    await this.assertOperationalRecordAccess(context, input, 'write');
+
+    const now = this.clock().toISOString();
+    const record = await this.repositories.operationalRecords.save({
+      id: this.createId(),
+      createdAt: now,
+      updatedAt: now,
+      ...input
+    });
+
+    await this.auditOperationalRecord(context, record, null);
+    return record;
+  }
+
+  async getOperationalRecord(context: AccessContext, recordId: UUID): Promise<OperationalRecord> {
+    const record = await this.repositories.operationalRecords.getById(recordId);
+    if (!record) throw new Error('Operational record not found');
+    await this.assertOperationalRecordAccess(context, record, 'read');
+    return record;
+  }
+
+  async listOperationalRecordsByScope(
+    context: AccessContext,
+    scope: { organizationId: UUID; facilityId?: UUID; residentId?: UUID; module?: OperationalRecord['module'] }
+  ): Promise<OperationalRecord[]> {
+    await this.assertOperationalRecordAccess(context, scope, 'read');
+    return this.repositories.operationalRecords.listByScope(scope);
+  }
+
+  async updateOperationalRecord(
+    context: AccessContext,
+    recordId: UUID,
+    updates: Partial<Omit<OperationalRecord, 'id' | 'organizationId' | 'facilityId' | 'residentId' | 'createdAt' | 'updatedAt'>>
+  ): Promise<OperationalRecord> {
+    const existing = await this.getOperationalRecord(context, recordId);
+    await this.assertOperationalRecordAccess(context, existing, 'write');
+
+    const updated = await this.repositories.operationalRecords.save({
+      ...existing,
+      ...updates,
+      id: existing.id,
+      organizationId: existing.organizationId,
+      facilityId: existing.facilityId,
+      residentId: existing.residentId,
+      createdAt: existing.createdAt,
+      updatedAt: this.clock().toISOString()
+    });
+
+    await this.auditOperationalRecord(context, updated, existing);
+    return updated;
   }
 
   async createUser(
@@ -969,6 +1024,69 @@ export class BackendFoundationService {
       },
       beforeState,
       afterState: job,
+      now: this.clock()
+    }));
+  }
+
+  private async assertOperationalRecordAccess(
+    context: AccessContext,
+    scope: { organizationId: UUID; facilityId?: UUID; residentId?: UUID },
+    mode: 'read' | 'write'
+  ): Promise<void> {
+    if (scope.residentId) {
+      const resident = await this.getResident(context, scope.residentId);
+      if (mode === 'write') {
+        assertAllowed(
+          requirePermission(
+            context,
+            { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id },
+            'resident:write'
+          )
+        );
+      }
+      return;
+    }
+
+    if (scope.facilityId) {
+      assertAllowed(
+        requirePermission(
+          context,
+          { scope: 'facility', organizationId: scope.organizationId, facilityId: scope.facilityId },
+          mode === 'read' ? 'report:read' : 'facility:manage'
+        )
+      );
+      return;
+    }
+
+    assertAllowed(
+      requirePermission(
+        context,
+        { scope: 'organization', organizationId: scope.organizationId },
+        mode === 'read' ? 'report:read' : 'organization:manage'
+      )
+    );
+  }
+
+  private async auditOperationalRecord(
+    context: AccessContext,
+    record: OperationalRecord,
+    beforeState: OperationalRecord | null
+  ): Promise<void> {
+    await this.repositories.auditLogs.append(createAuditEvent({
+      id: this.createId(),
+      action: beforeState ? 'update' : 'create',
+      actorUserId: context.user.id,
+      actorRole: context.user.roleTier,
+      entityType: 'OperationalRecord',
+      entityId: record.id,
+      scope: {
+        scope: record.residentId ? 'resident' : record.facilityId ? 'facility' : 'organization',
+        organizationId: record.organizationId,
+        facilityId: record.facilityId,
+        residentId: record.residentId
+      },
+      beforeState,
+      afterState: record,
       now: this.clock()
     }));
   }

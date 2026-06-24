@@ -1,5 +1,6 @@
 import {
   completeBackgroundJobHandler,
+  createOperationalRecordHandler,
   createFacilityHandler,
   enqueueBackgroundJobHandler,
   enqueueAiGenerationJobHandler,
@@ -22,6 +23,7 @@ import {
   createUserHandler,
   createServicePlanHandler,
   getFacilityHandler,
+  getOperationalRecordHandler,
   getOrganizationHandler,
   getResidentHandler,
   listFeaturesHandler,
@@ -31,6 +33,7 @@ import {
   listFacilitiesHandler,
   listIncidentsHandler,
   listOrganizationsHandler,
+  listOperationalRecordsHandler,
   listResidentsHandler,
   listUsersHandler,
   leaseBackgroundJobsHandler,
@@ -52,6 +55,7 @@ import {
   updateIncidentHandler,
   recordPaymentHandler,
   updateFacilityHandler,
+  updateOperationalRecordHandler,
   updateOrganizationHandler,
   updateResidentHandler,
   updateUserHandler,
@@ -65,6 +69,7 @@ import { apiRoutes } from './routes';
 import {
   isCompleteBackgroundJobBody,
   isCreateFacilityBody,
+  isCreateOperationalRecordBody,
   isEnqueueBackgroundJobBody,
   isEnqueueAiGenerationJobBody,
   isEnqueueDigitalRxSyncJobBody,
@@ -88,6 +93,7 @@ import {
   isLogAdlBody,
   isUpdateFacilityBody,
   isUpdateIncidentBody,
+  isUpdateOperationalRecordBody,
   isUpdateOrganizationBody,
   isLoginBody,
   isPasswordResetBody,
@@ -281,6 +287,10 @@ const routeConfigs: RouteConfig[] = [
   { method: 'GET', path: '/billing/invoices', handler: listInvoicesHandler },
   { method: 'POST', path: '/billing/payments', validate: isRecordPaymentBody, handler: recordPaymentHandler as RouteHandler },
   { method: 'GET', path: '/billing/payments', handler: listPaymentsHandler }
+  { method: 'POST', path: '/operational-records', validate: isCreateOperationalRecordBody, handler: createOperationalRecordHandler as RouteHandler },
+  { method: 'GET', path: '/operational-records', handler: listOperationalRecordsHandler },
+  { method: 'GET', path: '/operational-records/get', handler: getOperationalRecordHandler },
+  { method: 'PATCH', path: '/operational-records', validate: isUpdateOperationalRecordBody, handler: updateOperationalRecordHandler as RouteHandler }
 ];
 
 export function createApiRouter(services: ApiServices, middlewares: ApiMiddleware[] = []) {

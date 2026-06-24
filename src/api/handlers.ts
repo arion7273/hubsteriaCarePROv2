@@ -19,6 +19,7 @@ import {
   type MedicationAdministration,
   type MedicationOrder,
   type NotificationJobInput,
+  type OperationalRecord,
   type Organization,
   type PaymentTransaction,
   type PrintJobInput,
@@ -107,6 +108,11 @@ export type CreateComplianceIssueBody = Omit<ComplianceIssue, 'id'>;
 export type CreateBillingChargeBody = Omit<BillingCharge, 'id'>;
 export type CreateInvoiceBody = Omit<Invoice, 'id'>;
 export type RecordPaymentBody = Omit<PaymentTransaction, 'id' | 'postedAt' | 'postedBy'>;
+export type CreateOperationalRecordBody = Omit<OperationalRecord, 'id' | 'createdAt' | 'updatedAt'>;
+export type UpdateOperationalRecordBody = {
+  recordId: UUID;
+  updates: Partial<Omit<OperationalRecord, 'id' | 'organizationId' | 'facilityId' | 'residentId' | 'createdAt' | 'updatedAt'>>;
+};
 
 export async function loginHandler(services: ApiServices, request: ApiRequest<LoginBody>): Promise<ApiResponse> {
   return toApiResponse(async () => {
@@ -559,6 +565,45 @@ export async function listPaymentsHandler(services: ApiServices, request: ApiReq
     const residentId = request.query?.residentId;
     if (!residentId) throw new Error('residentId is required');
     return services.backend.listPaymentTransactionsByResident(context, residentId);
+export async function createOperationalRecordHandler(
+  services: ApiServices,
+  request: ApiRequest<CreateOperationalRecordBody>
+): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.createOperationalRecord(context, request.body);
+  }, 201);
+}
+
+export async function listOperationalRecordsHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const organizationId = request.query?.organizationId;
+    if (!organizationId) throw new Error('organizationId is required');
+
+    return services.backend.listOperationalRecordsByScope(context, {
+      organizationId,
+      facilityId: request.query?.facilityId,
+      residentId: request.query?.residentId,
+      module: request.query?.module as OperationalRecord['module'] | undefined
+    });
+  });
+}
+
+export async function getOperationalRecordHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const recordId = request.query?.recordId;
+    if (!recordId) throw new Error('recordId is required');
+    return services.backend.getOperationalRecord(context, recordId);
+  });
+}
+
+export async function updateOperationalRecordHandler(
+  services: ApiServices,
+  request: ApiRequest<UpdateOperationalRecordBody>
+): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.updateOperationalRecord(context, request.body.recordId, request.body.updates);
   });
 }
 

@@ -252,6 +252,18 @@ export type ComplianceIssue = {
   severity: 'info' | 'warning' | 'critical';
   status: 'open' | 'resolved';
   resolutionLink: string;
+export type OperationalRecord = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId?: UUID;
+  residentId?: UUID;
+  module: 'notifications' | 'print' | 'digitalrx' | 'workflow' | 'ai' | 'communication' | 'family' | 'support' | 'integrations';
+  recordType: string;
+  status: 'draft' | 'active' | 'queued' | 'processing' | 'completed' | 'failed' | 'archived';
+  title: string;
+  payload: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type User = {
