@@ -1,7 +1,11 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('HubsteriaCarePRO foundation', () => {
   it('renders the brand, global protocol, and bootstrap account without exposing a plain-text password', () => {
@@ -12,6 +16,36 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText('b094650@gmail.com')).toBeInTheDocument();
     expect(screen.getByText(/without storing a plain-text password/i)).toBeInTheDocument();
     expect(screen.queryByText(/Ariana1617/i)).not.toBeInTheDocument();
+  });
+
+  it('renders API connection center and connected endpoints', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { name: 'UI connected to backend API contracts' })).toBeInTheDocument();
+    expect(screen.getByText('http://localhost:3000')).toBeInTheDocument();
+
+    const endpoints = screen.getByLabelText('Connected API endpoints');
+    expect(within(endpoints).getByText('POST /auth/login')).toBeInTheDocument();
+    expect(within(endpoints).getByText('POST /residents')).toBeInTheDocument();
+    expect(within(endpoints).getByText('GET /users')).toBeInTheDocument();
+  });
+
+  it('checks backend API health from the UI', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      })
+    );
+
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Check API health' }));
+
+    const apiStatus = screen.getByText('API base URL').closest('.api-status-card');
+    expect(apiStatus).not.toBeNull();
+    expect(within(apiStatus as HTMLElement).getByText('Connected')).toBeInTheDocument();
+    expect(globalThis.fetch).toHaveBeenCalledWith('http://localhost:3000/healthz');
   });
 
   it('switches between T1, T2, and T3 role-aware dashboards', async () => {

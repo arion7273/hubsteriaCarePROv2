@@ -174,6 +174,7 @@ import {
   pinnedActions,
   productivitySearchIndex
 } from './data/productivity';
+import { createConfiguredApiClient, getConfiguredApiBaseUrl } from './client/api-client';
 import { residentCommandCenter } from './data/resident';
 
 type DashboardScope = 'T1 Master' | 'T2 Organization' | 'T3 Facility';
@@ -190,11 +191,23 @@ const quickActions: Record<DashboardScope, string[]> = {
   'T3 Facility': ['Add Resident', 'Start Assessment', 'Log Incident', 'Create Medication Order', 'Assign Task']
 };
 
+const connectedApiEndpoints = [
+  'POST /auth/login',
+  'POST /auth/mfa/verify',
+  'POST /organizations',
+  'GET /facilities',
+  'POST /residents',
+  'PATCH /residents',
+  'GET /users'
+];
+
 function App() {
   const [scope, setScope] = useState<DashboardScope>('T1 Master');
   const [query, setQuery] = useState('');
   const [darkMode, setDarkMode] = useState(false);
+  const [apiHealthStatus, setApiHealthStatus] = useState('Not checked');
   const globalSearchRef = useRef<HTMLInputElement>(null);
+  const apiBaseUrl = getConfiguredApiBaseUrl();
 
   useEffect(() => {
     const handleKeyboardShortcut = (event: KeyboardEvent) => {
@@ -239,6 +252,18 @@ function App() {
   }, [query]);
 
   const activePersonalizedDashboard = personalizedDashboards.find((dashboard) => dashboard.role === scope);
+
+  const checkApiHealth = async () => {
+    setApiHealthStatus('Checking...');
+
+    try {
+      await createConfiguredApiClient().health();
+      setApiHealthStatus('Connected');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown connection error';
+      setApiHealthStatus(`Unavailable: ${message}`);
+    }
+  };
 
   return (
     <div className={`app-shell ${darkMode ? 'dark-mode' : ''}`}>
@@ -477,6 +502,39 @@ function App() {
                 </article>
               ))}
             </div>
+          </div>
+        </section>
+
+        <section className="content-card api-connection-center" id="api-connection-center" aria-labelledby="api-connection-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">API connection foundation</p>
+              <h2 id="api-connection-title">UI connected to backend API contracts</h2>
+              <p>
+                The React shell now has a typed API client for authentication, residents, users, organizations,
+                and facilities. Set <strong>VITE_API_BASE_URL</strong> to point the UI at a running backend.
+              </p>
+            </div>
+            <div className="api-status-card">
+              <span>API base URL</span>
+              <strong>{apiBaseUrl}</strong>
+              <small>{apiHealthStatus}</small>
+            </div>
+          </div>
+
+          <div className="api-action-row">
+            <button type="button" onClick={checkApiHealth}>
+              Check API health
+            </button>
+            <a href={`${apiBaseUrl}/openapi.json`} target="_blank" rel="noreferrer">
+              Open API contract
+            </a>
+          </div>
+
+          <div className="api-endpoint-grid" aria-label="Connected API endpoints">
+            {connectedApiEndpoints.map((endpoint) => (
+              <span key={endpoint}>{endpoint}</span>
+            ))}
           </div>
         </section>
 

@@ -53,6 +53,8 @@ describe('production readiness workflow', () => {
     expect(backend).toContain('Immutable audit logs');
     expect(backend).toContain('npm run api:dev');
     expect(api).toContain('POST /auth/login');
+    expect(api).toContain('src/client/api-client.ts');
+    expect(api).toContain('VITE_API_BASE_URL');
     expect(api).toContain('POST /residents');
     expect(api).toContain('PATCH /residents');
     expect(api).toContain('POST /users');
