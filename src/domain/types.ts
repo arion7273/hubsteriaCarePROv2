@@ -42,6 +42,41 @@ export type Resident = {
   status: 'active' | 'discharged' | 'inactive';
 };
 
+export type BillingCharge = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  type: 'recurring' | 'level_of_care' | 'move_in' | 'move_out' | 'ancillary';
+  description: string;
+  amountCents: number;
+  status: 'draft' | 'posted' | 'void';
+};
+
+export type Invoice = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  invoiceNumber: string;
+  balanceCents: number;
+  dueDate: string;
+  status: 'draft' | 'posted' | 'paid' | 'overdue';
+};
+
+export type PaymentTransaction = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  invoiceId?: UUID;
+  type: 'payment' | 'credit' | 'refund';
+  amountCents: number;
+  method: string;
+  postedAt: string;
+  postedBy: UUID;
+};
+
 export type User = {
   id: UUID;
   email: string;

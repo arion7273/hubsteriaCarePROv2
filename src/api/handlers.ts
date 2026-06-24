@@ -1,5 +1,5 @@
 import type { RegisteredFeature } from '../domain';
-import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type Facility, type Organization, type Resident, type User, type UUID } from '../domain';
+import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type BillingCharge, type Facility, type Invoice, type Organization, type PaymentTransaction, type Resident, type User, type UUID } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -7,6 +7,7 @@ export type ApiServices = {
   auth: AuthService;
   backend: BackendFoundationService;
   repositories: BackendRepositories;
+  now?: () => Date;
 };
 
 export type LoginBody = {
@@ -52,6 +53,10 @@ export type UpdateUserBody = {
   userId: UUID;
   updates: Partial<Omit<User, 'id'>>;
 };
+
+export type CreateBillingChargeBody = Omit<BillingCharge, 'id'>;
+export type CreateInvoiceBody = Omit<Invoice, 'id'>;
+export type RecordPaymentBody = Omit<PaymentTransaction, 'id' | 'postedAt' | 'postedBy'>;
 
 export async function loginHandler(services: ApiServices, request: ApiRequest<LoginBody>): Promise<ApiResponse> {
   return toApiResponse(async () => {
@@ -229,6 +234,51 @@ export async function updateUserHandler(services: ApiServices, request: ApiReque
   });
 }
 
+export async function createBillingChargeHandler(services: ApiServices, request: ApiRequest<CreateBillingChargeBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.createBillingCharge(context, request.body);
+  }, 201);
+}
+
+export async function listBillingChargesHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const residentId = request.query?.residentId;
+    if (!residentId) throw new Error('residentId is required');
+    return services.backend.listBillingChargesByResident(context, residentId);
+  });
+}
+
+export async function createInvoiceHandler(services: ApiServices, request: ApiRequest<CreateInvoiceBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.createInvoice(context, request.body);
+  }, 201);
+}
+
+export async function listInvoicesHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const residentId = request.query?.residentId;
+    if (!residentId) throw new Error('residentId is required');
+    return services.backend.listInvoicesByResident(context, residentId);
+  });
+}
+
+export async function recordPaymentHandler(services: ApiServices, request: ApiRequest<RecordPaymentBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.recordPaymentTransaction(context, request.body);
+  }, 201);
+}
+
+export async function listPaymentsHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const residentId = request.query?.residentId;
+    if (!residentId) throw new Error('residentId is required');
+    return services.backend.listPaymentTransactionsByResident(context, residentId);
+  });
+}
+
 export async function resolveContext(services: ApiServices, sessionId: UUID | undefined): Promise<AccessContext> {
   if (!sessionId) {
     throw new Error('Session is required');
@@ -236,7 +286,9 @@ export async function resolveContext(services: ApiServices, sessionId: UUID | un
 
   const session = await services.repositories.authSessions.getById(sessionId);
 
-  if (!session || session.revokedAt || Date.parse(session.expiresAt) < Date.now()) {
+  const now = services.now?.() ?? new Date();
+
+  if (!session || session.revokedAt || Date.parse(session.expiresAt) < now.getTime()) {
     throw new Error('Session expired');
   }
 

@@ -1,5 +1,7 @@
 import {
   createFacilityHandler,
+  createBillingChargeHandler,
+  createInvoiceHandler,
   createOrganizationHandler,
   createResidentHandler,
   createUserHandler,
@@ -11,10 +13,14 @@ import {
   listOrganizationsHandler,
   listResidentsHandler,
   listUsersHandler,
+  listBillingChargesHandler,
+  listInvoicesHandler,
+  listPaymentsHandler,
   loginHandler,
   logoutHandler,
   passwordResetHandler,
   registerFeatureHandler,
+  recordPaymentHandler,
   updateFacilityHandler,
   updateOrganizationHandler,
   updateResidentHandler,
@@ -28,6 +34,8 @@ import { composeMiddleware, type ApiMiddleware } from './middleware';
 import { apiRoutes } from './routes';
 import {
   isCreateFacilityBody,
+  isCreateBillingChargeBody,
+  isCreateInvoiceBody,
   isCreateOrganizationBody,
   isCreateResidentBody,
   isCreateUserBody,
@@ -35,6 +43,7 @@ import {
   isUpdateOrganizationBody,
   isLoginBody,
   isPasswordResetBody,
+  isRecordPaymentBody,
   isRegisteredFeatureBody,
   isUpdateResidentBody,
   isUpdateUserBody,
@@ -168,7 +177,13 @@ const routeConfigs: RouteConfig[] = [
     path: '/users',
     validate: isUpdateUserBody,
     handler: updateUserHandler as RouteHandler
-  }
+  },
+  { method: 'POST', path: '/billing/charges', validate: isCreateBillingChargeBody, handler: createBillingChargeHandler as RouteHandler },
+  { method: 'GET', path: '/billing/charges', handler: listBillingChargesHandler },
+  { method: 'POST', path: '/billing/invoices', validate: isCreateInvoiceBody, handler: createInvoiceHandler as RouteHandler },
+  { method: 'GET', path: '/billing/invoices', handler: listInvoicesHandler },
+  { method: 'POST', path: '/billing/payments', validate: isRecordPaymentBody, handler: recordPaymentHandler as RouteHandler },
+  { method: 'GET', path: '/billing/payments', handler: listPaymentsHandler }
 ];
 
 export function createApiRouter(services: ApiServices, middlewares: ApiMiddleware[] = []) {

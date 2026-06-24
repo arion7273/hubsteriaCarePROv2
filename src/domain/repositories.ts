@@ -1,6 +1,6 @@
 import type { AuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
+import type { AuthSession, BillingCharge, Facility, Invoice, MfaChallenge, Organization, PaymentTransaction, PasswordResetRequest, Resident, User, UUID } from './types';
 
 export interface OrganizationRepository {
   getById(id: UUID): Promise<Organization | null>;
@@ -25,6 +25,22 @@ export interface ResidentRepository {
   getById(id: UUID): Promise<Resident | null>;
   listByFacility(organizationId: UUID, facilityId: UUID): Promise<Resident[]>;
   save(resident: Resident): Promise<Resident>;
+}
+
+export interface BillingChargeRepository {
+  listByResident(residentId: UUID): Promise<BillingCharge[]>;
+  save(charge: BillingCharge): Promise<BillingCharge>;
+}
+
+export interface InvoiceRepository {
+  getById(id: UUID): Promise<Invoice | null>;
+  listByResident(residentId: UUID): Promise<Invoice[]>;
+  save(invoice: Invoice): Promise<Invoice>;
+}
+
+export interface PaymentTransactionRepository {
+  listByResident(residentId: UUID): Promise<PaymentTransaction[]>;
+  save(transaction: PaymentTransaction): Promise<PaymentTransaction>;
 }
 
 export interface AuditLogRepository {
@@ -58,6 +74,9 @@ export type BackendRepositories = {
   facilities: FacilityRepository;
   users: UserRepository;
   residents: ResidentRepository;
+  billingCharges: BillingChargeRepository;
+  invoices: InvoiceRepository;
+  paymentTransactions: PaymentTransactionRepository;
   auditLogs: AuditLogRepository;
   featureRegistry: FeatureRegistryRepository;
   authSessions: AuthSessionRepository;

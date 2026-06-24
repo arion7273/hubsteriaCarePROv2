@@ -31,7 +31,7 @@ const t3User: User = {
 };
 
 function createTestService() {
-  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'audit-4', 'user-1', 'audit-user', 'audit-user-update', 'feature-audit'];
+  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'charge-1', 'audit-charge', 'invoice-1', 'audit-invoice', 'payment-1', 'audit-payment', 'audit-4', 'user-1', 'audit-user', 'audit-user-update', 'feature-audit'];
   const repositories = createInMemoryBackendRepositories();
   const service = new BackendFoundationService(
     repositories,
@@ -183,6 +183,36 @@ describe('BackendFoundationService', () => {
     ).resolves.toMatchObject({ room: '215A' });
 
     await expect(repositories.auditLogs.listByEntity('Resident', 'resident-1')).resolves.toHaveLength(2);
+  });
+
+  it('creates and lists billing charges invoices and payments with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+    await service.createResident(
+      { user: { ...t3User, permissions: ['resident:write', 'billing:manage'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
+    );
+
+    const charge = await service.createBillingCharge(
+      { user: { ...t3User, permissions: ['billing:manage'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1', type: 'recurring', description: 'Monthly rent', amountCents: 540000, status: 'posted' }
+    );
+    const invoice = await service.createInvoice(
+      { user: { ...t3User, permissions: ['billing:manage'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1', invoiceNumber: 'INV-1', balanceCents: 540000, dueDate: '2026-07-01', status: 'posted' }
+    );
+    const payment = await service.recordPaymentTransaction(
+      { user: { ...t3User, permissions: ['billing:manage'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1', invoiceId: invoice.id, type: 'payment', amountCents: 540000, method: 'ACH' }
+    );
+
+    expect(charge.description).toBe('Monthly rent');
+    expect(payment.postedBy).toBe(t3User.id);
+    await expect(service.listBillingChargesByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+    await expect(service.listInvoicesByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+    await expect(service.listPaymentTransactionsByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+    await expect(repositories.auditLogs.listByEntity('Invoice', invoice.id)).resolves.toHaveLength(1);
   });
 
   it('denies resident creation across facility boundaries', async () => {

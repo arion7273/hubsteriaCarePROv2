@@ -133,5 +133,41 @@ export const apiRoutes: ApiRouteDefinition[] = [
     path: '/users',
     authRequired: true,
     description: 'Update user'
+  },
+  {
+    method: 'POST',
+    path: '/billing/charges',
+    authRequired: true,
+    description: 'Create billing charge'
+  },
+  {
+    method: 'GET',
+    path: '/billing/charges',
+    authRequired: true,
+    description: 'List billing charges by resident'
+  },
+  {
+    method: 'POST',
+    path: '/billing/invoices',
+    authRequired: true,
+    description: 'Create invoice'
+  },
+  {
+    method: 'GET',
+    path: '/billing/invoices',
+    authRequired: true,
+    description: 'List invoices by resident'
+  },
+  {
+    method: 'POST',
+    path: '/billing/payments',
+    authRequired: true,
+    description: 'Record payment, credit, or refund'
+  },
+  {
+    method: 'GET',
+    path: '/billing/payments',
+    authRequired: true,
+    description: 'List payments by resident'
   }
 ];

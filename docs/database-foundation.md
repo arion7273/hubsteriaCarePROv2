@@ -22,6 +22,10 @@ The initial database target is PostgreSQL.
   - auth sessions
   - MFA challenges
   - password reset requests
+- `database/migrations/0009_billing_financials.sql`
+  - billing charges
+  - invoices
+  - payment transactions
 
 Run migrations with:
 

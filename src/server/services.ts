@@ -44,6 +44,7 @@ export function createRuntimeServices(config: ServerConfig = readServerConfig())
     auth,
     backend,
     repositories: runtime.repositories,
+    now: () => new Date(),
     close: runtime.close
   };
 }

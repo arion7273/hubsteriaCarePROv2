@@ -1,6 +1,6 @@
 import type { RegisteredFeature } from '../../domain';
 import type { AuditEvent } from '../../domain/audit';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
+import type { AuthSession, BillingCharge, Facility, Invoice, MfaChallenge, Organization, PaymentTransaction, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -44,6 +44,30 @@ export function mapResidentRow(row: PostgresRow): Resident {
     room: row.room ? String(row.room) : undefined,
     levelOfCare: row.level_of_care ? String(row.level_of_care) : undefined,
     status: status as Resident['status']
+  };
+}
+
+export function mapBillingChargeRow(row: PostgresRow): BillingCharge {
+  return {
+    id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
+    type: String(row.type) as BillingCharge['type'], description: String(row.description), amountCents: Number(row.amount_cents),
+    status: String(row.status) as BillingCharge['status']
+  };
+}
+
+export function mapInvoiceRow(row: PostgresRow): Invoice {
+  return {
+    id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
+    invoiceNumber: String(row.invoice_number), balanceCents: Number(row.balance_cents), dueDate: String(row.due_date),
+    status: String(row.status) as Invoice['status']
+  };
+}
+
+export function mapPaymentTransactionRow(row: PostgresRow): PaymentTransaction {
+  return {
+    id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
+    invoiceId: row.invoice_id ? String(row.invoice_id) : undefined, type: String(row.type) as PaymentTransaction['type'],
+    amountCents: Number(row.amount_cents), method: String(row.method), postedAt: String(row.posted_at), postedBy: String(row.posted_by)
   };
 }
 

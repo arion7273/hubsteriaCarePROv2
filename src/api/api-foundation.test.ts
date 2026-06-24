@@ -75,7 +75,8 @@ function createApiServices(): ApiServices {
   return {
     auth,
     backend,
-    repositories
+    repositories,
+    now: () => new Date('2026-06-24T01:00:00.000Z')
   };
 }
 
