@@ -58,6 +58,7 @@ describe('production readiness workflow', () => {
     const database = readFileSync('docs/database-foundation.md', 'utf8');
     const postgresAdapters = readFileSync('docs/postgres-adapters.md', 'utf8');
     const postgresIntegration = readFileSync('docs/postgres-integration-tests.md', 'utf8');
+    const observability = readFileSync('docs/observability-operations.md', 'utf8');
     const hipaa = readFileSync('docs/hipaa-security-readiness.md', 'utf8');
     const goLive = readFileSync('docs/go-live-checklist.md', 'utf8');
     const runbook = readFileSync('docs/operational-runbook.md', 'utf8');
@@ -120,6 +121,11 @@ describe('production readiness workflow', () => {
     expect(api).toContain('Node HTTP runtime adapter');
     expect(api).toContain('/openapi.json');
     expect(api).toContain('npm run api:dev');
+    expect(observability).toContain('/readyz');
+    expect(observability).toContain('/metrics');
+    expect(observability).toContain('Structured API logs');
+    expect(observability).toContain('background jobs queued');
+    expect(observability).toContain('staging dashboard');
     expect(auth).toContain('MFA verification');
     expect(auth).toContain('PBKDF2-SHA512 password hashing');
     expect(auth).toContain('Plain-text passwords must never be stored');
@@ -142,6 +148,8 @@ describe('production readiness workflow', () => {
     expect(goLive).toContain('Go-live readiness certification signed');
     expect(runbook).toContain('Standard deployment');
     expect(runbook).toContain('Rollback');
+    expect(runbook).toContain('Alert routing');
+    expect(runbook).toContain('X-Request-Id');
   });
 
   it('provides environment and ownership templates without secrets', () => {

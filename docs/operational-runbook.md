@@ -56,3 +56,15 @@
 - Integration failures.
 - Monitoring endpoint delivery.
 - Error tracking event delivery.
+
+## Alert routing
+
+- Page on API `/readyz` failure for more than two checks.
+- Page on frontend `/healthz` failure for more than two checks.
+- Alert on API 5xx rate spike.
+- Alert on p95 latency threshold breach.
+- Alert on background queue backlog or dead-letter jobs.
+- Alert on audit write failures.
+- Alert on authentication failure spikes.
+
+Use the `X-Request-Id` value from API responses and structured logs as the primary incident correlation key.

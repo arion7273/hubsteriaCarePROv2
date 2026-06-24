@@ -39,8 +39,12 @@ function createApiServices(): ApiServices {
   return { auth, backend, repositories, now: () => new Date('2026-06-24T01:00:00.000Z') };
 }
 
-async function withServer<T>(services: ApiServices, test: (baseUrl: string) => Promise<T>): Promise<T> {
-  const server = createNodeApiServer(services);
+async function withServer<T>(
+  services: ApiServices,
+  test: (baseUrl: string) => Promise<T>,
+  options?: Parameters<typeof createNodeApiServer>[1]
+): Promise<T> {
+  const server = createNodeApiServer(services, options);
 
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const address = server.address() as AddressInfo;
@@ -63,14 +67,32 @@ async function withServer<T>(services: ApiServices, test: (baseUrl: string) => P
 describe('Node API server adapter', () => {
   it('serves health and OpenAPI metadata', async () => {
     const services = createApiServices();
+    const logs: unknown[] = [];
 
     await withServer(services, async (baseUrl) => {
-      await expect(fetch(`${baseUrl}/healthz`).then((response) => response.json())).resolves.toEqual({ ok: true });
+      const health = await fetch(`${baseUrl}/healthz`, { headers: { 'x-request-id': 'request-health' } });
+      await expect(health.json()).resolves.toEqual({ ok: true, requestId: 'request-health' });
+      expect(health.headers.get('x-request-id')).toBe('request-health');
+
+      await expect(fetch(`${baseUrl}/readyz`).then((response) => response.json())).resolves.toMatchObject({
+        ok: true,
+        checks: { api: true }
+      });
+      await expect(fetch(`${baseUrl}/metrics`).then((response) => response.json())).resolves.toMatchObject({
+        ok: true,
+        metrics: expect.objectContaining({ requestsTotal: expect.any(Number) })
+      });
       await expect(fetch(`${baseUrl}/openapi.json`).then((response) => response.json())).resolves.toMatchObject({
         openapi: '3.1.0',
         info: { title: 'HubsteriaCarePRO API' }
       });
-    });
+    }, { structuredLogger: (entry) => logs.push(entry) });
+
+    expect(logs).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ requestId: 'request-health', path: '/healthz', status: 200 })
+      ])
+    );
   });
 
   it('handles login and protected organization creation over HTTP', async () => {
