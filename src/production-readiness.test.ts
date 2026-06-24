@@ -16,9 +16,12 @@ describe('production readiness workflow', () => {
   it('defines a static production container with health checks', () => {
     const dockerfile = readFileSync('Dockerfile', 'utf8');
     const nginxConfig = readFileSync('nginx.conf', 'utf8');
+    const compose = readFileSync('compose.staging.yml', 'utf8');
 
     expect(dockerfile).toContain('FROM node:22-alpine AS build');
     expect(dockerfile).toContain('FROM nginx:1.27-alpine AS runtime');
+    expect(dockerfile).toContain('FROM node:22-alpine AS api-runtime');
+    expect(dockerfile).toContain('"api:start"');
     expect(dockerfile).toContain('HEALTHCHECK');
     expect(dockerfile).toContain('/healthz');
 
@@ -26,6 +29,13 @@ describe('production readiness workflow', () => {
     expect(nginxConfig).toContain('try_files $uri $uri/ /index.html');
     expect(nginxConfig).toContain('X-Frame-Options "DENY"');
     expect(nginxConfig).toContain('X-Content-Type-Options "nosniff"');
+
+    expect(compose).toContain('postgres:16-alpine');
+    expect(compose).toContain('target: api-runtime');
+    expect(compose).toContain('target: runtime');
+    expect(compose).toContain('"db:migrate"');
+    expect(compose).toContain('MONITORING_ENDPOINT');
+    expect(compose).toContain('ERROR_TRACKING_DSN');
   });
 
   it('documents production deployment and remaining launch requirements', () => {
@@ -33,7 +43,9 @@ describe('production readiness workflow', () => {
 
     expect(guide).toContain('npm run verify');
     expect(guide).toContain('docker build');
+    expect(guide).toContain('compose.staging.yml');
     expect(guide).toContain('/healthz');
+    expect(guide).toContain('Monitoring and error tracking placeholders');
     expect(guide).toContain('HIPAA security review');
     expect(guide).toContain('Server-side tenant isolation');
   });
@@ -139,9 +151,13 @@ describe('production readiness workflow', () => {
 
     expect(envExample).toContain('VITE_APP_ENV=production');
     expect(envExample).toContain('VITE_APP_SUPPORT_EMAIL=');
+    expect(envExample).toContain('VITE_ERROR_TRACKING_DSN=');
     expect(envExample).toContain('DEMO_AUTH_PASSWORD=change-me-for-local-demo-only');
     expect(envExample).toContain('TEST_DATABASE_URL=');
     expect(envExample).toContain('RUN_POSTGRES_INTEGRATION=false');
+    expect(envExample).toContain('MONITORING_ENDPOINT=');
+    expect(envExample).toContain('ERROR_TRACKING_DSN=');
+    expect(envExample).toContain('RELEASE_VERSION=local-dev');
     expect(envExample).not.toContain('Ariana');
     expect(envExample).not.toContain('sk_');
     expect(codeowners).toContain('@arion7273');

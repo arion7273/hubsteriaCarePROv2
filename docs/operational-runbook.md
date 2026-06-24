@@ -5,11 +5,12 @@
 1. Confirm release branch is up to date.
 2. Run `npm ci`.
 3. Run `npm run verify`.
-4. Build the production container.
-5. Run container health check against `/healthz`.
+4. Build the frontend and API production containers.
+5. Run container health checks against `/healthz`.
 6. Promote artifact to staging.
-7. Complete smoke test.
-8. Promote artifact to production after approval.
+7. Run `docker compose -f compose.staging.yml up --build` for staging validation.
+8. Complete smoke test.
+9. Promote artifact to production after approval.
 
 ## Smoke test
 
@@ -17,7 +18,9 @@
 - Confirm responsive layout on desktop and mobile viewport.
 - Confirm navigation anchors work.
 - Confirm global search accepts input.
-- Confirm `/healthz` returns `ok`.
+- Confirm frontend `/healthz` returns `ok`.
+- Confirm API `/healthz` returns `{"ok":true}`.
+- Confirm staging compose services report healthy.
 
 ## Rollback
 
@@ -25,9 +28,10 @@
 2. Stop current rollout.
 3. Restore previous artifact.
 4. Validate `/healthz`.
-5. Run smoke test.
-6. Notify stakeholders.
-7. Open incident review.
+5. Confirm API and frontend health checks.
+6. Run smoke test.
+7. Notify stakeholders.
+8. Open incident review.
 
 ## Incident response
 
@@ -50,3 +54,5 @@
 - Authentication failures.
 - Audit write failures.
 - Integration failures.
+- Monitoring endpoint delivery.
+- Error tracking event delivery.

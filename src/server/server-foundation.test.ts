@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readServerConfig, roleIdResolver } from './config';
+import { initializeObservability } from './observability';
 import { createRuntimeServices, seedDemoMasterAdmin } from './services';
 
 describe('server runtime configuration', () => {
@@ -25,6 +26,25 @@ describe('server runtime configuration', () => {
 
     expect(roleIdResolver(config)('T1')).toBe('role-t1');
     expect(() => roleIdResolver(config)('T2')).toThrow('Missing role id for tier T2');
+  });
+
+  it('reads staging observability placeholders from environment', () => {
+    const config = readServerConfig({
+      MONITORING_ENDPOINT: 'https://monitoring.example.invalid/hubsteria',
+      ERROR_TRACKING_DSN: 'https://errors.example.invalid/hubsteria',
+      RELEASE_VERSION: 'staging-2026-06-24'
+    });
+
+    expect(config).toMatchObject({
+      monitoringEndpoint: 'https://monitoring.example.invalid/hubsteria',
+      errorTrackingDsn: 'https://errors.example.invalid/hubsteria',
+      releaseVersion: 'staging-2026-06-24'
+    });
+    expect(initializeObservability(config)).toEqual({
+      monitoringConfigured: true,
+      errorTrackingConfigured: true,
+      releaseVersion: 'staging-2026-06-24'
+    });
   });
 });
 

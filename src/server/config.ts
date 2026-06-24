@@ -9,6 +9,9 @@ export type ServerConfig = {
   databaseSsl: boolean;
   demoPassword?: string;
   demoMfaCode?: string;
+  monitoringEndpoint?: string;
+  errorTrackingDsn?: string;
+  releaseVersion?: string;
   roleIds: Partial<Record<RoleTier, UUID>>;
 };
 
@@ -27,6 +30,9 @@ export function readServerConfig(env: NodeJS.ProcessEnv = process.env): ServerCo
     databaseSsl: env.DATABASE_SSL === 'true',
     demoPassword: env.DEMO_AUTH_PASSWORD,
     demoMfaCode: env.DEMO_MFA_CODE,
+    monitoringEndpoint: env.MONITORING_ENDPOINT,
+    errorTrackingDsn: env.ERROR_TRACKING_DSN,
+    releaseVersion: env.RELEASE_VERSION,
     roleIds: {
       T1: env.ROLE_ID_T1,
       T2: env.ROLE_ID_T2,
