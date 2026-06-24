@@ -420,6 +420,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Help Desk Ticket System', 'Configuration Center'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Executive Command Center',
+    module: 'Executive Command Center',
+    status: 'registered',
+    dependencies: ['Role-Aware Dashboards', 'Tenant Isolation Guard', 'Audit Log Contract'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Facility Health and Survey Readiness Scores',
+    module: 'Executive Command Center',
+    status: 'registered',
+    dependencies: ['Incidents & Compliance Center', 'Billing & Financial Operations', 'Hubsteria Academy'],
+    version: '0.1.0'
   }
 ];
 

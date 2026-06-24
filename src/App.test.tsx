@@ -669,4 +669,38 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Hubsteria Academy links relevant knowledge base articles/i)).toBeInTheDocument();
     expect(screen.getByText(/All support tickets, screenshots, screen recordings, knowledge links/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 17 Executive Command Center metrics scores and drilldowns', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Executive Command Center' })).toBeInTheDocument();
+    ['Occupancy', 'Revenue', 'Medication Compliance', 'Incidents', 'Assessments', 'Staffing', 'Training', 'Billing'].forEach(
+      (metric) => {
+        expect(screen.getAllByText(metric).length).toBeGreaterThan(0);
+      }
+    );
+
+    const scores = screen.getByLabelText('Executive scores');
+    expect(within(scores).getByText('Survey Readiness Score')).toBeInTheDocument();
+    expect(within(scores).getByText('Compliance Score')).toBeInTheDocument();
+    expect(within(scores).getByText('Facility Health Score')).toBeInTheDocument();
+
+    const drilldowns = screen.getByLabelText('Executive drilldowns');
+    expect(within(drilldowns).getByText('Multi-facility occupancy view')).toBeInTheDocument();
+    expect(within(drilldowns).getByText('Survey readiness packet status')).toBeInTheDocument();
+  });
+
+  it('tracks executive multi-facility performance and integration requirements', () => {
+    render(<App />);
+
+    const facilities = screen.getByLabelText('Facility performance');
+    expect(within(facilities).getByText('Cedar Grove Assisted Living')).toBeInTheDocument();
+    expect(within(facilities).getByText('Pine Ridge Memory Care')).toBeInTheDocument();
+    expect(within(facilities).getByText('Northstar Group Home')).toBeInTheDocument();
+
+    expect(screen.getByText(/T1 and T2 administrators can view multi-facility performance/i)).toBeInTheDocument();
+    expect(screen.getByText(/Executive dashboards aggregate medication compliance, incidents, assessments/i)).toBeInTheDocument();
+    expect(screen.getByText(/Print Center Pro exports executive packets, facility rankings/i)).toBeInTheDocument();
+    expect(screen.getByText(/All executive dashboard access, drilldowns, exports, and score changes/i)).toBeInTheDocument();
+  });
 });

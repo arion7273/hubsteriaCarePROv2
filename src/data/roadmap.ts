@@ -224,7 +224,7 @@ export const enterprisePhases: Phase[] = [
   {
     id: '17',
     title: 'Executive Command Center',
-    status: 'future',
+    status: 'foundation',
     milestone: 'Executive Intelligence',
     summary: 'Occupancy, revenue, medication compliance, incidents, assessments, staffing, training, billing, and health scores.',
     deliverables: ['Executive dashboards', 'Health scores', 'Multi-facility view', 'Survey readiness score']

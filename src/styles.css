@@ -3601,6 +3601,130 @@ p {
   padding-left: 1.15rem;
 }
 
+.executive-center {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.executive-status {
+  display: grid;
+  gap: 0.2rem;
+  min-width: min(100%, 17rem);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.executive-status span {
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.executive-status strong {
+  color: var(--primary-strong);
+}
+
+.executive-metric-grid,
+.executive-layout,
+.executive-score-grid,
+.executive-drilldown-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.executive-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.executive-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.executive-score-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.executive-drilldown-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.executive-metric-card,
+.executive-panel,
+.executive-score-grid article,
+.facility-performance-list article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.executive-metric-card,
+.executive-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.executive-metric-card span,
+.executive-score-grid span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.executive-metric-card strong,
+.executive-score-grid strong {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  letter-spacing: -0.05em;
+}
+
+.executive-metric-card small {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.executive-score-grid article {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.executive-score-grid p {
+  margin: 0;
+}
+
+.executive-drilldown-grid span {
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 0.55rem 0.75rem;
+}
+
+.facility-performance-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.facility-performance-list article {
+  display: grid;
+  grid-template-columns: minmax(14rem, 1.3fr) repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.facility-performance-list span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
 .role-grid,
 .roadmap-grid {
   display: grid;
@@ -3766,6 +3890,9 @@ summary {
   .academy-metric-grid,
   .support-metric-grid,
   .support-capability-grid,
+  .executive-metric-grid,
+  .executive-score-grid,
+  .executive-drilldown-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -3794,6 +3921,7 @@ summary {
   .workflow-layout,
   .academy-layout,
   .support-layout,
+  .executive-layout,
   .module-connection-panel,
   .notification-layout,
   .notification-bottom-grid,
@@ -3850,6 +3978,9 @@ summary {
   .academy-metric-grid,
   .support-metric-grid,
   .support-capability-grid,
+  .executive-metric-grid,
+  .executive-score-grid,
+  .executive-drilldown-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -3944,6 +4075,7 @@ summary {
   .training-resource-list article,
   .certification-list article,
   .support-ticket-list article,
+  .facility-performance-list article,
   .sync-field-list article,
   .refill-list article,
   .configuration-audit-list article,

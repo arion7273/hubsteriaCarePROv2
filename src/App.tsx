@@ -112,6 +112,13 @@ import {
   supportTickets
 } from './data/support';
 import {
+  executiveDrilldowns,
+  executiveIntegrationRequirements,
+  executiveMetrics,
+  executiveScores,
+  facilityPerformance
+} from './data/executive';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -245,6 +252,7 @@ function App() {
             'Workflow Automation',
             'Hubsteria Academy',
             'Help Desk',
+            'Executive Command Center',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -273,7 +281,9 @@ function App() {
                                     ? '#hubsteria-academy'
                                     : item === 'Help Desk'
                                       ? '#help-desk-support-center'
-                                      : `#${item.toLowerCase().replaceAll(' ', '-')}`
+                                      : item === 'Executive Command Center'
+                                        ? '#executive-command-center'
+                                        : `#${item.toLowerCase().replaceAll(' ', '-')}`
               }
               key={item}
             >
@@ -285,8 +295,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-16</strong>
-            <span>Support center active</span>
+            <strong>Phase 0-17</strong>
+            <span>Executive command active</span>
           </div>
         </div>
       </aside>
@@ -355,6 +365,9 @@ function App() {
               </a>
               <a className="button secondary" href="#help-desk-support-center">
                 Open Help Desk
+              </a>
+              <a className="button secondary" href="#executive-command-center">
+                Open Executive
               </a>
             </div>
           </div>
@@ -2247,6 +2260,94 @@ function App() {
             </div>
             <ul className="check-list">
               {supportIntegrationRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className="content-card executive-center" id="executive-command-center" aria-labelledby="executive-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 17</p>
+              <h2 id="executive-title">Executive Command Center</h2>
+              <p>
+                Multi-facility executive intelligence for occupancy, revenue, medication compliance, incidents,
+                assessments, staffing, training, billing, survey readiness, compliance, and facility health.
+              </p>
+            </div>
+            <div className="executive-status">
+              <span>Multi-facility view</span>
+              <strong>T1 / T2 leadership</strong>
+            </div>
+          </div>
+
+          <div className="executive-metric-grid">
+            {executiveMetrics.map((metric) => (
+              <article className="executive-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="executive-layout">
+            <div className="executive-panel">
+              <div className="card-heading">
+                <span>Executive Scores</span>
+                <strong>Survey, compliance, facility health</strong>
+              </div>
+              <div className="executive-score-grid" aria-label="Executive scores">
+                {executiveScores.map((score) => (
+                  <article key={score.label}>
+                    <span>{score.label}</span>
+                    <strong>{score.score}</strong>
+                    <p>{score.detail}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="executive-panel">
+              <div className="card-heading">
+                <span>Executive Drilldowns</span>
+                <strong>Clickable leadership views</strong>
+              </div>
+              <div className="executive-drilldown-grid" aria-label="Executive drilldowns">
+                {executiveDrilldowns.map((drilldown) => (
+                  <span key={drilldown}>{drilldown}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="executive-panel">
+            <div className="card-heading">
+              <span>Multi-Facility View</span>
+              <strong>Facility performance ranking</strong>
+            </div>
+            <div className="facility-performance-list" aria-label="Facility performance">
+              {facilityPerformance.map((facility) => (
+                <article key={facility.facility}>
+                  <strong>{facility.facility}</strong>
+                  <span>Occupancy {facility.occupancy}</span>
+                  <span>Med Compliance {facility.medicationCompliance}</span>
+                  <span>Incidents {facility.incidents}</span>
+                  <span>Survey {facility.surveyReadiness}</span>
+                  <span>Health {facility.healthScore}</span>
+                </article>
+              ))}
+            </div>
+          </div>
+
+          <div className="executive-panel integration-panel">
+            <div className="card-heading">
+              <span>Executive integration contract</span>
+              <strong>Multi-facility, notification, print, and audit hooks</strong>
+            </div>
+            <ul className="check-list">
+              {executiveIntegrationRequirements.map((requirement) => (
                 <li key={requirement}>{requirement}</li>
               ))}
             </ul>
