@@ -1,6 +1,6 @@
 import type { AuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
+import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
 
 export interface OrganizationRepository {
   getById(id: UUID): Promise<Organization | null>;
@@ -30,6 +30,13 @@ export interface ResidentRepository {
   getById(id: UUID): Promise<Resident | null>;
   listByFacility(organizationId: UUID, facilityId: UUID): Promise<Resident[]>;
   save(resident: Resident): Promise<Resident>;
+}
+
+export interface BackgroundJobRepository {
+  getById(id: UUID): Promise<BackgroundJob | null>;
+  listQueued(limit: number): Promise<BackgroundJob[]>;
+  listByScope(scope: { organizationId?: UUID; facilityId?: UUID; residentId?: UUID }): Promise<BackgroundJob[]>;
+  save(job: BackgroundJob): Promise<BackgroundJob>;
 }
 
 export interface AuditLogRepository {
@@ -64,6 +71,7 @@ export type BackendRepositories = {
   users: UserRepository;
   userCredentials: UserCredentialRepository;
   residents: ResidentRepository;
+  backgroundJobs: BackgroundJobRepository;
   auditLogs: AuditLogRepository;
   featureRegistry: FeatureRegistryRepository;
   authSessions: AuthSessionRepository;

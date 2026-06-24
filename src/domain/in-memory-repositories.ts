@@ -2,6 +2,7 @@ import type { AuditEvent } from './audit';
 import { assertFeatureRegistration, type RegisteredFeature } from './feature-registry';
 import type {
   AuditLogRepository,
+  BackgroundJobRepository,
   AuthSessionRepository,
   BackendRepositories,
   FacilityRepository,
@@ -13,7 +14,7 @@ import type {
   UserCredentialRepository,
   UserRepository
 } from './repositories';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
+import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -100,6 +101,39 @@ export class InMemoryResidentRepository implements ResidentRepository {
     this.residents.set(resident.id, resident);
     return resident;
   }
+}
+
+export class InMemoryBackgroundJobRepository implements BackgroundJobRepository {
+  private readonly jobs = new Map<UUID, BackgroundJob>();
+
+  async getById(id: UUID): Promise<BackgroundJob | null> {
+    return this.jobs.get(id) ?? null;
+  }
+
+  async listQueued(limit: number): Promise<BackgroundJob[]> {
+    return [...this.jobs.values()]
+      .filter((job) => job.status === 'queued')
+      .sort((a, b) => priorityValue(b.priority) - priorityValue(a.priority) || a.availableAt.localeCompare(b.availableAt))
+      .slice(0, limit);
+  }
+
+  async listByScope(scope: { organizationId?: UUID; facilityId?: UUID; residentId?: UUID }): Promise<BackgroundJob[]> {
+    return [...this.jobs.values()].filter(
+      (job) =>
+        (!scope.organizationId || job.organizationId === scope.organizationId) &&
+        (!scope.facilityId || job.facilityId === scope.facilityId) &&
+        (!scope.residentId || job.residentId === scope.residentId)
+    );
+  }
+
+  async save(job: BackgroundJob): Promise<BackgroundJob> {
+    this.jobs.set(job.id, job);
+    return job;
+  }
+}
+
+function priorityValue(priority: BackgroundJob['priority']): number {
+  return { low: 0, normal: 1, high: 2, critical: 3 }[priority];
 }
 
 export class InMemoryAuditLogRepository implements AuditLogRepository {
@@ -192,6 +226,7 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     users: new InMemoryUserRepository(),
     userCredentials: new InMemoryUserCredentialRepository(),
     residents: new InMemoryResidentRepository(),
+    backgroundJobs: new InMemoryBackgroundJobRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
     featureRegistry: new InMemoryFeatureRegistryRepository(),
     authSessions: new InMemoryAuthSessionRepository(),

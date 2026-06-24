@@ -1,4 +1,4 @@
-import type { AuditEvent, AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UserCredential, UUID } from '../../domain';
+import type { AuditEvent, AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UserCredential, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -181,6 +181,27 @@ export const residentStatements = {
         resident.status
       ]
     };
+  }
+};
+
+export const backgroundJobStatements = {
+  selectById(id: UUID): SqlStatement { return { text: 'SELECT * FROM background_jobs WHERE id = $1', values: [id] }; },
+  listQueued(limit: number): SqlStatement { return { text: "SELECT * FROM background_jobs WHERE status = 'queued' ORDER BY priority DESC, available_at ASC LIMIT $1", values: [limit] }; },
+  listByScope(scope: { organizationId?: UUID; facilityId?: UUID; residentId?: UUID }): SqlStatement {
+    const clauses: string[] = [];
+    const values: unknown[] = [];
+    if (scope.organizationId) { values.push(scope.organizationId); clauses.push(`organization_id = $${values.length}`); }
+    if (scope.facilityId) { values.push(scope.facilityId); clauses.push(`facility_id = $${values.length}`); }
+    if (scope.residentId) { values.push(scope.residentId); clauses.push(`resident_id = $${values.length}`); }
+    return { text: `SELECT * FROM background_jobs ${clauses.length ? `WHERE ${clauses.join(' AND ')}` : ''} ORDER BY created_at DESC`, values };
+  },
+  upsert(job: BackgroundJob): SqlStatement {
+    return { text: `
+      INSERT INTO background_jobs (id, organization_id, facility_id, resident_id, type, status, priority, payload, attempts, max_attempts, available_at, created_at, updated_at, last_error)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11,$12,$13,$14)
+      ON CONFLICT (id) DO UPDATE SET status=EXCLUDED.status, payload=EXCLUDED.payload, attempts=EXCLUDED.attempts, updated_at=EXCLUDED.updated_at, last_error=EXCLUDED.last_error
+      RETURNING *
+    `, values: [job.id, job.organizationId ?? null, job.facilityId ?? null, job.residentId ?? null, job.type, job.status, job.priority, JSON.stringify(job.payload), job.attempts, job.maxAttempts, job.availableAt, job.createdAt, job.updatedAt, job.lastError ?? null] };
   }
 };
 

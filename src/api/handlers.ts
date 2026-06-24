@@ -1,5 +1,21 @@
 import type { RegisteredFeature } from '../domain';
-import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type Facility, type Organization, type Resident, type User, type UUID } from '../domain';
+import {
+  AuthService,
+  BackendFoundationService,
+  type AccessContext,
+  type AiGenerationJobInput,
+  type BackgroundJob,
+  type BackendRepositories,
+  type DigitalRxSyncJobInput,
+  type Facility,
+  type NotificationJobInput,
+  type Organization,
+  type PrintJobInput,
+  type Resident,
+  type User,
+  type UUID,
+  type WorkflowActionJobInput
+} from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -7,6 +23,7 @@ export type ApiServices = {
   auth: AuthService;
   backend: BackendFoundationService;
   repositories: BackendRepositories;
+  now?: () => Date;
 };
 
 export type LoginBody = {
@@ -52,6 +69,15 @@ export type UpdateUserBody = {
   userId: UUID;
   updates: Partial<Omit<User, 'id'>>;
 };
+
+export type EnqueueBackgroundJobBody = Omit<BackgroundJob, 'id' | 'status' | 'attempts' | 'createdAt' | 'updatedAt'>;
+export type FailBackgroundJobBody = { jobId: UUID; error: string };
+export type CompleteBackgroundJobBody = { jobId: UUID };
+export type EnqueueNotificationJobBody = NotificationJobInput;
+export type EnqueuePrintJobBody = PrintJobInput;
+export type EnqueueDigitalRxSyncJobBody = DigitalRxSyncJobInput;
+export type EnqueueAiGenerationJobBody = AiGenerationJobInput;
+export type EnqueueWorkflowActionJobBody = WorkflowActionJobInput;
 
 export async function loginHandler(services: ApiServices, request: ApiRequest<LoginBody>): Promise<ApiResponse> {
   return toApiResponse(async () => {
@@ -229,6 +255,76 @@ export async function updateUserHandler(services: ApiServices, request: ApiReque
   });
 }
 
+export async function enqueueBackgroundJobHandler(services: ApiServices, request: ApiRequest<EnqueueBackgroundJobBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.enqueueBackgroundJob(context, request.body);
+  }, 201);
+}
+
+export async function leaseBackgroundJobsHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => services.backend.leaseQueuedJobs(context, Number(request.query?.limit ?? 10)));
+}
+
+export async function completeBackgroundJobHandler(services: ApiServices, request: ApiRequest<CompleteBackgroundJobBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.completeBackgroundJob(context, request.body.jobId);
+  });
+}
+
+export async function failBackgroundJobHandler(services: ApiServices, request: ApiRequest<FailBackgroundJobBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.failBackgroundJob(context, request.body.jobId, request.body.error);
+  });
+}
+
+export async function listBackgroundJobsHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) =>
+    services.backend.listBackgroundJobsByScope(context, {
+      organizationId: request.query?.organizationId,
+      facilityId: request.query?.facilityId,
+      residentId: request.query?.residentId
+    })
+  );
+}
+
+export async function enqueueNotificationJobHandler(services: ApiServices, request: ApiRequest<EnqueueNotificationJobBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.enqueueNotificationJob(context, request.body);
+  }, 201);
+}
+
+export async function enqueuePrintJobHandler(services: ApiServices, request: ApiRequest<EnqueuePrintJobBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.enqueuePrintJob(context, request.body);
+  }, 201);
+}
+
+export async function enqueueDigitalRxSyncJobHandler(services: ApiServices, request: ApiRequest<EnqueueDigitalRxSyncJobBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.enqueueDigitalRxSyncJob(context, request.body);
+  }, 201);
+}
+
+export async function enqueueAiGenerationJobHandler(services: ApiServices, request: ApiRequest<EnqueueAiGenerationJobBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.enqueueAiGenerationJob(context, request.body);
+  }, 201);
+}
+
+export async function enqueueWorkflowActionJobHandler(services: ApiServices, request: ApiRequest<EnqueueWorkflowActionJobBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.enqueueWorkflowActionJob(context, request.body);
+  }, 201);
+}
+
 export async function resolveContext(services: ApiServices, sessionId: UUID | undefined): Promise<AccessContext> {
   if (!sessionId) {
     throw new Error('Session is required');
@@ -236,7 +332,9 @@ export async function resolveContext(services: ApiServices, sessionId: UUID | un
 
   const session = await services.repositories.authSessions.getById(sessionId);
 
-  if (!session || session.revokedAt || Date.parse(session.expiresAt) < Date.now()) {
+  const now = services.now?.() ?? new Date();
+
+  if (!session || session.revokedAt || Date.parse(session.expiresAt) < now.getTime()) {
     throw new Error('Session expired');
   }
 

@@ -22,6 +22,8 @@ The initial database target is PostgreSQL.
   - auth sessions
   - MFA challenges
   - password reset requests
+- `database/migrations/0011_background_jobs.sql`
+  - background job queue records
 - `database/migrations/0004_user_credentials.sql`
   - user credential hashes
   - no plain-text password storage

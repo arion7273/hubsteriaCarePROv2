@@ -1,5 +1,6 @@
 export * from './access-control';
 export * from './audit';
+export * from './background-job-processor';
 export * from './auth-service';
 export * from './backend-service';
 export * from './credential-service';

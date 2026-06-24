@@ -31,7 +31,7 @@ const t3User: User = {
 };
 
 function createTestService() {
-  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'audit-4', 'user-1', 'audit-user', 'audit-user-update', 'feature-audit'];
+  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'job-1', 'audit-job-1', 'audit-job-fail', 'job-2', 'audit-job-2', 'audit-job-complete', 'audit-4', 'user-1', 'audit-user', 'audit-user-update', 'feature-audit'];
   const repositories = createInMemoryBackendRepositories();
   const service = new BackendFoundationService(
     repositories,
@@ -183,6 +183,51 @@ describe('BackendFoundationService', () => {
     ).resolves.toMatchObject({ room: '215A' });
 
     await expect(repositories.auditLogs.listByEntity('Resident', 'resident-1')).resolves.toHaveLength(2);
+  });
+
+  it('enqueues leases completes and fails background jobs with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    const job = await service.enqueueBackgroundJob(
+      { user: t1User },
+      {
+        type: 'notification',
+        priority: 'critical',
+        payload: { channel: 'sms' },
+        maxAttempts: 1,
+        availableAt: '2026-06-24T01:00:00.000Z'
+      }
+    );
+    expect(job.status).toBe('queued');
+
+    await expect(service.leaseQueuedJobs({ user: t1User }, 1)).resolves.toEqual([
+      expect.objectContaining({ status: 'processing', attempts: 1 })
+    ]);
+    await expect(service.failBackgroundJob({ user: t1User }, job.id, 'provider unavailable')).resolves.toMatchObject({
+      status: 'dead_letter',
+      lastError: 'provider unavailable'
+    });
+
+    const second = await service.enqueueBackgroundJob(
+      { user: t1User },
+      {
+        type: 'print',
+        priority: 'normal',
+        payload: { template: 'Resident Packet' },
+        maxAttempts: 3,
+        availableAt: '2026-06-24T01:00:00.000Z'
+      }
+    );
+    await expect(service.completeBackgroundJob({ user: t1User }, second.id)).resolves.toMatchObject({ status: 'succeeded' });
+    await expect(repositories.auditLogs.listByEntity('BackgroundJob', job.id)).resolves.toHaveLength(2);
+  });
+
+  it('enqueues typed notification print digitalrx ai and workflow jobs', async () => {
+    const { service } = createTestService();
+    await expect(service.enqueueNotificationJob({ user: t1User }, { channel: 'sms', template: 'Medication Refused', recipient: 'admin@example.com', payload: { residentId: 'resident-1' } })).resolves.toMatchObject({ type: 'notification' });
+    await expect(service.enqueuePrintJob({ user: t1User }, { template: 'Resident Packet', format: 'pdf', recordIds: ['resident-1'] })).resolves.toMatchObject({ type: 'print' });
+    await expect(service.enqueueDigitalRxSyncJob({ user: t1User }, { organizationId: 'org-1', event: 'refill_updated', payload: { refillId: 'refill-1' } })).resolves.toMatchObject({ type: 'digitalrx_sync' });
+    await expect(service.enqueueAiGenerationJob({ user: t1User }, { task: 'resident_summary', payload: { residentId: 'resident-1' } })).resolves.toMatchObject({ type: 'ai_generation' });
+    await expect(service.enqueueWorkflowActionJob({ user: t1User }, { trigger: 'Assessment Due', action: 'Create Task', payload: { residentId: 'resident-1' } })).resolves.toMatchObject({ type: 'workflow_action' });
   });
 
   it('denies resident creation across facility boundaries', async () => {

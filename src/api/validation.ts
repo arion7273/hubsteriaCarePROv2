@@ -1,7 +1,7 @@
 import type { RegisteredFeature } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
-import type { CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
+import type { CompleteBackgroundJobBody, CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, EnqueueAiGenerationJobBody, EnqueueBackgroundJobBody, EnqueueDigitalRxSyncJobBody, EnqueueNotificationJobBody, EnqueuePrintJobBody, EnqueueWorkflowActionJobBody, FailBackgroundJobBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -142,6 +142,38 @@ export function isUpdateUserBody(body: unknown): body is UpdateUserBody {
       (Array.isArray(body.updates.permissions) && body.updates.permissions.every((permission) => typeof permission === 'string'))) &&
     (body.updates.status === undefined || ['active', 'inactive'].includes(String(body.updates.status)))
   );
+}
+
+export function isEnqueueBackgroundJobBody(body: unknown): body is EnqueueBackgroundJobBody {
+  return isRecord(body) && (body.organizationId === undefined || isNonEmptyString(body.organizationId)) && (body.facilityId === undefined || isNonEmptyString(body.facilityId)) && (body.residentId === undefined || isNonEmptyString(body.residentId)) && ['notification', 'print', 'digitalrx_sync', 'ai_generation', 'workflow_action', 'audit_export'].includes(String(body.type)) && ['low', 'normal', 'high', 'critical'].includes(String(body.priority)) && isRecord(body.payload) && typeof body.maxAttempts === 'number' && isNonEmptyString(body.availableAt);
+}
+
+export function isCompleteBackgroundJobBody(body: unknown): body is CompleteBackgroundJobBody {
+  return isRecord(body) && isNonEmptyString(body.jobId);
+}
+
+export function isFailBackgroundJobBody(body: unknown): body is FailBackgroundJobBody {
+  return isRecord(body) && isNonEmptyString(body.jobId) && isNonEmptyString(body.error);
+}
+
+export function isEnqueueNotificationJobBody(body: unknown): body is EnqueueNotificationJobBody {
+  return isRecord(body) && ['in_app', 'email', 'sms', 'push'].includes(String(body.channel)) && isNonEmptyString(body.template) && isNonEmptyString(body.recipient) && isRecord(body.payload);
+}
+
+export function isEnqueuePrintJobBody(body: unknown): body is EnqueuePrintJobBody {
+  return isRecord(body) && isNonEmptyString(body.template) && ['pdf', 'csv', 'excel'].includes(String(body.format)) && Array.isArray(body.recordIds) && body.recordIds.every((id) => typeof id === 'string');
+}
+
+export function isEnqueueDigitalRxSyncJobBody(body: unknown): body is EnqueueDigitalRxSyncJobBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && ['order_created', 'order_updated', 'order_discontinued', 'refill_updated'].includes(String(body.event)) && isRecord(body.payload);
+}
+
+export function isEnqueueAiGenerationJobBody(body: unknown): body is EnqueueAiGenerationJobBody {
+  return isRecord(body) && ['resident_summary', 'compliance_insight', 'family_update_draft', 'knowledge_answer'].includes(String(body.task)) && isRecord(body.payload);
+}
+
+export function isEnqueueWorkflowActionJobBody(body: unknown): body is EnqueueWorkflowActionJobBody {
+  return isRecord(body) && isNonEmptyString(body.trigger) && isNonEmptyString(body.action) && isRecord(body.payload);
 }
 
 function isRecord(body: unknown): body is Record<string, unknown> {

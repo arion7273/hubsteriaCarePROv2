@@ -2,7 +2,20 @@ import { createAuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
 import type { BackendRepositories } from './repositories';
 import { requirePermission } from './access-control';
-import type { AccessContext, Facility, Organization, Resident, User, UUID } from './types';
+import type {
+  AccessContext,
+  AiGenerationJobInput,
+  BackgroundJob,
+  DigitalRxSyncJobInput,
+  Facility,
+  NotificationJobInput,
+  Organization,
+  PrintJobInput,
+  Resident,
+  User,
+  UUID,
+  WorkflowActionJobInput
+} from './types';
 
 export type IdFactory = () => UUID;
 export type Clock = () => Date;
@@ -377,6 +390,159 @@ export class BackendFoundationService {
     return saved;
   }
 
+  async enqueueBackgroundJob(
+    context: AccessContext,
+    input: Omit<BackgroundJob, 'id' | 'status' | 'attempts' | 'createdAt' | 'updatedAt'>
+  ): Promise<BackgroundJob> {
+    if (input.residentId) {
+      await this.getResident(context, input.residentId);
+    } else if (input.facilityId && input.organizationId) {
+      assertAllowed(requirePermission(context, { scope: 'facility', organizationId: input.organizationId, facilityId: input.facilityId }, 'facility:manage'));
+    } else if (input.organizationId) {
+      assertAllowed(requirePermission(context, { scope: 'organization', organizationId: input.organizationId }, 'organization:manage'));
+    } else {
+      assertAllowed(requirePermission(context, { scope: 'platform' }, 'platform:manage'));
+    }
+
+    const now = this.clock().toISOString();
+    const job = await this.repositories.backgroundJobs.save({
+      id: this.createId(),
+      status: 'queued',
+      attempts: 0,
+      createdAt: now,
+      updatedAt: now,
+      ...input
+    });
+
+    await this.auditJob(context, job, null);
+    return job;
+  }
+
+  async leaseQueuedJobs(context: AccessContext, limit: number): Promise<BackgroundJob[]> {
+    assertAllowed(requirePermission(context, { scope: 'platform' }, 'platform:manage'));
+    const jobs = await this.repositories.backgroundJobs.listQueued(limit);
+    const now = this.clock().toISOString();
+    return Promise.all(
+      jobs.map((job) =>
+        this.repositories.backgroundJobs.save({
+          ...job,
+          status: 'processing',
+          attempts: job.attempts + 1,
+          updatedAt: now
+        })
+      )
+    );
+  }
+
+  async completeBackgroundJob(context: AccessContext, jobId: UUID): Promise<BackgroundJob> {
+    return this.transitionBackgroundJob(context, jobId, { status: 'succeeded', lastError: undefined });
+  }
+
+  async failBackgroundJob(context: AccessContext, jobId: UUID, error: string): Promise<BackgroundJob> {
+    const existing = await this.repositories.backgroundJobs.getById(jobId);
+    if (!existing) throw new Error('Background job not found');
+    const status = existing.attempts >= existing.maxAttempts ? 'dead_letter' : 'failed';
+    return this.transitionBackgroundJob(context, jobId, { status, lastError: error });
+  }
+
+  async listBackgroundJobsByScope(
+    context: AccessContext,
+    scope: { organizationId?: UUID; facilityId?: UUID; residentId?: UUID }
+  ): Promise<BackgroundJob[]> {
+    if (scope.residentId) {
+      await this.getResident(context, scope.residentId);
+    } else if (scope.facilityId && scope.organizationId) {
+      assertAllowed(requirePermission(context, { scope: 'facility', organizationId: scope.organizationId, facilityId: scope.facilityId }, 'report:read'));
+    } else if (scope.organizationId) {
+      assertAllowed(requirePermission(context, { scope: 'organization', organizationId: scope.organizationId }, 'report:read'));
+    } else {
+      assertAllowed(requirePermission(context, { scope: 'platform' }, 'platform:manage'));
+    }
+    return this.repositories.backgroundJobs.listByScope(scope);
+  }
+
+  enqueueNotificationJob(context: AccessContext, input: NotificationJobInput): Promise<BackgroundJob> {
+    return this.enqueueBackgroundJob(context, {
+      organizationId: input.organizationId,
+      facilityId: input.facilityId,
+      residentId: input.residentId,
+      type: 'notification',
+      priority: input.priority ?? 'normal',
+      maxAttempts: 3,
+      availableAt: this.clock().toISOString(),
+      payload: {
+        channel: input.channel,
+        template: input.template,
+        recipient: input.recipient,
+        ...input.payload
+      }
+    });
+  }
+
+  enqueuePrintJob(context: AccessContext, input: PrintJobInput): Promise<BackgroundJob> {
+    return this.enqueueBackgroundJob(context, {
+      organizationId: input.organizationId,
+      facilityId: input.facilityId,
+      residentId: input.residentId,
+      type: 'print',
+      priority: input.priority ?? 'normal',
+      maxAttempts: 3,
+      availableAt: this.clock().toISOString(),
+      payload: {
+        template: input.template,
+        format: input.format,
+        recordIds: input.recordIds
+      }
+    });
+  }
+
+  enqueueDigitalRxSyncJob(context: AccessContext, input: DigitalRxSyncJobInput): Promise<BackgroundJob> {
+    return this.enqueueBackgroundJob(context, {
+      organizationId: input.organizationId,
+      type: 'digitalrx_sync',
+      priority: input.priority ?? 'high',
+      maxAttempts: 5,
+      availableAt: this.clock().toISOString(),
+      payload: {
+        event: input.event,
+        ...input.payload
+      }
+    });
+  }
+
+  enqueueAiGenerationJob(context: AccessContext, input: AiGenerationJobInput): Promise<BackgroundJob> {
+    return this.enqueueBackgroundJob(context, {
+      organizationId: input.organizationId,
+      facilityId: input.facilityId,
+      residentId: input.residentId,
+      type: 'ai_generation',
+      priority: input.priority ?? 'low',
+      maxAttempts: 2,
+      availableAt: this.clock().toISOString(),
+      payload: {
+        task: input.task,
+        ...input.payload
+      }
+    });
+  }
+
+  enqueueWorkflowActionJob(context: AccessContext, input: WorkflowActionJobInput): Promise<BackgroundJob> {
+    return this.enqueueBackgroundJob(context, {
+      organizationId: input.organizationId,
+      facilityId: input.facilityId,
+      residentId: input.residentId,
+      type: 'workflow_action',
+      priority: input.priority ?? 'normal',
+      maxAttempts: 3,
+      availableAt: this.clock().toISOString(),
+      payload: {
+        trigger: input.trigger,
+        action: input.action,
+        ...input.payload
+      }
+    });
+  }
+
   async createUser(
     context: AccessContext,
     input: Omit<User, 'id' | 'status'>
@@ -452,6 +618,34 @@ export class BackendFoundationService {
     );
 
     return saved;
+  }
+
+  private async transitionBackgroundJob(
+    context: AccessContext,
+    jobId: UUID,
+    updates: Pick<Partial<BackgroundJob>, 'status' | 'lastError'>
+  ): Promise<BackgroundJob> {
+    assertAllowed(requirePermission(context, { scope: 'platform' }, 'platform:manage'));
+    const existing = await this.repositories.backgroundJobs.getById(jobId);
+    if (!existing) throw new Error('Background job not found');
+    const updated = await this.repositories.backgroundJobs.save({ ...existing, ...updates, updatedAt: this.clock().toISOString() });
+    await this.auditJob(context, updated, existing);
+    return updated;
+  }
+
+  private async auditJob(context: AccessContext, job: BackgroundJob, beforeState: BackgroundJob | null): Promise<void> {
+    await this.repositories.auditLogs.append(createAuditEvent({
+      id: this.createId(),
+      action: beforeState ? 'update' : 'create',
+      actorUserId: context.user.id,
+      actorRole: context.user.roleTier,
+      entityType: 'BackgroundJob',
+      entityId: job.id,
+      scope: { scope: job.residentId ? 'resident' : job.facilityId ? 'facility' : job.organizationId ? 'organization' : 'platform', organizationId: job.organizationId, facilityId: job.facilityId, residentId: job.residentId },
+      beforeState,
+      afterState: job,
+      now: this.clock()
+    }));
   }
 }
 
