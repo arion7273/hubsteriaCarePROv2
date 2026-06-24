@@ -5,6 +5,7 @@ import App from './App';
 
 afterEach(() => {
   vi.restoreAllMocks();
+  localStorage.clear();
 });
 
 describe('HubsteriaCarePRO foundation', () => {
@@ -21,8 +22,9 @@ describe('HubsteriaCarePRO foundation', () => {
   it('renders API connection center and connected endpoints', () => {
     render(<App />);
 
-    expect(screen.getByRole('heading', { name: 'UI connected to backend API contracts' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Admin workflows connected to real backend APIs' })).toBeInTheDocument();
     expect(screen.getByText('http://localhost:3000')).toBeInTheDocument();
+    expect(screen.getByText('Protected admin UI locked')).toBeInTheDocument();
 
     const endpoints = screen.getByLabelText('Connected API endpoints');
     expect(within(endpoints).getByText('POST /auth/login')).toBeInTheDocument();
@@ -50,7 +52,7 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(globalThis.fetch).toHaveBeenCalledWith('http://localhost:3000/healthz');
   });
 
-  it('runs first UI-to-API workflow actions from the connection center', async () => {
+  it('runs protected admin UI-to-API workflow actions from the connection center', async () => {
     const user = userEvent.setup();
     const fetchMock = vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce(
@@ -80,8 +82,15 @@ describe('HubsteriaCarePRO foundation', () => {
       );
 
     render(<App />);
-    await user.click(screen.getByRole('button', { name: 'Demo login + MFA' }));
-    expect(await screen.findByText(/Demo login: ok, session session-1/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Protected admin workflow panel')).toHaveClass('locked');
+    expect(screen.getByRole('button', { name: 'Create organization' })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'Login' }));
+    expect(await screen.findByText(/Login: ok 200/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Verify MFA' }));
+    expect(await screen.findByText(/Verify MFA: ok 200/)).toBeInTheDocument();
+    expect(screen.getByLabelText('Protected admin workflow panel')).toHaveClass('unlocked');
 
     await user.click(screen.getByRole('button', { name: 'Create organization' }));
     expect(await screen.findByText(/Create organization: ok 201/)).toBeInTheDocument();
@@ -98,11 +107,59 @@ describe('HubsteriaCarePRO foundation', () => {
     });
   });
 
+  it('uses form values for admin CRUD API screens and shows errors', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ok: true,
+            status: 200,
+            data: {
+              session: { id: 'session-1' },
+              mfaChallenge: { id: 'mfa-1' }
+            }
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, status: 200, data: { id: 'session-1', mfaVerified: true } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, status: 201, data: { id: 'facility-7' } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      )
+      .mockRejectedValueOnce(new Error('Network unavailable'));
+
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Login' }));
+    await user.click(await screen.findByRole('button', { name: 'Verify MFA' }));
+
+    await user.clear(screen.getByLabelText('Facility name'));
+    await user.type(screen.getByLabelText('Facility name'), 'Pine Ridge');
+    await user.click(screen.getByRole('button', { name: 'Create facility' }));
+    expect(await screen.findByText(/Create facility: ok 201/)).toBeInTheDocument();
+
+    const facilityCall = fetchMock.mock.calls[2] as unknown as [URL, RequestInit];
+    expect(facilityCall[0].toString()).toBe('http://localhost:3000/facilities');
+    expect(facilityCall[1].body).toBe(JSON.stringify({ organizationId: 'org-1', name: 'Pine Ridge' }));
+
+    await user.click(screen.getByRole('button', { name: 'List facilities' }));
+    expect(await screen.findByText('Error: Network unavailable')).toBeInTheDocument();
+    expect(await screen.findByText(/List facilities: failed \(Network unavailable\)/)).toBeInTheDocument();
+  });
+
   it('switches between T1, T2, and T3 role-aware dashboards', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    expect(screen.getByText('Organizations')).toBeInTheDocument();
+    expect(screen.getAllByText('Organizations').length).toBeGreaterThan(0);
     expect(screen.getByText('DigitalRX Health')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'T2 Organization' }));
