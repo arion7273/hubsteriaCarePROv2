@@ -62,6 +62,9 @@ The current backend foundation includes executable service-layer behavior for:
 - Creating residents
 - Reading residents
 - Updating residents
+- Creating users
+- Listing users
+- Updating users
 - Authenticating users
 - Creating MFA challenges
 - Revoking sessions on logout

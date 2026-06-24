@@ -90,6 +90,12 @@ export class PostgresUserRepository implements UserRepository {
 
   async save(user: User): Promise<User> {
     await this.client.query(userStatements.upsert(user, this.roleIdForTier(user.roleTier)));
+    await this.client.query(userStatements.deleteFacilities(user.id));
+
+    for (const facilityId of user.facilityIds) {
+      await this.client.query(userStatements.insertFacility(user.id, facilityId));
+    }
+
     const saved = await this.getById(user.id);
 
     if (!saved) {

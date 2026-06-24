@@ -55,8 +55,11 @@ describe('production readiness workflow', () => {
     expect(api).toContain('POST /auth/login');
     expect(api).toContain('POST /residents');
     expect(api).toContain('PATCH /residents');
+    expect(api).toContain('POST /users');
+    expect(api).toContain('PATCH /users');
     expect(api).toContain('Protected routes require a valid session');
     expect(api).toContain('Resident APIs must enforce organization and facility scope');
+    expect(api).toContain('User APIs must enforce organization scope');
     expect(api).toContain('OpenAPI documentation');
     expect(api).toContain('framework-agnostic dispatcher');
     expect(api).toContain('Invalid request bodies must return `400`');

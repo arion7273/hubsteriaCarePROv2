@@ -1,7 +1,7 @@
 import type { RegisteredFeature } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
-import type { CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, LoginBody, UpdateResidentBody, VerifyMfaBody } from './handlers';
+import type { CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -91,6 +91,36 @@ export function isUpdateResidentBody(body: unknown): body is UpdateResidentBody 
     optionalString(body.updates.room) &&
     optionalString(body.updates.levelOfCare) &&
     (body.updates.status === undefined || ['active', 'discharged', 'inactive'].includes(String(body.updates.status)))
+  );
+}
+
+export function isCreateUserBody(body: unknown): body is CreateUserBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.email) &&
+    ['T1', 'T2', 'T2_5', 'T3', 'EMPLOYEE', 'FAMILY', 'RESIDENT'].includes(String(body.roleTier)) &&
+    (body.organizationId === undefined || isNonEmptyString(body.organizationId)) &&
+    Array.isArray(body.facilityIds) &&
+    body.facilityIds.every((facilityId) => typeof facilityId === 'string') &&
+    Array.isArray(body.permissions) &&
+    body.permissions.every((permission) => typeof permission === 'string')
+  );
+}
+
+export function isUpdateUserBody(body: unknown): body is UpdateUserBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.userId) &&
+    isRecord(body.updates) &&
+    (body.updates.email === undefined || isNonEmptyString(body.updates.email)) &&
+    (body.updates.roleTier === undefined ||
+      ['T1', 'T2', 'T2_5', 'T3', 'EMPLOYEE', 'FAMILY', 'RESIDENT'].includes(String(body.updates.roleTier))) &&
+    (body.updates.organizationId === undefined || isNonEmptyString(body.updates.organizationId)) &&
+    (body.updates.facilityIds === undefined ||
+      (Array.isArray(body.updates.facilityIds) && body.updates.facilityIds.every((facilityId) => typeof facilityId === 'string'))) &&
+    (body.updates.permissions === undefined ||
+      (Array.isArray(body.updates.permissions) && body.updates.permissions.every((permission) => typeof permission === 'string'))) &&
+    (body.updates.status === undefined || ['active', 'inactive'].includes(String(body.updates.status)))
   );
 }
 

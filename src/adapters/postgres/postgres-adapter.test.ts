@@ -39,6 +39,12 @@ describe('Postgres statement builders', () => {
     expect(byEmail.text).toContain('LEFT JOIN permissions p ON p.id = rp.permission_id');
     expect(byEmail.text).toContain('u.email = $1');
     expect(byEmail.values).toEqual(['admin@example.com']);
+
+    expect(userStatements.deleteFacilities('user-1')).toMatchObject({
+      text: 'DELETE FROM user_facilities WHERE user_id = $1',
+      values: ['user-1']
+    });
+    expect(userStatements.insertFacility('user-1', 'facility-1').text).toContain('INSERT INTO user_facilities');
   });
 
   it('uses tenant-scoped resident statements', () => {

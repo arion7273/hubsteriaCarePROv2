@@ -31,7 +31,7 @@ const t3User: User = {
 };
 
 function createTestService() {
-  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'audit-4', 'feature-audit'];
+  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'audit-4', 'user-1', 'audit-user', 'audit-user-update', 'feature-audit'];
   const repositories = createInMemoryBackendRepositories();
   const service = new BackendFoundationService(
     repositories,
@@ -169,5 +169,28 @@ describe('BackendFoundationService', () => {
         lastName: 'Resident'
       })
     ).rejects.toThrow('Cross-facility access denied');
+  });
+
+  it('creates, lists, and updates organization users with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+
+    const user = await service.createUser({ user: t2User }, {
+      email: 'caregiver@example.com',
+      roleTier: 'EMPLOYEE',
+      organizationId: 'org-1',
+      facilityIds: ['facility-1'],
+      permissions: ['resident:read']
+    });
+
+    expect(user).toMatchObject({
+      email: 'caregiver@example.com'
+    });
+    await expect(service.listUsersByOrganization({ user: t2User }, 'org-1')).resolves.toHaveLength(1);
+
+    await expect(service.updateUser({ user: t2User }, user.id, { status: 'inactive' })).resolves.toMatchObject({
+      status: 'inactive'
+    });
+    await expect(repositories.auditLogs.listByEntity('User', user.id)).resolves.toHaveLength(2);
   });
 });

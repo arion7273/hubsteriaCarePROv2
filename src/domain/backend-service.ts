@@ -2,7 +2,7 @@ import { createAuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
 import type { BackendRepositories } from './repositories';
 import { requirePermission } from './access-control';
-import type { AccessContext, Facility, Organization, Resident, UUID } from './types';
+import type { AccessContext, Facility, Organization, Resident, User, UUID } from './types';
 
 export type IdFactory = () => UUID;
 export type Clock = () => Date;
@@ -252,10 +252,95 @@ export class BackendFoundationService {
 
     return saved;
   }
+
+  async createUser(
+    context: AccessContext,
+    input: Omit<User, 'id' | 'status'>
+  ): Promise<User> {
+    const decision = requirePermission(context, userManagementScope(input.organizationId), userManagementPermission(input.organizationId));
+    assertAllowed(decision);
+
+    const user: User = {
+      id: this.createId(),
+      status: 'active',
+      ...input
+    };
+    const saved = await this.repositories.users.save(user);
+
+    await this.repositories.auditLogs.append(
+      createAuditEvent({
+        id: this.createId(),
+        action: 'create',
+        actorUserId: context.user.id,
+        actorRole: context.user.roleTier,
+        entityType: 'User',
+        entityId: saved.id,
+        scope: userManagementScope(saved.organizationId),
+        beforeState: null,
+        afterState: saved,
+        now: this.clock()
+      })
+    );
+
+    return saved;
+  }
+
+  async listUsersByOrganization(context: AccessContext, organizationId: UUID): Promise<User[]> {
+    const decision = requirePermission(context, { scope: 'organization', organizationId }, 'organization:manage');
+    assertAllowed(decision);
+
+    return this.repositories.users.listByOrganization(organizationId);
+  }
+
+  async updateUser(
+    context: AccessContext,
+    userId: UUID,
+    updates: Partial<Omit<User, 'id'>>
+  ): Promise<User> {
+    const existing = await this.repositories.users.getById(userId);
+
+    if (!existing) {
+      throw new Error('User not found');
+    }
+
+    const decision = requirePermission(context, userManagementScope(existing.organizationId), userManagementPermission(existing.organizationId));
+    assertAllowed(decision);
+
+    const saved = await this.repositories.users.save({
+      ...existing,
+      ...updates,
+      id: existing.id
+    });
+
+    await this.repositories.auditLogs.append(
+      createAuditEvent({
+        id: this.createId(),
+        action: 'update',
+        actorUserId: context.user.id,
+        actorRole: context.user.roleTier,
+        entityType: 'User',
+        entityId: saved.id,
+        scope: userManagementScope(saved.organizationId),
+        beforeState: existing,
+        afterState: saved,
+        now: this.clock()
+      })
+    );
+
+    return saved;
+  }
 }
 
 function assertAllowed(decision: { allowed: boolean; reason: string }): void {
   if (!decision.allowed) {
     throw new Error(decision.reason);
   }
+}
+
+function userManagementScope(organizationId: UUID | undefined) {
+  return organizationId ? { scope: 'organization' as const, organizationId } : { scope: 'platform' as const };
+}
+
+function userManagementPermission(organizationId: UUID | undefined) {
+  return organizationId ? 'organization:manage' : 'platform:manage';
 }

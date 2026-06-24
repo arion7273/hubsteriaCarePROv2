@@ -98,6 +98,24 @@ export const userStatements = {
       `,
       values: [user.id, user.organizationId ?? null, user.facilityIds[0] ?? null, user.email, roleId, user.status]
     };
+  },
+
+  deleteFacilities(userId: UUID): SqlStatement {
+    return {
+      text: 'DELETE FROM user_facilities WHERE user_id = $1',
+      values: [userId]
+    };
+  },
+
+  insertFacility(userId: UUID, facilityId: UUID): SqlStatement {
+    return {
+      text: `
+        INSERT INTO user_facilities (user_id, facility_id)
+        VALUES ($1, $2)
+        ON CONFLICT (user_id, facility_id) DO NOTHING
+      `,
+      values: [userId, facilityId]
+    };
   }
 };
 

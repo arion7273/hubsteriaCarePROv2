@@ -1,5 +1,5 @@
 import type { RegisteredFeature } from '../domain';
-import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type Resident, type UUID } from '../domain';
+import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type Resident, type User, type UUID } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -34,6 +34,13 @@ export type CreateResidentBody = Omit<Resident, 'id' | 'status'>;
 export type UpdateResidentBody = {
   residentId: UUID;
   updates: Partial<Omit<Resident, 'id' | 'organizationId' | 'facilityId'>>;
+};
+
+export type CreateUserBody = Omit<User, 'id' | 'status'>;
+
+export type UpdateUserBody = {
+  userId: UUID;
+  updates: Partial<Omit<User, 'id'>>;
 };
 
 export async function loginHandler(services: ApiServices, request: ApiRequest<LoginBody>): Promise<ApiResponse> {
@@ -129,6 +136,32 @@ export async function updateResidentHandler(services: ApiServices, request: ApiR
   return withContext(services, request, async (context) => {
     assertBody(request.body);
     return services.backend.updateResident(context, request.body.residentId, request.body.updates);
+  });
+}
+
+export async function createUserHandler(services: ApiServices, request: ApiRequest<CreateUserBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.createUser(context, request.body);
+  }, 201);
+}
+
+export async function listUsersHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const organizationId = request.query?.organizationId;
+
+    if (!organizationId) {
+      throw new Error('organizationId is required');
+    }
+
+    return services.backend.listUsersByOrganization(context, organizationId);
+  });
+}
+
+export async function updateUserHandler(services: ApiServices, request: ApiRequest<UpdateUserBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.updateUser(context, request.body.userId, request.body.updates);
   });
 }
 

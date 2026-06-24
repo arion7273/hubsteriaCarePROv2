@@ -79,5 +79,23 @@ export const apiRoutes: ApiRouteDefinition[] = [
     path: '/residents',
     authRequired: true,
     description: 'Update resident'
+  },
+  {
+    method: 'POST',
+    path: '/users',
+    authRequired: true,
+    description: 'Create user'
+  },
+  {
+    method: 'GET',
+    path: '/users',
+    authRequired: true,
+    description: 'List users by organization'
+  },
+  {
+    method: 'PATCH',
+    path: '/users',
+    authRequired: true,
+    description: 'Update user'
   }
 ];

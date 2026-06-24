@@ -118,7 +118,9 @@ describe('API foundation handlers', () => {
         expect.objectContaining({ method: 'POST', path: '/organizations', authRequired: true }),
         expect.objectContaining({ method: 'GET', path: '/feature-registry', authRequired: true }),
         expect.objectContaining({ method: 'POST', path: '/residents', authRequired: true }),
-        expect.objectContaining({ method: 'PATCH', path: '/residents', authRequired: true })
+        expect.objectContaining({ method: 'PATCH', path: '/residents', authRequired: true }),
+        expect.objectContaining({ method: 'POST', path: '/users', authRequired: true }),
+        expect.objectContaining({ method: 'PATCH', path: '/users', authRequired: true })
       ])
     );
   });
@@ -129,6 +131,7 @@ describe('API foundation handlers', () => {
     expect(openApiDocument.paths).toHaveProperty('/auth/login');
     expect(openApiDocument.paths).toHaveProperty('/organizations');
     expect(openApiDocument.paths).toHaveProperty('/residents');
+    expect(openApiDocument.paths).toHaveProperty('/users');
     expect(openApiDocument.components.securitySchemes.session.name).toBe('X-Session-Id');
   });
 
@@ -309,6 +312,55 @@ describe('API foundation handlers', () => {
     });
 
     expect(updated).toMatchObject({ ok: true, data: expect.objectContaining({ room: '215A' }) });
+  });
+
+  it('creates, lists, and updates users through the API router', async () => {
+    const services = createApiServices();
+    const router = createApiRouter(services);
+    const sessionId = await createVerifiedSession(services);
+    await router.handle({
+      method: 'POST',
+      path: '/organizations',
+      sessionId,
+      body: { name: 'Northstar Senior Living' }
+    });
+
+    const created = await router.handle({
+      method: 'POST',
+      path: '/users',
+      sessionId,
+      body: {
+        email: 'caregiver@example.com',
+        roleTier: 'EMPLOYEE',
+        organizationId: 'org-1',
+        facilityIds: [],
+        permissions: ['resident:read']
+      }
+    });
+
+    expect(created).toMatchObject({ ok: true, status: 201 });
+    const userId = created.ok ? (created.data as { id: string }).id : '';
+
+    const listed = await router.handle({
+      method: 'GET',
+      path: '/users',
+      sessionId,
+      query: { organizationId: 'org-1' }
+    });
+
+    expect(listed.ok && listed.data).toHaveLength(1);
+
+    const updated = await router.handle({
+      method: 'PATCH',
+      path: '/users',
+      sessionId,
+      body: {
+        userId,
+        updates: { status: 'inactive' }
+      }
+    });
+
+    expect(updated).toMatchObject({ ok: true, data: expect.objectContaining({ status: 'inactive' }) });
   });
 
   it('dispatches requests through the API router', async () => {

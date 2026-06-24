@@ -130,6 +130,38 @@ export const openApiDocument = {
           '404': { description: 'Resident not found' }
         }
       }
+    },
+    '/users': {
+      get: {
+        summary: 'List users by organization',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'User list' },
+          '403': { description: 'Insufficient permissions or tenant mismatch' }
+        }
+      },
+      post: {
+        summary: 'Create user',
+        security: [{ session: [] }],
+        requestBody: {
+          required: true
+        },
+        responses: {
+          '201': { description: 'User created' },
+          '403': { description: 'Insufficient permissions or tenant mismatch' }
+        }
+      },
+      patch: {
+        summary: 'Update user',
+        security: [{ session: [] }],
+        requestBody: {
+          required: true
+        },
+        responses: {
+          '200': { description: 'User updated' },
+          '404': { description: 'User not found' }
+        }
+      }
     }
   },
   components: {
