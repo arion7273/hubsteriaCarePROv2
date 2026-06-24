@@ -22,6 +22,7 @@ import type {
   UserCredential
 } from '../../domain/types';
 import type { AdlEntry } from '../../domain/types';
+import type { AuthSession, BillingCharge, Facility, Invoice, MfaChallenge, Organization, PaymentTransaction, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -215,6 +216,27 @@ export function mapComplianceIssueRow(row: PostgresRow): ComplianceIssue {
     severity: String(row.severity) as ComplianceIssue['severity'],
     status: String(row.status) as ComplianceIssue['status'],
     resolutionLink: String(row.resolution_link)
+export function mapBillingChargeRow(row: PostgresRow): BillingCharge {
+  return {
+    id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
+    type: String(row.type) as BillingCharge['type'], description: String(row.description), amountCents: Number(row.amount_cents),
+    status: String(row.status) as BillingCharge['status']
+  };
+}
+
+export function mapInvoiceRow(row: PostgresRow): Invoice {
+  return {
+    id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
+    invoiceNumber: String(row.invoice_number), balanceCents: Number(row.balance_cents), dueDate: String(row.due_date),
+    status: String(row.status) as Invoice['status']
+  };
+}
+
+export function mapPaymentTransactionRow(row: PostgresRow): PaymentTransaction {
+  return {
+    id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
+    invoiceId: row.invoice_id ? String(row.invoice_id) : undefined, type: String(row.type) as PaymentTransaction['type'],
+    amountCents: Number(row.amount_cents), method: String(row.method), postedAt: String(row.posted_at), postedBy: String(row.posted_by)
   };
 }
 

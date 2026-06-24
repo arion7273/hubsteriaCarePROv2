@@ -21,6 +21,7 @@ import type {
   UserCredential,
   UUID
 } from '../../domain';
+import type { AuditEvent, AuthSession, BillingCharge, Facility, Invoice, MfaChallenge, Organization, PaymentTransaction, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -416,6 +417,28 @@ export const complianceIssueStatements = {
       ON CONFLICT (id) DO UPDATE SET issue=EXCLUDED.issue, severity=EXCLUDED.severity, status=EXCLUDED.status, resolution_link=EXCLUDED.resolution_link, updated_at=now()
       RETURNING *
     `, values: [issue.id, issue.organizationId, issue.facilityId, issue.residentId ?? null, issue.issue, issue.severity, issue.status, issue.resolutionLink] };
+export const billingChargeStatements = {
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM billing_charges WHERE resident_id = $1 ORDER BY created_at DESC', values: [residentId] }; },
+  upsert(charge: BillingCharge): SqlStatement {
+    return { text: `INSERT INTO billing_charges (id, organization_id, facility_id, resident_id, type, description, amount_cents, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO UPDATE SET type=EXCLUDED.type, description=EXCLUDED.description, amount_cents=EXCLUDED.amount_cents, status=EXCLUDED.status, updated_at=now() RETURNING *`,
+      values: [charge.id, charge.organizationId, charge.facilityId, charge.residentId, charge.type, charge.description, charge.amountCents, charge.status] };
+  }
+};
+
+export const invoiceStatements = {
+  selectById(id: UUID): SqlStatement { return { text: 'SELECT * FROM invoices WHERE id = $1', values: [id] }; },
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM invoices WHERE resident_id = $1 ORDER BY due_date DESC', values: [residentId] }; },
+  upsert(invoice: Invoice): SqlStatement {
+    return { text: `INSERT INTO invoices (id, organization_id, facility_id, resident_id, invoice_number, balance_cents, due_date, status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO UPDATE SET balance_cents=EXCLUDED.balance_cents, due_date=EXCLUDED.due_date, status=EXCLUDED.status, updated_at=now() RETURNING *`,
+      values: [invoice.id, invoice.organizationId, invoice.facilityId, invoice.residentId, invoice.invoiceNumber, invoice.balanceCents, invoice.dueDate, invoice.status] };
+  }
+};
+
+export const paymentTransactionStatements = {
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM payment_transactions WHERE resident_id = $1 ORDER BY posted_at DESC', values: [residentId] }; },
+  insert(transaction: PaymentTransaction): SqlStatement {
+    return { text: `INSERT INTO payment_transactions (id, organization_id, facility_id, resident_id, invoice_id, type, amount_cents, method, posted_at, posted_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+      values: [transaction.id, transaction.organizationId, transaction.facilityId, transaction.residentId, transaction.invoiceId ?? null, transaction.type, transaction.amountCents, transaction.method, transaction.postedAt, transaction.postedBy] };
   }
 };
 

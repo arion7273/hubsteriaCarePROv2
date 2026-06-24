@@ -37,6 +37,10 @@ The initial database target is PostgreSQL.
 - `database/migrations/0008_incidents_compliance.sql`
   - incidents
   - compliance issues
+- `database/migrations/0009_billing_financials.sql`
+  - billing charges
+  - invoices
+  - payment transactions
 
 Run migrations with:
 

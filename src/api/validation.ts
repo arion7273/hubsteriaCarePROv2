@@ -32,6 +32,7 @@ import type {
   UpdateUserBody,
   VerifyMfaBody
 } from './handlers';
+import type { CreateBillingChargeBody, CreateFacilityBody, CreateInvoiceBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, RecordPaymentBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -269,6 +270,16 @@ export function isUpdateIncidentBody(body: unknown): body is UpdateIncidentBody 
 
 export function isCreateComplianceIssueBody(body: unknown): body is CreateComplianceIssueBody {
   return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.issue) && ['info', 'warning', 'critical'].includes(String(body.severity)) && ['open', 'resolved'].includes(String(body.status)) && isNonEmptyString(body.resolutionLink);
+export function isCreateBillingChargeBody(body: unknown): body is CreateBillingChargeBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && ['recurring', 'level_of_care', 'move_in', 'move_out', 'ancillary'].includes(String(body.type)) && isNonEmptyString(body.description) && typeof body.amountCents === 'number' && ['draft', 'posted', 'void'].includes(String(body.status));
+}
+
+export function isCreateInvoiceBody(body: unknown): body is CreateInvoiceBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.invoiceNumber) && typeof body.balanceCents === 'number' && isNonEmptyString(body.dueDate) && ['draft', 'posted', 'paid', 'overdue'].includes(String(body.status));
+}
+
+export function isRecordPaymentBody(body: unknown): body is RecordPaymentBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && (body.invoiceId === undefined || isNonEmptyString(body.invoiceId)) && ['payment', 'credit', 'refund'].includes(String(body.type)) && typeof body.amountCents === 'number' && isNonEmptyString(body.method);
 }
 
 function isRecord(body: unknown): body is Record<string, unknown> {

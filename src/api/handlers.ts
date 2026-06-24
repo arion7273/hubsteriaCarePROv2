@@ -25,6 +25,7 @@ import {
   type UUID,
   type WorkflowActionJobInput
 } from '../domain';
+import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type BillingCharge, type Facility, type Invoice, type Organization, type PaymentTransaction, type Resident, type User, type UUID } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -101,6 +102,9 @@ export type UpdateIncidentBody = {
   updates: Partial<Omit<Incident, 'id' | 'organizationId' | 'facilityId' | 'residentId'>>;
 };
 export type CreateComplianceIssueBody = Omit<ComplianceIssue, 'id'>;
+export type CreateBillingChargeBody = Omit<BillingCharge, 'id'>;
+export type CreateInvoiceBody = Omit<Invoice, 'id'>;
+export type RecordPaymentBody = Omit<PaymentTransaction, 'id' | 'postedAt' | 'postedBy'>;
 
 export async function loginHandler(services: ApiServices, request: ApiRequest<LoginBody>): Promise<ApiResponse> {
   return toApiResponse(async () => {
@@ -508,6 +512,48 @@ export async function listComplianceIssuesHandler(services: ApiServices, request
     const facilityId = request.query?.facilityId;
     if (!organizationId || !facilityId) throw new Error('organizationId and facilityId are required');
     return services.backend.listComplianceIssuesByFacility(context, organizationId, facilityId);
+export async function createBillingChargeHandler(services: ApiServices, request: ApiRequest<CreateBillingChargeBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.createBillingCharge(context, request.body);
+  }, 201);
+}
+
+export async function listBillingChargesHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const residentId = request.query?.residentId;
+    if (!residentId) throw new Error('residentId is required');
+    return services.backend.listBillingChargesByResident(context, residentId);
+  });
+}
+
+export async function createInvoiceHandler(services: ApiServices, request: ApiRequest<CreateInvoiceBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.createInvoice(context, request.body);
+  }, 201);
+}
+
+export async function listInvoicesHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const residentId = request.query?.residentId;
+    if (!residentId) throw new Error('residentId is required');
+    return services.backend.listInvoicesByResident(context, residentId);
+  });
+}
+
+export async function recordPaymentHandler(services: ApiServices, request: ApiRequest<RecordPaymentBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.recordPaymentTransaction(context, request.body);
+  }, 201);
+}
+
+export async function listPaymentsHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const residentId = request.query?.residentId;
+    if (!residentId) throw new Error('residentId is required');
+    return services.backend.listPaymentTransactionsByResident(context, residentId);
   });
 }
 

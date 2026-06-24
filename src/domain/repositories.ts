@@ -21,6 +21,7 @@ import type {
   UserCredential,
   UUID
 } from './types';
+import type { AuthSession, BillingCharge, Facility, Invoice, MfaChallenge, Organization, PaymentTransaction, PasswordResetRequest, Resident, User, UUID } from './types';
 
 export interface OrganizationRepository {
   getById(id: UUID): Promise<Organization | null>;
@@ -108,6 +109,20 @@ export interface IncidentRepository {
 export interface ComplianceIssueRepository {
   listByFacility(organizationId: UUID, facilityId: UUID): Promise<ComplianceIssue[]>;
   save(issue: ComplianceIssue): Promise<ComplianceIssue>;
+export interface BillingChargeRepository {
+  listByResident(residentId: UUID): Promise<BillingCharge[]>;
+  save(charge: BillingCharge): Promise<BillingCharge>;
+}
+
+export interface InvoiceRepository {
+  getById(id: UUID): Promise<Invoice | null>;
+  listByResident(residentId: UUID): Promise<Invoice[]>;
+  save(invoice: Invoice): Promise<Invoice>;
+}
+
+export interface PaymentTransactionRepository {
+  listByResident(residentId: UUID): Promise<PaymentTransaction[]>;
+  save(transaction: PaymentTransaction): Promise<PaymentTransaction>;
 }
 
 export interface AuditLogRepository {
@@ -152,6 +167,9 @@ export type BackendRepositories = {
   medicationAdministrations: MedicationAdministrationRepository;
   incidents: IncidentRepository;
   complianceIssues: ComplianceIssueRepository;
+  billingCharges: BillingChargeRepository;
+  invoices: InvoiceRepository;
+  paymentTransactions: PaymentTransactionRepository;
   auditLogs: AuditLogRepository;
   featureRegistry: FeatureRegistryRepository;
   authSessions: AuthSessionRepository;

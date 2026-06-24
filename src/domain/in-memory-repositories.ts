@@ -15,9 +15,14 @@ import type {
   FacilityRepository,
   FeatureRegistryRepository,
   IncidentRepository,
+  BillingChargeRepository,
+  FacilityRepository,
+  FeatureRegistryRepository,
+  InvoiceRepository,
   MfaChallengeRepository,
   OrganizationRepository,
   PasswordResetRepository,
+  PaymentTransactionRepository,
   ResidentRepository,
   ServicePlanRepository,
   UserCredentialRepository,
@@ -44,6 +49,7 @@ import type {
   UserCredential,
   UUID
 } from './types';
+import type { AuthSession, BillingCharge, Facility, Invoice, MfaChallenge, Organization, PaymentTransaction, PasswordResetRequest, Resident, User, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -279,6 +285,37 @@ export class InMemoryComplianceIssueRepository implements ComplianceIssueReposit
   async save(issue: ComplianceIssue): Promise<ComplianceIssue> {
     this.issues.set(issue.id, issue);
     return issue;
+export class InMemoryBillingChargeRepository implements BillingChargeRepository {
+  private readonly charges = new Map<UUID, BillingCharge>();
+  async listByResident(residentId: UUID): Promise<BillingCharge[]> {
+    return [...this.charges.values()].filter((charge) => charge.residentId === residentId);
+  }
+  async save(charge: BillingCharge): Promise<BillingCharge> {
+    this.charges.set(charge.id, charge);
+    return charge;
+  }
+}
+
+export class InMemoryInvoiceRepository implements InvoiceRepository {
+  private readonly invoices = new Map<UUID, Invoice>();
+  async getById(id: UUID): Promise<Invoice | null> { return this.invoices.get(id) ?? null; }
+  async listByResident(residentId: UUID): Promise<Invoice[]> {
+    return [...this.invoices.values()].filter((invoice) => invoice.residentId === residentId);
+  }
+  async save(invoice: Invoice): Promise<Invoice> {
+    this.invoices.set(invoice.id, invoice);
+    return invoice;
+  }
+}
+
+export class InMemoryPaymentTransactionRepository implements PaymentTransactionRepository {
+  private readonly transactions = new Map<UUID, PaymentTransaction>();
+  async listByResident(residentId: UUID): Promise<PaymentTransaction[]> {
+    return [...this.transactions.values()].filter((transaction) => transaction.residentId === residentId);
+  }
+  async save(transaction: PaymentTransaction): Promise<PaymentTransaction> {
+    this.transactions.set(transaction.id, transaction);
+    return transaction;
   }
 }
 
@@ -382,6 +419,9 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     medicationAdministrations: new InMemoryMedicationAdministrationRepository(),
     incidents: new InMemoryIncidentRepository(),
     complianceIssues: new InMemoryComplianceIssueRepository(),
+    billingCharges: new InMemoryBillingChargeRepository(),
+    invoices: new InMemoryInvoiceRepository(),
+    paymentTransactions: new InMemoryPaymentTransactionRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
     featureRegistry: new InMemoryFeatureRegistryRepository(),
     authSessions: new InMemoryAuthSessionRepository(),

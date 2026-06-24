@@ -84,6 +84,12 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - `PATCH /incidents`
 - `POST /compliance-issues`
 - `GET /compliance-issues`
+- `POST /billing/charges`
+- `GET /billing/charges`
+- `POST /billing/invoices`
+- `GET /billing/invoices`
+- `POST /billing/payments`
+- `GET /billing/payments`
 
 ## Security requirements
 
@@ -101,6 +107,7 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - Task, ADL, and service plan APIs must enforce resident/facility scope.
 - Medication APIs must enforce resident/facility scope and medication management permission.
 - Incident and compliance APIs must enforce resident/facility scope and audit changes.
+- Billing APIs must enforce resident/facility scope and billing management permission.
 - Invalid request bodies must return `400`.
 - Wrong methods must return `405`.
 - Unknown routes must return `404`.
