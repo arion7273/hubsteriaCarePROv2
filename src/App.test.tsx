@@ -703,4 +703,38 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Print Center Pro exports executive packets, facility rankings/i)).toBeInTheDocument();
     expect(screen.getByText(/All executive dashboard access, drilldowns, exports, and score changes/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 18 AI resident summaries and compliance insights', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'AI Assistant & Insights Layer' })).toBeInTheDocument();
+    expect(screen.getByText('Resident Summaries')).toBeInTheDocument();
+    expect(screen.getByText('Compliance Risks')).toBeInTheDocument();
+
+    const summaries = screen.getByLabelText('AI resident summaries');
+    expect(within(summaries).getByText('Maria Alvarez')).toBeInTheDocument();
+    expect(within(summaries).getByText(/stable medication adherence with two refusals/i)).toBeInTheDocument();
+    expect(within(summaries).getByText('Medication Trends')).toBeInTheDocument();
+
+    const insights = screen.getByLabelText('AI compliance insights');
+    expect(within(insights).getByText('Missing fall risk reassessment signature')).toBeInTheDocument();
+    expect(within(insights).getByText('Incident corrective action overdue')).toBeInTheDocument();
+    expect(within(insights).getAllByText('High').length).toBeGreaterThan(0);
+  });
+
+  it('supports AI family drafts knowledge answers and integration guardrails', () => {
+    render(<App />);
+
+    const drafts = screen.getByLabelText('AI family update drafts');
+    expect(within(drafts).getByText('Weekly care update')).toBeInTheDocument();
+    expect(within(drafts).getByText(/Needs Wellness Director approval/i)).toBeInTheDocument();
+
+    const knowledge = screen.getByLabelText('AI knowledge answers');
+    expect(within(knowledge).getByText('How do I prepare a survey readiness packet?')).toBeInTheDocument();
+    expect(within(knowledge).getByText(/Open Survey Readiness, resolve critical compliance items/i)).toBeInTheDocument();
+
+    expect(screen.getByText(/AI resident summaries use resident timeline, medication trends/i)).toBeInTheDocument();
+    expect(screen.getByText(/AI family update drafts must require staff approval/i)).toBeInTheDocument();
+    expect(screen.getByText(/All AI suggestions, generated drafts, approvals, edits, dismissals/i)).toBeInTheDocument();
+  });
 });

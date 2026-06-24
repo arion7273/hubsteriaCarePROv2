@@ -232,7 +232,7 @@ export const enterprisePhases: Phase[] = [
   {
     id: '18',
     title: 'AI Assistant & Insights Layer',
-    status: 'future',
+    status: 'foundation',
     milestone: 'AI Insights',
     summary: 'Resident summaries, compliance risk detection, family update drafts, and system knowledge assistant.',
     deliverables: ['Resident summaries', 'Compliance assistant', 'Family drafts', 'Knowledge assistant']

@@ -434,6 +434,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Incidents & Compliance Center', 'Billing & Financial Operations', 'Hubsteria Academy'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'AI Resident Summary and Compliance Assistant',
+    module: 'AI Assistant & Insights Layer',
+    status: 'registered',
+    dependencies: ['Resident Command Center', 'Incidents & Compliance Center', 'Audit Log Contract'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'AI Family Drafts and Knowledge Assistant',
+    module: 'AI Assistant & Insights Layer',
+    status: 'registered',
+    dependencies: ['Family Portal', 'Hubsteria Academy', 'Configuration Center'],
+    version: '0.1.0'
   }
 ];
 

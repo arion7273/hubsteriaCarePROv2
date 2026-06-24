@@ -119,6 +119,14 @@ import {
   facilityPerformance
 } from './data/executive';
 import {
+  aiComplianceInsights,
+  aiFamilyDrafts,
+  aiIntegrationRequirements,
+  aiKnowledgeAnswers,
+  aiMetrics,
+  aiResidentSummaries
+} from './data/ai';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -253,6 +261,7 @@ function App() {
             'Hubsteria Academy',
             'Help Desk',
             'Executive Command Center',
+            'AI Insights',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -283,7 +292,9 @@ function App() {
                                       ? '#help-desk-support-center'
                                       : item === 'Executive Command Center'
                                         ? '#executive-command-center'
-                                        : `#${item.toLowerCase().replaceAll(' ', '-')}`
+                                        : item === 'AI Insights'
+                                          ? '#ai-assistant-insights'
+                                          : `#${item.toLowerCase().replaceAll(' ', '-')}`
               }
               key={item}
             >
@@ -295,8 +306,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-17</strong>
-            <span>Executive command active</span>
+            <strong>Phase 0-18</strong>
+            <span>AI insights active</span>
           </div>
         </div>
       </aside>
@@ -368,6 +379,9 @@ function App() {
               </a>
               <a className="button secondary" href="#executive-command-center">
                 Open Executive
+              </a>
+              <a className="button secondary" href="#ai-assistant-insights">
+                Open AI Insights
               </a>
             </div>
           </div>
@@ -2348,6 +2362,126 @@ function App() {
             </div>
             <ul className="check-list">
               {executiveIntegrationRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className="content-card ai-center" id="ai-assistant-insights" aria-labelledby="ai-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 18</p>
+              <h2 id="ai-title">AI Assistant & Insights Layer</h2>
+              <p>
+                AI-assisted resident summaries, compliance risk detection, family update drafts, and knowledge
+                guidance with staff approval, auditability, and module-aware context.
+              </p>
+            </div>
+            <div className="ai-status">
+              <span>AI assistive layer</span>
+              <strong>Approval required</strong>
+            </div>
+          </div>
+
+          <div className="ai-metric-grid">
+            {aiMetrics.map((metric) => (
+              <article className="ai-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="ai-layout">
+            <div className="ai-panel">
+              <div className="card-heading">
+                <span>AI Resident Summary</span>
+                <strong>Last 30 days</strong>
+              </div>
+              <div className="ai-summary-list" aria-label="AI resident summaries">
+                {aiResidentSummaries.map((summary) => (
+                  <article key={summary.resident}>
+                    <div className="ai-summary-header">
+                      <strong>{summary.resident}</strong>
+                      <span>{summary.period}</span>
+                    </div>
+                    <p>{summary.summary}</p>
+                    <div className="ai-chip-row">
+                      {summary.highlights.map((highlight) => (
+                        <span key={highlight}>{highlight}</span>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="ai-panel">
+              <div className="card-heading">
+                <span>AI Compliance Assistant</span>
+                <strong>Risk detection and recommendations</strong>
+              </div>
+              <div className="ai-compliance-list" aria-label="AI compliance insights">
+                {aiComplianceInsights.map((insight) => (
+                  <article key={insight.risk}>
+                    <div>
+                      <strong>{insight.risk}</strong>
+                      <span>{insight.module}</span>
+                    </div>
+                    <p>{insight.recommendation}</p>
+                    <span className={`ai-severity-pill ${insight.severity.toLowerCase()}`}>{insight.severity}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="ai-layout">
+            <div className="ai-panel">
+              <div className="card-heading">
+                <span>AI Family Update Drafts</span>
+                <strong>Staff approval before sending</strong>
+              </div>
+              <div className="ai-family-draft-list" aria-label="AI family update drafts">
+                {aiFamilyDrafts.map((draft) => (
+                  <article key={`${draft.resident}-${draft.topic}`}>
+                    <div>
+                      <strong>{draft.topic}</strong>
+                      <span>{draft.resident}</span>
+                    </div>
+                    <p>{draft.draft}</p>
+                    <small>{draft.approval}</small>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="ai-panel">
+              <div className="card-heading">
+                <span>AI Knowledge Assistant</span>
+                <strong>Module-aware guidance</strong>
+              </div>
+              <div className="ai-knowledge-list" aria-label="AI knowledge answers">
+                {aiKnowledgeAnswers.map((answer) => (
+                  <article key={answer.question}>
+                    <strong>{answer.question}</strong>
+                    <p>{answer.answer}</p>
+                    <span>{answer.module}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="ai-panel integration-panel">
+            <div className="card-heading">
+              <span>AI integration contract</span>
+              <strong>Resident, compliance, family, knowledge, and audit hooks</strong>
+            </div>
+            <ul className="check-list">
+              {aiIntegrationRequirements.map((requirement) => (
                 <li key={requirement}>{requirement}</li>
               ))}
             </ul>
