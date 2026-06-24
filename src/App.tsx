@@ -26,6 +26,14 @@ import {
   notificationTemplates
 } from './data/notifications';
 import {
+  batchPrintJobs,
+  printCapabilities,
+  printIntegrationRequirements,
+  printPreview,
+  printTemplates,
+  templateBuilderFeatures
+} from './data/print';
+import {
   commandCapabilities,
   favorites,
   personalizedDashboards,
@@ -119,6 +127,7 @@ function App() {
             'Resident Command Center',
             'Productivity System',
             'Notification Center Pro',
+            'Print Center Pro',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -132,8 +141,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-4</strong>
-            <span>Notifications active</span>
+            <strong>Phase 0-5</strong>
+            <span>Print engine active</span>
           </div>
         </div>
       </aside>
@@ -163,6 +172,9 @@ function App() {
               </a>
               <a className="button secondary" href="#notification-center-pro">
                 Open Notifications
+              </a>
+              <a className="button secondary" href="#print-center-pro">
+                Open Print Center
               </a>
             </div>
           </div>
@@ -425,6 +437,139 @@ function App() {
                 ))}
               </ul>
             </div>
+          </div>
+        </section>
+
+        <section className="content-card print-center" id="print-center-pro" aria-labelledby="print-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 5</p>
+              <h2 id="print-title">Print Center Pro</h2>
+              <p>
+                Enterprise print and export engine for PDF, CSV, and Excel with template building, preview,
+                batch printing, branding, signatures, QR codes, barcodes, and module-wide print integration.
+              </p>
+            </div>
+            <div className="print-status">
+              <span>Preview engine</span>
+              <strong>Required before print</strong>
+            </div>
+          </div>
+
+          <div className="print-capability-grid">
+            {printCapabilities.map((capability) => (
+              <article className="print-capability-card" key={capability.format}>
+                <span>{capability.format}</span>
+                <p>{capability.purpose}</p>
+                <strong>{capability.defaultUse}</strong>
+              </article>
+            ))}
+          </div>
+
+          <div className="print-layout">
+            <div className="print-panel">
+              <div className="card-heading">
+                <span>Template Builder</span>
+                <strong>Configurable print components</strong>
+              </div>
+              <div className="builder-feature-grid" aria-label="Template builder features">
+                {templateBuilderFeatures.map((feature) => (
+                  <span key={feature}>{feature}</span>
+                ))}
+              </div>
+            </div>
+
+            <div className="print-panel print-preview-panel">
+              <div className="card-heading">
+                <span>Preview before printing</span>
+                <strong>{printPreview.template}</strong>
+              </div>
+              <div className="preview-sheet" aria-label="Print preview">
+                <div className="preview-header">
+                  <span>{printPreview.watermark}</span>
+                  <strong>{printPreview.resident}</strong>
+                </div>
+                <dl>
+                  <div>
+                    <dt>Pages</dt>
+                    <dd>{printPreview.pageCount}</dd>
+                  </div>
+                  <div>
+                    <dt>Generated</dt>
+                    <dd>{printPreview.lastGenerated}</dd>
+                  </div>
+                </dl>
+                <ul>
+                  {printPreview.validation.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="print-layout">
+            <div className="print-panel">
+              <div className="card-heading">
+                <span>Saved templates</span>
+                <strong>CRUD template registry</strong>
+              </div>
+              <div className="print-template-list">
+                {printTemplates.map((template) => (
+                  <article key={template.name}>
+                    <div className="print-template-header">
+                      <div>
+                        <strong>{template.name}</strong>
+                        <span>
+                          {template.module} | {template.format}
+                        </span>
+                      </div>
+                      <span className={`pill ${template.status === 'Active' ? 'registered' : 'planned'}`}>
+                        {template.status}
+                      </span>
+                    </div>
+                    <div className="print-chip-row">
+                      {template.includes.map((item) => (
+                        <span key={item}>{item}</span>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="print-panel">
+              <div className="card-heading">
+                <span>Batch printing</span>
+                <strong>Multi-record output</strong>
+              </div>
+              <div className="batch-list" aria-label="Batch print jobs">
+                {batchPrintJobs.map((job) => (
+                  <article key={job.name}>
+                    <div>
+                      <strong>{job.name}</strong>
+                      <span>{job.scope}</span>
+                    </div>
+                    <p>
+                      {job.records} | {job.output}
+                    </p>
+                    <span className="batch-status">{job.status}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="print-panel integration-panel">
+            <div className="card-heading">
+              <span>Print Center integration contract</span>
+              <strong>Required for every future module</strong>
+            </div>
+            <ul className="check-list">
+              {printIntegrationRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
           </div>
         </section>
 

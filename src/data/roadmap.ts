@@ -97,7 +97,7 @@ export const foundationPhases: Phase[] = [
   {
     id: '5',
     title: 'Print Center Pro',
-    status: 'planned',
+    status: 'foundation',
     milestone: 'Enterprise Print Engine',
     summary:
       'PDF, CSV, Excel, batch printing, template builder, previews, logos, signatures, QR codes, and barcodes.',

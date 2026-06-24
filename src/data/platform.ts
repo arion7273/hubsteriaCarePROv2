@@ -200,7 +200,7 @@ export const featureRegistry: FeatureRegistryItem[] = [
   {
     featureName: 'Print Center Integration',
     module: 'Platform Services',
-    status: 'gated',
+    status: 'registered',
     dependencies: ['Templates', 'Preview', 'Batch Printing'],
     version: '0.1.0'
   },
@@ -237,6 +237,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     module: 'Notification Center Pro',
     status: 'registered',
     dependencies: ['In-App', 'Email', 'SMS', 'Push'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Print Template Builder',
+    module: 'Print Center Pro',
+    status: 'registered',
+    dependencies: ['Headers', 'Footers', 'Logos', 'Signatures', 'QR Codes', 'Barcodes', 'Conditional Content'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Print Preview and Batch Printing',
+    module: 'Print Center Pro',
+    status: 'registered',
+    dependencies: ['PDF', 'CSV', 'Excel', 'Audit Log Contract'],
     version: '0.1.0'
   }
 ];

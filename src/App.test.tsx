@@ -167,4 +167,40 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Notification rules remain tenant-scoped/i)).toBeInTheDocument();
     expect(screen.getByText(/Delivery tracking records queued, delivered, read, failed, and escalated states/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 5 Print Center Pro formats, template builder, and preview validation', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Print Center Pro' })).toBeInTheDocument();
+    ['PDF', 'CSV', 'Excel'].forEach((format) => {
+      expect(screen.getAllByText(format).length).toBeGreaterThan(0);
+    });
+
+    const builder = screen.getByLabelText('Template builder features');
+    ['Headers', 'Footers', 'Logos', 'Signatures', 'QR Codes', 'Barcodes', 'Conditional Content'].forEach((feature) => {
+      expect(within(builder).getByText(feature)).toBeInTheDocument();
+    });
+
+    const preview = screen.getByLabelText('Print preview');
+    expect(within(preview).getByText('Maria Alvarez')).toBeInTheDocument();
+    expect(within(preview).getByText('QR code scannable')).toBeInTheDocument();
+    expect(within(preview).getByText('No missing required fields')).toBeInTheDocument();
+  });
+
+  it('tracks print templates, batch jobs, and required module integration contract', () => {
+    render(<App />);
+
+    expect(screen.getAllByText('Resident Face Sheet').length).toBeGreaterThan(0);
+    expect(screen.getByText('Medication Administration Record')).toBeInTheDocument();
+    expect(screen.getByText('Incident Register')).toBeInTheDocument();
+
+    const batchJobs = screen.getByLabelText('Batch print jobs');
+    expect(within(batchJobs).getByText('Survey Readiness Packet')).toBeInTheDocument();
+    expect(within(batchJobs).getByText('Monthly Medication Audit')).toBeInTheDocument();
+    expect(within(batchJobs).getByText('Preview Required')).toBeInTheDocument();
+
+    expect(screen.getByText(/Every major record can route to Print Center Pro/i)).toBeInTheDocument();
+    expect(screen.getByText(/Preview is required before final print, export, or batch generation/i)).toBeInTheDocument();
+    expect(screen.getByText(/Print actions create immutable audit records/i)).toBeInTheDocument();
+  });
 });

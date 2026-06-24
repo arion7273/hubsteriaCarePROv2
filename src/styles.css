@@ -1245,6 +1245,210 @@ p {
   color: var(--ink);
 }
 
+.print-center {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.print-status {
+  display: grid;
+  gap: 0.2rem;
+  min-width: min(100%, 16rem);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.print-status span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.print-status strong {
+  color: var(--primary-strong);
+}
+
+.print-capability-grid,
+.print-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.print-capability-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.print-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.print-capability-card,
+.print-panel,
+.preview-sheet,
+.print-template-list article,
+.batch-list article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.print-capability-card,
+.print-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.print-capability-card span {
+  color: var(--primary);
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+
+.print-capability-card p {
+  margin-bottom: 0;
+}
+
+.print-capability-card strong {
+  color: var(--primary-strong);
+}
+
+.builder-feature-grid,
+.print-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.builder-feature-grid span,
+.print-chip-row span {
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 0.55rem 0.75rem;
+}
+
+.print-preview-panel {
+  background:
+    radial-gradient(circle at right top, rgba(47, 182, 168, 0.16), transparent 16rem),
+    var(--surface-strong);
+}
+
+.preview-sheet {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  background: var(--surface);
+  box-shadow: 0 18px 36px rgba(20, 42, 47, 0.1);
+}
+
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-header span {
+  border-radius: 999px;
+  background: #fff4da;
+  color: var(--warning);
+  font-size: 0.75rem;
+  font-weight: 900;
+  padding: 0.45rem 0.65rem;
+  text-transform: uppercase;
+}
+
+.preview-sheet dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.preview-sheet dl div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.preview-sheet dt {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.preview-sheet dd {
+  margin: 0;
+  font-weight: 900;
+}
+
+.preview-sheet ul {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.print-template-list,
+.batch-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.print-template-list article,
+.batch-list article {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.print-template-header,
+.batch-list article {
+  align-items: center;
+}
+
+.print-template-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.print-template-header span:not(.pill),
+.batch-list span:not(.batch-status) {
+  display: block;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.batch-list article {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+}
+
+.batch-list p {
+  margin: 0;
+}
+
+.batch-status {
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  font-size: 0.75rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  white-space: nowrap;
+}
+
 .role-grid,
 .roadmap-grid {
   display: grid;
@@ -1394,6 +1598,7 @@ summary {
   .metric-grid,
   .notification-channel-grid,
   .notification-metric-grid,
+  .print-capability-grid,
   .profile-section-grid,
   .productivity-grid,
   .role-grid,
@@ -1408,7 +1613,8 @@ summary {
   .resident-layout,
   .module-connection-panel,
   .notification-layout,
-  .notification-bottom-grid {
+  .notification-bottom-grid,
+  .print-layout {
     grid-template-columns: 1fr;
   }
 
@@ -1444,6 +1650,7 @@ summary {
   .metric-grid,
   .notification-channel-grid,
   .notification-metric-grid,
+  .print-capability-grid,
   .profile-section-grid,
   .productivity-grid,
   .role-grid,
@@ -1472,6 +1679,7 @@ summary {
   }
 
   .history-list article,
+  .print-template-header,
   .rule-header,
   .template-list article > div:first-child {
     align-items: flex-start;
@@ -1509,6 +1717,11 @@ summary {
   }
 
   .global-results article {
+    grid-template-columns: 1fr;
+  }
+
+  .batch-list article,
+  .preview-sheet dl {
     grid-template-columns: 1fr;
   }
 
