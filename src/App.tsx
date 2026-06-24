@@ -127,6 +127,13 @@ import {
   aiResidentSummaries
 } from './data/ai';
 import {
+  loadTestTargets,
+  performanceIntegrationRequirements,
+  performanceMetrics,
+  scalabilityArchitecture,
+  scaleCapabilities
+} from './data/performance';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -262,6 +269,7 @@ function App() {
             'Help Desk',
             'Executive Command Center',
             'AI Insights',
+            'Performance & Scalability',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -294,7 +302,9 @@ function App() {
                                         ? '#executive-command-center'
                                         : item === 'AI Insights'
                                           ? '#ai-assistant-insights'
-                                          : `#${item.toLowerCase().replaceAll(' ', '-')}`
+                                          : item === 'Performance & Scalability'
+                                            ? '#performance-scalability'
+                                            : `#${item.toLowerCase().replaceAll(' ', '-')}`
               }
               key={item}
             >
@@ -306,8 +316,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-18</strong>
-            <span>AI insights active</span>
+            <strong>Phase 0-19</strong>
+            <span>Scale foundation active</span>
           </div>
         </div>
       </aside>
@@ -382,6 +392,9 @@ function App() {
               </a>
               <a className="button secondary" href="#ai-assistant-insights">
                 Open AI Insights
+              </a>
+              <a className="button secondary" href="#performance-scalability">
+                Open Performance
               </a>
             </div>
           </div>
@@ -2485,6 +2498,101 @@ function App() {
                 <li key={requirement}>{requirement}</li>
               ))}
             </ul>
+          </div>
+        </section>
+
+        <section className="content-card performance-center" id="performance-scalability" aria-labelledby="performance-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 19</p>
+              <h2 id="performance-title">Performance & Scalability</h2>
+              <p>
+                Scale foundation for caching, background processing, queueing, optimized search, database
+                indexing, lazy loading, infinite scroll, offline mobile support, load testing, and stress testing.
+              </p>
+            </div>
+            <div className="performance-status">
+              <span>Scale target</span>
+              <strong>Thousands of facilities</strong>
+            </div>
+          </div>
+
+          <div className="performance-metric-grid">
+            {performanceMetrics.map((metric) => (
+              <article className="performance-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="performance-layout">
+            <div className="performance-panel">
+              <div className="card-heading">
+                <span>Scalability Capabilities</span>
+                <strong>Platform services for expansion</strong>
+              </div>
+              <div className="scale-capability-list" aria-label="Scale capabilities">
+                {scaleCapabilities.map((capability) => (
+                  <article key={capability.name}>
+                    <div>
+                      <strong>{capability.name}</strong>
+                      <p>{capability.purpose}</p>
+                    </div>
+                    <span className={`performance-status-pill ${capability.status.toLowerCase().replaceAll(' ', '-')}`}>
+                      {capability.status}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="performance-panel">
+              <div className="card-heading">
+                <span>Load and Stress Testing</span>
+                <strong>Critical performance scenarios</strong>
+              </div>
+              <div className="load-test-list" aria-label="Load test targets">
+                {loadTestTargets.map((target) => (
+                  <article key={target.scenario}>
+                    <div>
+                      <strong>{target.scenario}</strong>
+                      <p>{target.target}</p>
+                    </div>
+                    <span className={`performance-status-pill ${target.status.toLowerCase().replaceAll(' ', '-')}`}>
+                      {target.status}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="performance-layout">
+            <div className="performance-panel">
+              <div className="card-heading">
+                <span>Scalability Architecture</span>
+                <strong>Tenant-safe performance patterns</strong>
+              </div>
+              <ul className="scalability-list">
+                {scalabilityArchitecture.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="performance-panel integration-panel">
+              <div className="card-heading">
+                <span>Performance integration contract</span>
+                <strong>Budgets, CI, monitoring, load testing, and tenant safety</strong>
+              </div>
+              <ul className="check-list">
+                {performanceIntegrationRequirements.map((requirement) => (
+                  <li key={requirement}>{requirement}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         </section>
 

@@ -448,6 +448,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Family Portal', 'Hubsteria Academy', 'Configuration Center'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Performance Budgets and Load Testing',
+    module: 'Performance & Scalability',
+    status: 'registered',
+    dependencies: ['Regression Protection', 'Production CI'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Caching Queues Search and Offline Mobile',
+    module: 'Performance & Scalability',
+    status: 'registered',
+    dependencies: ['Tenant Isolation Guard', 'Audit Log Contract'],
+    version: '0.1.0'
   }
 ];
 

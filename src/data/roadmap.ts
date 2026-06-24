@@ -240,7 +240,7 @@ export const enterprisePhases: Phase[] = [
   {
     id: '19',
     title: 'Performance & Scalability',
-    status: 'future',
+    status: 'foundation',
     milestone: 'Scale Foundation',
     summary: 'Caching, queues, optimized search, database indexing, lazy loading, infinite scroll, offline mobile, and load testing.',
     deliverables: ['Caching', 'Queues', 'Optimized search', 'Load testing']

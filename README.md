@@ -25,6 +25,7 @@ This repository currently implements the first product foundation milestone:
 - Phase 16 Help Desk & Support Center with ticket categories, screenshot/screen-recording support, knowledge base linking, remote assistance guardrails, support analytics, and SLA tracking
 - Phase 17 Executive Command Center with multi-facility occupancy, revenue, medication compliance, incidents, assessments, staffing, training, billing, survey readiness, compliance, and facility health scores
 - Phase 18 AI Assistant & Insights Layer with AI resident summaries, compliance risk detection, family update drafts, knowledge assistant answers, approval controls, and audit guardrails
+- Phase 19 Performance & Scalability with caching, background processing, queueing, optimized search, database indexing, lazy loading, infinite scroll, offline mobile readiness, and load/stress testing targets
 - Roadmap registry for phases 0-20
 - Regression tests for the foundation shell
 

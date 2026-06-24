@@ -3884,6 +3884,131 @@ p {
   color: var(--success);
 }
 
+.performance-center {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.performance-status {
+  display: grid;
+  gap: 0.2rem;
+  min-width: min(100%, 17rem);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.performance-status span {
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.performance-status strong {
+  color: var(--primary-strong);
+}
+
+.performance-metric-grid,
+.performance-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.performance-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.performance-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.performance-metric-card,
+.performance-panel,
+.scale-capability-list article,
+.load-test-list article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.performance-metric-card,
+.performance-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.performance-metric-card span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.performance-metric-card strong {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  letter-spacing: -0.05em;
+}
+
+.performance-metric-card small {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.scale-capability-list,
+.load-test-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.scale-capability-list article,
+.load-test-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.scale-capability-list p,
+.load-test-list p {
+  margin: 0;
+}
+
+.performance-status-pill {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.performance-status-pill.ready {
+  background: #ddf6ed;
+  color: var(--success);
+}
+
+.performance-status-pill.in-progress {
+  background: #fff4da;
+  color: var(--warning);
+}
+
+.performance-status-pill.planned {
+  background: #e8eef9;
+  color: #355985;
+}
+
+.scalability-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
 .role-grid,
 .roadmap-grid {
   display: grid;
@@ -4053,6 +4178,7 @@ summary {
   .executive-score-grid,
   .executive-drilldown-grid,
   .ai-metric-grid,
+  .performance-metric-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -4083,6 +4209,7 @@ summary {
   .support-layout,
   .executive-layout,
   .ai-layout,
+  .performance-layout,
   .module-connection-panel,
   .notification-layout,
   .notification-bottom-grid,
@@ -4143,6 +4270,7 @@ summary {
   .executive-score-grid,
   .executive-drilldown-grid,
   .ai-metric-grid,
+  .performance-metric-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -4241,6 +4369,8 @@ summary {
   .ai-summary-header,
   .ai-family-draft-list article > div,
   .ai-compliance-list article > div,
+  .scale-capability-list article,
+  .load-test-list article,
   .sync-field-list article,
   .refill-list article,
   .configuration-audit-list article,

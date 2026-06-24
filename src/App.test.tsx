@@ -737,4 +737,34 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/AI family update drafts must require staff approval/i)).toBeInTheDocument();
     expect(screen.getByText(/All AI suggestions, generated drafts, approvals, edits, dismissals/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 19 Performance and Scalability budgets and capabilities', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Performance & Scalability' })).toBeInTheDocument();
+    expect(screen.getByText('Dashboard Load')).toBeInTheDocument();
+    expect(screen.getByText('Resident Search')).toBeInTheDocument();
+    expect(screen.getByText('Medication Actions')).toBeInTheDocument();
+
+    const capabilities = screen.getByLabelText('Scale capabilities');
+    ['Caching', 'Background Processing', 'Queue System', 'Optimized Search', 'Database Indexing', 'Lazy Loading', 'Infinite Scroll', 'Offline-Friendly Mobile Support'].forEach(
+      (capability) => {
+        expect(within(capabilities).getByText(capability)).toBeInTheDocument();
+      }
+    );
+  });
+
+  it('tracks Phase 19 load testing architecture and integration guardrails', () => {
+    render(<App />);
+
+    const loadTests = screen.getByLabelText('Load test targets');
+    expect(within(loadTests).getByText('Executive dashboard multi-facility load')).toBeInTheDocument();
+    expect(within(loadTests).getByText('DigitalRX webhook burst')).toBeInTheDocument();
+    expect(within(loadTests).getByText(/Handle 10k order\/refill events per hour/i)).toBeInTheDocument();
+
+    expect(screen.getByText(/Tenant-aware caching keys include organization, facility, role/i)).toBeInTheDocument();
+    expect(screen.getByText(/Background workers process notifications, audit writes, pharmacy sync/i)).toBeInTheDocument();
+    expect(screen.getByText(/Every module must preserve dashboard, resident search, and medication action performance budgets/i)).toBeInTheDocument();
+    expect(screen.getByText(/Scalability architecture must support thousands of facilities/i)).toBeInTheDocument();
+  });
 });
