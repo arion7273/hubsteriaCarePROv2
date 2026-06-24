@@ -2,17 +2,20 @@ import type { AuditEvent } from './audit';
 import { assertFeatureRegistration, type RegisteredFeature } from './feature-registry';
 import type {
   AuditLogRepository,
+  AdlEntryRepository,
   AuthSessionRepository,
   BackendRepositories,
+  CareTaskRepository,
   FacilityRepository,
   FeatureRegistryRepository,
   MfaChallengeRepository,
   OrganizationRepository,
   PasswordResetRepository,
   ResidentRepository,
+  ServicePlanRepository,
   UserRepository
 } from './repositories';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
+import type { AdlEntry, AuthSession, CareTask, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, ServicePlanRecord, User, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -85,6 +88,40 @@ export class InMemoryResidentRepository implements ResidentRepository {
   async save(resident: Resident): Promise<Resident> {
     this.residents.set(resident.id, resident);
     return resident;
+  }
+}
+
+export class InMemoryCareTaskRepository implements CareTaskRepository {
+  private readonly tasks = new Map<UUID, CareTask>();
+  async getById(id: UUID): Promise<CareTask | null> { return this.tasks.get(id) ?? null; }
+  async listByResident(residentId: UUID): Promise<CareTask[]> {
+    return [...this.tasks.values()].filter((task) => task.residentId === residentId);
+  }
+  async save(task: CareTask): Promise<CareTask> {
+    this.tasks.set(task.id, task);
+    return task;
+  }
+}
+
+export class InMemoryAdlEntryRepository implements AdlEntryRepository {
+  private readonly entries = new Map<UUID, AdlEntry>();
+  async listByResident(residentId: UUID): Promise<AdlEntry[]> {
+    return [...this.entries.values()].filter((entry) => entry.residentId === residentId);
+  }
+  async save(entry: AdlEntry): Promise<AdlEntry> {
+    this.entries.set(entry.id, entry);
+    return entry;
+  }
+}
+
+export class InMemoryServicePlanRepository implements ServicePlanRepository {
+  private readonly plans = new Map<UUID, ServicePlanRecord>();
+  async listByResident(residentId: UUID): Promise<ServicePlanRecord[]> {
+    return [...this.plans.values()].filter((plan) => plan.residentId === residentId);
+  }
+  async save(plan: ServicePlanRecord): Promise<ServicePlanRecord> {
+    this.plans.set(plan.id, plan);
+    return plan;
   }
 }
 
@@ -177,6 +214,9 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     facilities: new InMemoryFacilityRepository(),
     users: new InMemoryUserRepository(),
     residents: new InMemoryResidentRepository(),
+    careTasks: new InMemoryCareTaskRepository(),
+    adlEntries: new InMemoryAdlEntryRepository(),
+    servicePlans: new InMemoryServicePlanRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
     featureRegistry: new InMemoryFeatureRegistryRepository(),
     authSessions: new InMemoryAuthSessionRepository(),

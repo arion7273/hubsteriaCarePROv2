@@ -1,6 +1,6 @@
 import type { AuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
+import type { AdlEntry, AuthSession, CareTask, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, ServicePlanRecord, User, UUID } from './types';
 
 export interface OrganizationRepository {
   getById(id: UUID): Promise<Organization | null>;
@@ -25,6 +25,22 @@ export interface ResidentRepository {
   getById(id: UUID): Promise<Resident | null>;
   listByFacility(organizationId: UUID, facilityId: UUID): Promise<Resident[]>;
   save(resident: Resident): Promise<Resident>;
+}
+
+export interface CareTaskRepository {
+  getById(id: UUID): Promise<CareTask | null>;
+  listByResident(residentId: UUID): Promise<CareTask[]>;
+  save(task: CareTask): Promise<CareTask>;
+}
+
+export interface AdlEntryRepository {
+  listByResident(residentId: UUID): Promise<AdlEntry[]>;
+  save(entry: AdlEntry): Promise<AdlEntry>;
+}
+
+export interface ServicePlanRepository {
+  listByResident(residentId: UUID): Promise<ServicePlanRecord[]>;
+  save(plan: ServicePlanRecord): Promise<ServicePlanRecord>;
 }
 
 export interface AuditLogRepository {
@@ -58,6 +74,9 @@ export type BackendRepositories = {
   facilities: FacilityRepository;
   users: UserRepository;
   residents: ResidentRepository;
+  careTasks: CareTaskRepository;
+  adlEntries: AdlEntryRepository;
+  servicePlans: ServicePlanRepository;
   auditLogs: AuditLogRepository;
   featureRegistry: FeatureRegistryRepository;
   authSessions: AuthSessionRepository;

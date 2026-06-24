@@ -1,4 +1,4 @@
-import type { AuditEvent, AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
+import type { AdlEntry, AuditEvent, AuthSession, CareTask, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, ServicePlanRecord, User, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -181,6 +181,42 @@ export const residentStatements = {
         resident.status
       ]
     };
+  }
+};
+
+export const careTaskStatements = {
+  selectById(id: UUID): SqlStatement { return { text: 'SELECT * FROM care_tasks WHERE id = $1', values: [id] }; },
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM care_tasks WHERE resident_id = $1 ORDER BY due_at ASC', values: [residentId] }; },
+  upsert(task: CareTask): SqlStatement {
+    return { text: `
+      INSERT INTO care_tasks (id, organization_id, facility_id, resident_id, title, task_type, due_at, assigned_staff, status)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      ON CONFLICT (id) DO UPDATE SET title=EXCLUDED.title, task_type=EXCLUDED.task_type, due_at=EXCLUDED.due_at, assigned_staff=EXCLUDED.assigned_staff, status=EXCLUDED.status, updated_at=now()
+      RETURNING *
+    `, values: [task.id, task.organizationId, task.facilityId, task.residentId, task.title, task.taskType, task.dueAt, task.assignedStaff, task.status] };
+  }
+};
+
+export const adlEntryStatements = {
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM adl_entries WHERE resident_id = $1 ORDER BY recorded_at DESC', values: [residentId] }; },
+  insert(entry: AdlEntry): SqlStatement {
+    return { text: `
+      INSERT INTO adl_entries (id, organization_id, facility_id, resident_id, category, outcome, note, recorded_at, recorded_by)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      RETURNING *
+    `, values: [entry.id, entry.organizationId, entry.facilityId, entry.residentId, entry.category, entry.outcome, entry.note ?? null, entry.recordedAt, entry.recordedBy] };
+  }
+};
+
+export const servicePlanStatements = {
+  listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM service_plans WHERE resident_id = $1 ORDER BY service', values: [residentId] }; },
+  upsert(plan: ServicePlanRecord): SqlStatement {
+    return { text: `
+      INSERT INTO service_plans (id, organization_id, facility_id, resident_id, service, schedule, assigned_staff, exceptions, status)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      ON CONFLICT (id) DO UPDATE SET service=EXCLUDED.service, schedule=EXCLUDED.schedule, assigned_staff=EXCLUDED.assigned_staff, exceptions=EXCLUDED.exceptions, status=EXCLUDED.status, updated_at=now()
+      RETURNING *
+    `, values: [plan.id, plan.organizationId, plan.facilityId, plan.residentId, plan.service, plan.schedule, plan.assignedStaff, plan.exceptions ?? null, plan.status] };
   }
 };
 

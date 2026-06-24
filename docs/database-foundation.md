@@ -22,6 +22,10 @@ The initial database target is PostgreSQL.
   - auth sessions
   - MFA challenges
   - password reset requests
+- `database/migrations/0006_tasks_adls_services.sql`
+  - care tasks
+  - ADL entries
+  - service plans
 
 Run migrations with:
 

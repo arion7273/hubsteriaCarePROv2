@@ -1,6 +1,6 @@
 import type { RegisteredFeature } from '../../domain';
 import type { AuditEvent } from '../../domain/audit';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
+import type { AdlEntry, AuthSession, CareTask, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, ServicePlanRecord, User } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -44,6 +44,30 @@ export function mapResidentRow(row: PostgresRow): Resident {
     room: row.room ? String(row.room) : undefined,
     levelOfCare: row.level_of_care ? String(row.level_of_care) : undefined,
     status: status as Resident['status']
+  };
+}
+
+export function mapCareTaskRow(row: PostgresRow): CareTask {
+  return {
+    id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
+    title: String(row.title), taskType: String(row.task_type) as CareTask['taskType'], dueAt: String(row.due_at),
+    assignedStaff: String(row.assigned_staff), status: String(row.status) as CareTask['status']
+  };
+}
+
+export function mapAdlEntryRow(row: PostgresRow): AdlEntry {
+  return {
+    id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
+    category: String(row.category), outcome: String(row.outcome), note: row.note ? String(row.note) : undefined,
+    recordedAt: String(row.recorded_at), recordedBy: String(row.recorded_by)
+  };
+}
+
+export function mapServicePlanRow(row: PostgresRow): ServicePlanRecord {
+  return {
+    id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
+    service: String(row.service), schedule: String(row.schedule), assignedStaff: String(row.assigned_staff),
+    exceptions: row.exceptions ? String(row.exceptions) : undefined, status: String(row.status) as ServicePlanRecord['status']
   };
 }
 

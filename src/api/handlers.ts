@@ -1,5 +1,5 @@
 import type { RegisteredFeature } from '../domain';
-import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type Facility, type Organization, type Resident, type User, type UUID } from '../domain';
+import { AuthService, BackendFoundationService, type AccessContext, type AdlEntry, type BackendRepositories, type CareTask, type Facility, type Organization, type Resident, type ServicePlanRecord, type User, type UUID } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -52,6 +52,11 @@ export type UpdateUserBody = {
   userId: UUID;
   updates: Partial<Omit<User, 'id'>>;
 };
+
+export type CreateCareTaskBody = Omit<CareTask, 'id'>;
+export type CompleteCareTaskBody = { taskId: UUID };
+export type LogAdlBody = Omit<AdlEntry, 'id' | 'recordedAt' | 'recordedBy'>;
+export type CreateServicePlanBody = Omit<ServicePlanRecord, 'id'>;
 
 export async function loginHandler(services: ApiServices, request: ApiRequest<LoginBody>): Promise<ApiResponse> {
   return toApiResponse(async () => {
@@ -226,6 +231,58 @@ export async function updateUserHandler(services: ApiServices, request: ApiReque
   return withContext(services, request, async (context) => {
     assertBody(request.body);
     return services.backend.updateUser(context, request.body.userId, request.body.updates);
+  });
+}
+
+export async function createCareTaskHandler(services: ApiServices, request: ApiRequest<CreateCareTaskBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.createCareTask(context, request.body);
+  }, 201);
+}
+
+export async function listCareTasksHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const residentId = request.query?.residentId;
+    if (!residentId) throw new Error('residentId is required');
+    return services.backend.listCareTasksByResident(context, residentId);
+  });
+}
+
+export async function completeCareTaskHandler(services: ApiServices, request: ApiRequest<CompleteCareTaskBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.completeCareTask(context, request.body.taskId);
+  });
+}
+
+export async function logAdlHandler(services: ApiServices, request: ApiRequest<LogAdlBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.logAdl(context, request.body);
+  }, 201);
+}
+
+export async function listAdlsHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const residentId = request.query?.residentId;
+    if (!residentId) throw new Error('residentId is required');
+    return services.backend.listAdlsByResident(context, residentId);
+  });
+}
+
+export async function createServicePlanHandler(services: ApiServices, request: ApiRequest<CreateServicePlanBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.createServicePlan(context, request.body);
+  }, 201);
+}
+
+export async function listServicePlansHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const residentId = request.query?.residentId;
+    if (!residentId) throw new Error('residentId is required');
+    return services.backend.listServicePlansByResident(context, residentId);
   });
 }
 
