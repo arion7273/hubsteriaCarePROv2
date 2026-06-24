@@ -1,12 +1,25 @@
 import { createNodeApiServer } from '../api';
 import { readServerConfig } from './config';
-import { initializeObservability } from './observability';
+import { createRuntimeObservability } from './observability';
 import { createRuntimeServices, seedDemoMasterAdmin } from './services';
 
 const config = readServerConfig();
-initializeObservability(config);
+const observability = createRuntimeObservability(config);
 const services = createRuntimeServices(config);
-const server = createNodeApiServer(services);
+const server = createNodeApiServer(services, {
+  metrics: observability.metrics,
+  structuredLogger: observability.structuredLogger,
+  errorTracker: observability.errorTracker,
+  readiness: async () => ({
+    ok: true,
+    checks: {
+      api: true,
+      repositoryMode: config.repositoryMode,
+      monitoringConfigured: String(observability.status.monitoringConfigured),
+      errorTrackingConfigured: String(observability.status.errorTrackingConfigured)
+    }
+  })
+});
 
 if (config.repositoryMode === 'memory') {
   await seedDemoMasterAdmin(services);

@@ -1,4 +1,5 @@
 import type { ServerConfig } from './config';
+import { createConsoleStructuredLogger, createInMemoryMetricsRecorder, createPlaceholderErrorTracker } from '../api/observability';
 
 export type ObservabilityStatus = {
   monitoringConfigured: boolean;
@@ -21,4 +22,15 @@ export function initializeObservability(config: ServerConfig): ObservabilityStat
   });
 
   return status;
+}
+
+export function createRuntimeObservability(config: ServerConfig) {
+  const status = initializeObservability(config);
+
+  return {
+    status,
+    metrics: createInMemoryMetricsRecorder(),
+    structuredLogger: createConsoleStructuredLogger(),
+    errorTracker: createPlaceholderErrorTracker(status.errorTrackingConfigured)
+  };
 }
