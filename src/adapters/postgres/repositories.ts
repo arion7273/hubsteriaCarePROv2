@@ -40,6 +40,7 @@ import type {
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
+  OperationalRecord,
   Organization,
   PaymentTransaction,
   PasswordResetRequest,
@@ -50,7 +51,6 @@ import type {
   UserCredential,
   UUID
 } from '../../domain/types';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, OperationalRecord, Organization, PasswordResetRequest, Resident, RoleTier, User, UserCredential, UUID } from '../../domain/types';
 import {
   assessmentStatements,
   adlEntryStatements,

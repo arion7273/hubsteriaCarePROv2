@@ -14,6 +14,7 @@ import type {
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
+  OperationalRecord,
   Organization,
   PaymentTransaction,
   PasswordResetRequest,
@@ -25,7 +26,6 @@ import type {
   UserCredential
 } from '../../domain/types';
 import type { AdlEntry } from '../../domain/types';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, OperationalRecord, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User, UserCredential } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -243,6 +243,9 @@ export function mapPaymentTransactionRow(row: PostgresRow): PaymentTransaction {
     id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
     invoiceId: row.invoice_id ? String(row.invoice_id) : undefined, type: String(row.type) as PaymentTransaction['type'],
     amountCents: Number(row.amount_cents), method: String(row.method), postedAt: String(row.posted_at), postedBy: String(row.posted_by)
+  };
+}
+
 export function mapOperationalRecordRow(row: PostgresRow): OperationalRecord {
   return {
     id: String(row.id),

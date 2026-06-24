@@ -286,7 +286,7 @@ const routeConfigs: RouteConfig[] = [
   { method: 'POST', path: '/billing/invoices', validate: isCreateInvoiceBody, handler: createInvoiceHandler as RouteHandler },
   { method: 'GET', path: '/billing/invoices', handler: listInvoicesHandler },
   { method: 'POST', path: '/billing/payments', validate: isRecordPaymentBody, handler: recordPaymentHandler as RouteHandler },
-  { method: 'GET', path: '/billing/payments', handler: listPaymentsHandler }
+  { method: 'GET', path: '/billing/payments', handler: listPaymentsHandler },
   { method: 'POST', path: '/operational-records', validate: isCreateOperationalRecordBody, handler: createOperationalRecordHandler as RouteHandler },
   { method: 'GET', path: '/operational-records', handler: listOperationalRecordsHandler },
   { method: 'GET', path: '/operational-records/get', handler: getOperationalRecordHandler },

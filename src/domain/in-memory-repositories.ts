@@ -42,6 +42,7 @@ import type {
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
+  OperationalRecord,
   Organization,
   PaymentTransaction,
   PasswordResetRequest,
@@ -51,7 +52,6 @@ import type {
   UserCredential,
   UUID
 } from './types';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, OperationalRecord, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -321,6 +321,9 @@ export class InMemoryPaymentTransactionRepository implements PaymentTransactionR
   async save(transaction: PaymentTransaction): Promise<PaymentTransaction> {
     this.transactions.set(transaction.id, transaction);
     return transaction;
+  }
+}
+
 export class InMemoryOperationalRecordRepository implements OperationalRecordRepository {
   private readonly records = new Map<UUID, OperationalRecord>();
 

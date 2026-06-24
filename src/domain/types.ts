@@ -252,6 +252,8 @@ export type ComplianceIssue = {
   severity: 'info' | 'warning' | 'critical';
   status: 'open' | 'resolved';
   resolutionLink: string;
+};
+
 export type OperationalRecord = {
   id: UUID;
   organizationId: UUID;

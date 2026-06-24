@@ -840,6 +840,8 @@ export class BackendFoundationService {
   async listPaymentTransactionsByResident(context: AccessContext, residentId: UUID): Promise<PaymentTransaction[]> {
     await this.getResident(context, residentId);
     return this.repositories.paymentTransactions.listByResident(residentId);
+  }
+
   async createOperationalRecord(
     context: AccessContext,
     input: Omit<OperationalRecord, 'id' | 'createdAt' | 'updatedAt'>

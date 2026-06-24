@@ -353,7 +353,6 @@ describe('BackendFoundationService', () => {
   });
 
   it('creates tasks, completes tasks, logs ADLs, and creates service plans with audit logs', async () => {
-  it('creates, lists, reads, and updates operational records with audit logs', async () => {
     const { repositories, service } = createTestService();
     await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
     await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
@@ -363,7 +362,6 @@ describe('BackendFoundationService', () => {
     );
 
     const task = await service.createCareTask(
-    const record = await service.createOperationalRecord(
       { user: { ...t3User, permissions: ['resident:write'] } },
       {
         organizationId: 'org-1',
@@ -410,6 +408,47 @@ describe('BackendFoundationService', () => {
     expect(servicePlan.service).toBe('Memory care evening support');
     await expect(service.listServicePlansByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
     await expect(repositories.auditLogs.listByEntity('CareTask', task.id)).resolves.toHaveLength(2);
+  });
+
+  it('creates, lists, reads, and updates operational records with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+    await service.createResident(
+      { user: { ...t3User, permissions: ['resident:write'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
+    );
+
+    const record = await service.createOperationalRecord(
+      { user: { ...t3User, permissions: ['resident:write'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        module: 'digitalrx',
+        recordType: 'pharmacy_sync',
+        status: 'queued',
+        title: 'DigitalRX refill sync',
+        payload: { refillId: 'refill-1' }
+      }
+    );
+
+    expect(record).toMatchObject({
+      module: 'digitalrx',
+      status: 'queued',
+      createdAt: '2026-06-24T01:00:00.000Z'
+    });
+    await expect(service.getOperationalRecord({ user: t3User }, record.id)).resolves.toMatchObject({ title: 'DigitalRX refill sync' });
+    await expect(
+      service.listOperationalRecordsByScope({ user: t3User }, { organizationId: 'org-1', facilityId: 'facility-1', module: 'digitalrx' })
+    ).resolves.toHaveLength(1);
+    await expect(
+      service.updateOperationalRecord({ user: { ...t3User, permissions: ['resident:write'] } }, record.id, {
+        status: 'completed',
+        payload: { refillId: 'refill-1', synced: true }
+      })
+    ).resolves.toMatchObject({ status: 'completed', payload: { synced: true, refillId: 'refill-1' } });
+    await expect(repositories.auditLogs.listByEntity('OperationalRecord', record.id)).resolves.toHaveLength(2);
   });
 
   it('creates, lists, and updates incidents and compliance issues with audit logs', async () => {
@@ -485,31 +524,6 @@ describe('BackendFoundationService', () => {
     await expect(service.listInvoicesByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
     await expect(service.listPaymentTransactionsByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
     await expect(repositories.auditLogs.listByEntity('Invoice', invoice.id)).resolves.toHaveLength(1);
-        module: 'digitalrx',
-        recordType: 'pharmacy_sync',
-        status: 'queued',
-        title: 'DigitalRX refill sync',
-        payload: { refillId: 'refill-1' }
-      }
-    );
-
-    expect(record).toMatchObject({
-      id: 'job-1',
-      module: 'digitalrx',
-      status: 'queued',
-      createdAt: '2026-06-24T01:00:00.000Z'
-    });
-    await expect(service.getOperationalRecord({ user: t3User }, record.id)).resolves.toMatchObject({ title: 'DigitalRX refill sync' });
-    await expect(
-      service.listOperationalRecordsByScope({ user: t3User }, { organizationId: 'org-1', facilityId: 'facility-1', module: 'digitalrx' })
-    ).resolves.toHaveLength(1);
-    await expect(
-      service.updateOperationalRecord({ user: { ...t3User, permissions: ['resident:write'] } }, record.id, {
-        status: 'completed',
-        payload: { refillId: 'refill-1', synced: true }
-      })
-    ).resolves.toMatchObject({ status: 'completed', payload: { synced: true, refillId: 'refill-1' } });
-    await expect(repositories.auditLogs.listByEntity('OperationalRecord', record.id)).resolves.toHaveLength(2);
   });
 
   it('denies resident creation across facility boundaries', async () => {

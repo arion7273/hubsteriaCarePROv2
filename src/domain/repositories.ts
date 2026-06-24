@@ -15,6 +15,7 @@ import type {
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
+  OperationalRecord,
   Organization,
   PaymentTransaction,
   PasswordResetRequest,
@@ -24,7 +25,6 @@ import type {
   UserCredential,
   UUID
 } from './types';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, OperationalRecord, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
 
 export interface OrganizationRepository {
   getById(id: UUID): Promise<Organization | null>;
@@ -128,6 +128,8 @@ export interface InvoiceRepository {
 export interface PaymentTransactionRepository {
   listByResident(residentId: UUID): Promise<PaymentTransaction[]>;
   save(transaction: PaymentTransaction): Promise<PaymentTransaction>;
+}
+
 export interface OperationalRecordRepository {
   getById(id: UUID): Promise<OperationalRecord | null>;
   listByScope(scope: { organizationId: UUID; facilityId?: UUID; residentId?: UUID; module?: OperationalRecord['module'] }): Promise<OperationalRecord[]>;

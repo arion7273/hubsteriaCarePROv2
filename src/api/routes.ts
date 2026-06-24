@@ -257,7 +257,7 @@ export const apiRoutes: ApiRouteDefinition[] = [
     path: '/billing/payments',
     authRequired: true,
     description: 'List payments by resident'
-  }
+  },
   { method: 'POST', path: '/operational-records', authRequired: true, description: 'Create operational integration record' },
   { method: 'GET', path: '/operational-records', authRequired: true, description: 'List operational records by scope' },
   { method: 'GET', path: '/operational-records/get', authRequired: true, description: 'Get operational record' },

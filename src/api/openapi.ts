@@ -250,6 +250,9 @@ export const openApiDocument = {
         responses: {
           '201': { description: 'Care plan created' },
           '403': { description: 'Insufficient permissions or tenant mismatch' }
+        }
+      }
+    },
     '/jobs/notifications': {
       post: {
         summary: 'Enqueue notification job',

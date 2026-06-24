@@ -14,6 +14,7 @@ import type {
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
+  OperationalRecord,
   Organization,
   PaymentTransaction,
   PasswordResetRequest,
@@ -24,7 +25,6 @@ import type {
   UserCredential,
   UUID
 } from '../../domain';
-import type { AuditEvent, AuthSession, BackgroundJob, Facility, MfaChallenge, OperationalRecord, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UserCredential, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {

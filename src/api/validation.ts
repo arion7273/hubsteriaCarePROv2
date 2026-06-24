@@ -13,6 +13,7 @@ import type {
   CreateIncidentBody,
   CreateInvoiceBody,
   CreateMedicationOrderBody,
+  CreateOperationalRecordBody,
   CreateOrganizationBody,
   CreateResidentBody,
   CreateServicePlanBody,
@@ -30,12 +31,12 @@ import type {
   RecordPaymentBody,
   UpdateFacilityBody,
   UpdateIncidentBody,
+  UpdateOperationalRecordBody,
   UpdateOrganizationBody,
   UpdateResidentBody,
   UpdateUserBody,
   VerifyMfaBody
 } from './handlers';
-import type { CompleteBackgroundJobBody, CreateFacilityBody, CreateOperationalRecordBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, EnqueueAiGenerationJobBody, EnqueueBackgroundJobBody, EnqueueDigitalRxSyncJobBody, EnqueueNotificationJobBody, EnqueuePrintJobBody, EnqueueWorkflowActionJobBody, FailBackgroundJobBody, LoginBody, UpdateFacilityBody, UpdateOperationalRecordBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {

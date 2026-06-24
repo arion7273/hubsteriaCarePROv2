@@ -565,6 +565,9 @@ export async function listPaymentsHandler(services: ApiServices, request: ApiReq
     const residentId = request.query?.residentId;
     if (!residentId) throw new Error('residentId is required');
     return services.backend.listPaymentTransactionsByResident(context, residentId);
+  });
+}
+
 export async function createOperationalRecordHandler(
   services: ApiServices,
   request: ApiRequest<CreateOperationalRecordBody>
