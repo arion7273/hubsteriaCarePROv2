@@ -42,6 +42,23 @@ export type Resident = {
   status: 'active' | 'discharged' | 'inactive';
 };
 
+export type BackgroundJob = {
+  id: UUID;
+  organizationId?: UUID;
+  facilityId?: UUID;
+  residentId?: UUID;
+  type: 'notification' | 'print' | 'digitalrx_sync' | 'ai_generation' | 'workflow_action' | 'audit_export';
+  status: 'queued' | 'processing' | 'succeeded' | 'failed' | 'dead_letter';
+  priority: 'low' | 'normal' | 'high' | 'critical';
+  payload: Record<string, unknown>;
+  attempts: number;
+  maxAttempts: number;
+  availableAt: string;
+  createdAt: string;
+  updatedAt: string;
+  lastError?: string;
+};
+
 export type User = {
   id: UUID;
   email: string;

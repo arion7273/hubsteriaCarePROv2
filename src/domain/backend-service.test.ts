@@ -31,7 +31,7 @@ const t3User: User = {
 };
 
 function createTestService() {
-  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'audit-4', 'user-1', 'audit-user', 'audit-user-update', 'feature-audit'];
+  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'job-1', 'audit-job-1', 'audit-job-fail', 'job-2', 'audit-job-2', 'audit-job-complete', 'audit-4', 'user-1', 'audit-user', 'audit-user-update', 'feature-audit'];
   const repositories = createInMemoryBackendRepositories();
   const service = new BackendFoundationService(
     repositories,
@@ -183,6 +183,42 @@ describe('BackendFoundationService', () => {
     ).resolves.toMatchObject({ room: '215A' });
 
     await expect(repositories.auditLogs.listByEntity('Resident', 'resident-1')).resolves.toHaveLength(2);
+  });
+
+  it('enqueues leases completes and fails background jobs with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    const job = await service.enqueueBackgroundJob(
+      { user: t1User },
+      {
+        type: 'notification',
+        priority: 'critical',
+        payload: { channel: 'sms' },
+        maxAttempts: 1,
+        availableAt: '2026-06-24T01:00:00.000Z'
+      }
+    );
+    expect(job.status).toBe('queued');
+
+    await expect(service.leaseQueuedJobs({ user: t1User }, 1)).resolves.toEqual([
+      expect.objectContaining({ status: 'processing', attempts: 1 })
+    ]);
+    await expect(service.failBackgroundJob({ user: t1User }, job.id, 'provider unavailable')).resolves.toMatchObject({
+      status: 'dead_letter',
+      lastError: 'provider unavailable'
+    });
+
+    const second = await service.enqueueBackgroundJob(
+      { user: t1User },
+      {
+        type: 'print',
+        priority: 'normal',
+        payload: { template: 'Resident Packet' },
+        maxAttempts: 3,
+        availableAt: '2026-06-24T01:00:00.000Z'
+      }
+    );
+    await expect(service.completeBackgroundJob({ user: t1User }, second.id)).resolves.toMatchObject({ status: 'succeeded' });
+    await expect(repositories.auditLogs.listByEntity('BackgroundJob', job.id)).resolves.toHaveLength(2);
   });
 
   it('denies resident creation across facility boundaries', async () => {

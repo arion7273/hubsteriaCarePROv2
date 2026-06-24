@@ -1,6 +1,7 @@
 import { assertFeatureRegistration, type AuditEvent, type RegisteredFeature } from '../../domain';
 import type {
   AuditLogRepository,
+  BackgroundJobRepository,
   AuthSessionRepository,
   FacilityRepository,
   FeatureRegistryRepository,
@@ -10,9 +11,10 @@ import type {
   ResidentRepository,
   UserRepository
 } from '../../domain/repositories';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UUID } from '../../domain/types';
+import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UUID } from '../../domain/types';
 import {
   auditLogStatements,
+  backgroundJobStatements,
   authSessionStatements,
   facilityStatements,
   featureRegistryStatements,
@@ -24,6 +26,7 @@ import {
 } from './statements';
 import {
   mapAuditRow,
+  mapBackgroundJobRow,
   mapAuthSessionRow,
   mapFacilityRow,
   mapFeatureRow,
@@ -121,6 +124,14 @@ export class PostgresResidentRepository implements ResidentRepository {
   async save(resident: Resident): Promise<Resident> {
     return requiredFirst(await this.client.query(residentStatements.upsert(resident)), mapResidentRow);
   }
+}
+
+export class PostgresBackgroundJobRepository implements BackgroundJobRepository {
+  constructor(private readonly client: PostgresClient) {}
+  async getById(id: UUID): Promise<BackgroundJob | null> { return first(await this.client.query(backgroundJobStatements.selectById(id)), mapBackgroundJobRow); }
+  async listQueued(limit: number): Promise<BackgroundJob[]> { return (await this.client.query(backgroundJobStatements.listQueued(limit))).rows.map(mapBackgroundJobRow); }
+  async listByScope(scope: { organizationId?: UUID; facilityId?: UUID; residentId?: UUID }): Promise<BackgroundJob[]> { return (await this.client.query(backgroundJobStatements.listByScope(scope))).rows.map(mapBackgroundJobRow); }
+  async save(job: BackgroundJob): Promise<BackgroundJob> { return requiredFirst(await this.client.query(backgroundJobStatements.upsert(job)), mapBackgroundJobRow); }
 }
 
 export class PostgresAuditLogRepository implements AuditLogRepository {

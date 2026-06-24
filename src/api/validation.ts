@@ -1,7 +1,7 @@
 import type { RegisteredFeature } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
-import type { CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
+import type { CompleteBackgroundJobBody, CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, EnqueueBackgroundJobBody, FailBackgroundJobBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -142,6 +142,18 @@ export function isUpdateUserBody(body: unknown): body is UpdateUserBody {
       (Array.isArray(body.updates.permissions) && body.updates.permissions.every((permission) => typeof permission === 'string'))) &&
     (body.updates.status === undefined || ['active', 'inactive'].includes(String(body.updates.status)))
   );
+}
+
+export function isEnqueueBackgroundJobBody(body: unknown): body is EnqueueBackgroundJobBody {
+  return isRecord(body) && (body.organizationId === undefined || isNonEmptyString(body.organizationId)) && (body.facilityId === undefined || isNonEmptyString(body.facilityId)) && (body.residentId === undefined || isNonEmptyString(body.residentId)) && ['notification', 'print', 'digitalrx_sync', 'ai_generation', 'workflow_action', 'audit_export'].includes(String(body.type)) && ['low', 'normal', 'high', 'critical'].includes(String(body.priority)) && isRecord(body.payload) && typeof body.maxAttempts === 'number' && isNonEmptyString(body.availableAt);
+}
+
+export function isCompleteBackgroundJobBody(body: unknown): body is CompleteBackgroundJobBody {
+  return isRecord(body) && isNonEmptyString(body.jobId);
+}
+
+export function isFailBackgroundJobBody(body: unknown): body is FailBackgroundJobBody {
+  return isRecord(body) && isNonEmptyString(body.jobId) && isNonEmptyString(body.error);
 }
 
 function isRecord(body: unknown): body is Record<string, unknown> {

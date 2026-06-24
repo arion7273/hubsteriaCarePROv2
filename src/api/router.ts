@@ -1,5 +1,8 @@
 import {
+  completeBackgroundJobHandler,
   createFacilityHandler,
+  enqueueBackgroundJobHandler,
+  failBackgroundJobHandler,
   createOrganizationHandler,
   createResidentHandler,
   createUserHandler,
@@ -11,6 +14,8 @@ import {
   listOrganizationsHandler,
   listResidentsHandler,
   listUsersHandler,
+  leaseBackgroundJobsHandler,
+  listBackgroundJobsHandler,
   loginHandler,
   logoutHandler,
   passwordResetHandler,
@@ -27,7 +32,10 @@ import { fail } from './http';
 import { composeMiddleware, type ApiMiddleware } from './middleware';
 import { apiRoutes } from './routes';
 import {
+  isCompleteBackgroundJobBody,
   isCreateFacilityBody,
+  isEnqueueBackgroundJobBody,
+  isFailBackgroundJobBody,
   isCreateOrganizationBody,
   isCreateResidentBody,
   isCreateUserBody,
@@ -168,7 +176,12 @@ const routeConfigs: RouteConfig[] = [
     path: '/users',
     validate: isUpdateUserBody,
     handler: updateUserHandler as RouteHandler
-  }
+  },
+  { method: 'POST', path: '/background-jobs', validate: isEnqueueBackgroundJobBody, handler: enqueueBackgroundJobHandler as RouteHandler },
+  { method: 'GET', path: '/background-jobs', handler: listBackgroundJobsHandler },
+  { method: 'POST', path: '/background-jobs/lease', handler: leaseBackgroundJobsHandler },
+  { method: 'PATCH', path: '/background-jobs/complete', validate: isCompleteBackgroundJobBody, handler: completeBackgroundJobHandler as RouteHandler },
+  { method: 'PATCH', path: '/background-jobs/fail', validate: isFailBackgroundJobBody, handler: failBackgroundJobHandler as RouteHandler }
 ];
 
 export function createApiRouter(services: ApiServices, middlewares: ApiMiddleware[] = []) {

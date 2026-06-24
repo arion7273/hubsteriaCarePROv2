@@ -54,6 +54,11 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - `POST /users`
 - `GET /users`
 - `PATCH /users`
+- `POST /background-jobs`
+- `GET /background-jobs`
+- `POST /background-jobs/lease`
+- `PATCH /background-jobs/complete`
+- `PATCH /background-jobs/fail`
 
 ## Security requirements
 
@@ -65,6 +70,7 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - Invalid login must return a generic invalid credentials response.
 - Resident APIs must enforce organization and facility scope.
 - User APIs must enforce organization scope and administrative permissions.
+- Background job APIs must enforce platform or tenant scope depending on job ownership.
 - Invalid request bodies must return `400`.
 - Wrong methods must return `405`.
 - Unknown routes must return `404`.

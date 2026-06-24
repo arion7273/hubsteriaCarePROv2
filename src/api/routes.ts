@@ -133,5 +133,10 @@ export const apiRoutes: ApiRouteDefinition[] = [
     path: '/users',
     authRequired: true,
     description: 'Update user'
-  }
+  },
+  { method: 'POST', path: '/background-jobs', authRequired: true, description: 'Enqueue background job' },
+  { method: 'GET', path: '/background-jobs', authRequired: true, description: 'List background jobs by scope' },
+  { method: 'POST', path: '/background-jobs/lease', authRequired: true, description: 'Lease queued background jobs' },
+  { method: 'PATCH', path: '/background-jobs/complete', authRequired: true, description: 'Complete background job' },
+  { method: 'PATCH', path: '/background-jobs/fail', authRequired: true, description: 'Fail background job' }
 ];
