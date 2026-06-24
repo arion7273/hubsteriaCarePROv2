@@ -161,6 +161,54 @@ export class HubsteriaApiClient {
       body
     });
   }
+
+  listAssessments(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/assessments', sessionId, query: { residentId } });
+  }
+
+  createAssessment(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/assessments', sessionId, body });
+  }
+
+  listCareTasks(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/tasks', sessionId, query: { residentId } });
+  }
+
+  createCareTask(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/tasks', sessionId, body });
+  }
+
+  listMedicationOrders(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/medication-orders', sessionId, query: { residentId } });
+  }
+
+  createMedicationOrder(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/medication-orders', sessionId, body });
+  }
+
+  listIncidents(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/incidents', sessionId, query: { residentId } });
+  }
+
+  createIncident(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/incidents', sessionId, body });
+  }
+
+  listBillingCharges(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/billing/charges', sessionId, query: { residentId } });
+  }
+
+  createBillingCharge(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/billing/charges', sessionId, body });
+  }
+
+  listBackgroundJobs(sessionId: string, query: { organizationId?: string; facilityId?: string; residentId?: string }) {
+    return this.request({ method: 'GET', path: '/background-jobs', sessionId, query });
+  }
+
+  listOperationalRecords(sessionId: string, query: { organizationId: string; facilityId?: string; residentId?: string; module?: string }) {
+    return this.request({ method: 'GET', path: '/operational-records', sessionId, query });
+  }
 }
 
 export function getConfiguredApiBaseUrl(): string {

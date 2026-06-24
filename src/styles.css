@@ -591,6 +591,71 @@ p {
   gap: 0.6rem;
 }
 
+.clinical-api-panel,
+.live-workflow-panel {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.clinical-api-scope-grid,
+.live-workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.85rem;
+}
+
+.clinical-api-scope-grid label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.clinical-api-scope-grid input {
+  width: 100%;
+  min-height: 2.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0.65rem 0.75rem;
+}
+
+.live-workflow-panel.has-records {
+  border-color: rgba(19, 138, 91, 0.35);
+}
+
+.live-workflow-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.live-workflow-list article {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.live-workflow-list span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.live-workflow-list strong {
+  color: var(--primary-strong);
+}
+
 .api-endpoint-grid span {
   border-radius: 999px;
   background: #e8f5f4;
