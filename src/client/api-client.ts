@@ -69,6 +69,22 @@ export class HubsteriaApiClient {
     });
   }
 
+  logout(sessionId: string) {
+    return this.request({
+      method: 'POST',
+      path: '/auth/logout',
+      sessionId
+    });
+  }
+
+  completePasswordReset(requestId: string, newPassword: string) {
+    return this.request({
+      method: 'POST',
+      path: '/auth/password-reset/complete',
+      body: { requestId, newPassword }
+    });
+  }
+
   createOrganization(sessionId: string, name: string) {
     return this.request({
       method: 'POST',

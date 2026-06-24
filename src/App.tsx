@@ -211,6 +211,7 @@ function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [apiHealthStatus, setApiHealthStatus] = useState('Not checked');
   const [apiSessionId, setApiSessionId] = useState('');
+  const [apiSessionExpiresAt, setApiSessionExpiresAt] = useState('');
   const [apiWorkflowLog, setApiWorkflowLog] = useState<string[]>(['No API workflow actions run yet.']);
   const globalSearchRef = useRef<HTMLInputElement>(null);
   const apiBaseUrl = getConfiguredApiBaseUrl();
@@ -292,7 +293,7 @@ function App() {
       const login = await client.login('b094650@gmail.com', 'change-me-for-local-demo-only');
 
       if (login.ok) {
-        const data = login.data as { session?: { id?: string }; mfaChallenge?: { id?: string } };
+        const data = login.data as { session?: { id?: string; expiresAt?: string }; mfaChallenge?: { id?: string } };
         const sessionId = data.session?.id;
         const challengeId = data.mfaChallenge?.id;
 
@@ -301,6 +302,7 @@ function App() {
 
           if (mfa.ok) {
             setApiSessionId(sessionId);
+            setApiSessionExpiresAt(data.session?.expiresAt ?? '');
             return { ok: true, status: 200, data: { sessionId, mfaVerified: true } };
           }
 
@@ -309,6 +311,16 @@ function App() {
       }
 
       return login;
+    });
+  };
+
+  const runLogout = async () => {
+    await runApiAction('Logout', async (client) => {
+      const sessionId = requireDemoSession();
+      const result = await client.logout(sessionId);
+      setApiSessionId('');
+      setApiSessionExpiresAt('');
+      return result;
     });
   };
 
@@ -574,6 +586,7 @@ function App() {
               <span>API base URL</span>
               <strong>{apiBaseUrl}</strong>
               <small>{apiHealthStatus}</small>
+              <small>{apiSessionId ? `Session expires ${formatSessionExpiration(apiSessionExpiresAt)}` : 'No active session'}</small>
             </div>
           </div>
 
@@ -583,6 +596,9 @@ function App() {
             </button>
             <button type="button" onClick={runDemoLogin}>
               Demo login + MFA
+            </button>
+            <button type="button" onClick={runLogout} disabled={!apiSessionId}>
+              Logout session
             </button>
             <button
               type="button"
@@ -3199,6 +3215,19 @@ function summarizeApiResult(result: unknown): string {
   }
 
   return `ok ${response.status ?? 200}`;
+}
+
+function formatSessionExpiration(expiresAt: string): string {
+  if (!expiresAt) {
+    return 'unknown';
+  }
+
+  const timestamp = Date.parse(expiresAt);
+  if (Number.isNaN(timestamp)) {
+    return expiresAt;
+  }
+
+  return new Date(timestamp).toLocaleString();
 }
 
 export default App;

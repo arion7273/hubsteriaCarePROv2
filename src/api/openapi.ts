@@ -52,6 +52,18 @@ export const openApiDocument = {
         }
       }
     },
+    '/auth/password-reset/complete': {
+      post: {
+        summary: 'Complete password reset',
+        requestBody: {
+          required: true
+        },
+        responses: {
+          '200': { description: 'Password reset completed' },
+          '400': { description: 'Invalid reset request' }
+        }
+      }
+    },
     '/organizations': {
       get: {
         summary: 'List organizations',

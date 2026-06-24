@@ -34,6 +34,12 @@ export const apiRoutes: ApiRouteDefinition[] = [
   },
   {
     method: 'POST',
+    path: '/auth/password-reset/complete',
+    authRequired: false,
+    description: 'Complete password reset and update credential'
+  },
+  {
+    method: 'POST',
     path: '/organizations',
     authRequired: true,
     description: 'Create organization'

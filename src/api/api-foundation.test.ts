@@ -8,6 +8,7 @@ import {
 } from '../domain';
 import {
   apiRoutes,
+  completePasswordResetHandler,
   createApiRouter,
   createCsrfMiddleware,
   createFacilityHandler,
@@ -18,6 +19,7 @@ import {
   listFeaturesHandler,
   loginHandler,
   openApiDocument,
+  passwordResetHandler,
   type ApiRequestLog,
   registerFeatureHandler,
   redactBody,
@@ -116,6 +118,7 @@ describe('API foundation handlers', () => {
     expect(apiRoutes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ method: 'POST', path: '/auth/login', authRequired: false }),
+        expect.objectContaining({ method: 'POST', path: '/auth/password-reset/complete', authRequired: false }),
         expect.objectContaining({ method: 'POST', path: '/organizations', authRequired: true }),
         expect.objectContaining({ method: 'PATCH', path: '/organizations', authRequired: true }),
         expect.objectContaining({ method: 'GET', path: '/facilities', authRequired: true }),
@@ -152,6 +155,31 @@ describe('API foundation handlers', () => {
       ok: false,
       status: 401,
       error: { code: 'invalid_credentials', message: 'Invalid credentials' }
+    });
+  });
+
+  it('completes password reset through public handlers', async () => {
+    const services = createApiServices();
+    await services.repositories.users.save(t1User);
+
+    const reset = await passwordResetHandler(services, {
+      method: 'POST',
+      path: '/auth/password-reset',
+      body: { email: t1User.email }
+    });
+
+    expect(reset).toMatchObject({ ok: true });
+    const requestId = reset.ok ? (reset.data as { id: string }).id : '';
+
+    await expect(
+      completePasswordResetHandler(services, {
+        method: 'POST',
+        path: '/auth/password-reset/complete',
+        body: { requestId, newPassword: 'new-secure-password' }
+      })
+    ).resolves.toMatchObject({ ok: true, data: { completed: true } });
+    await expect(services.repositories.passwordResets.getById(requestId)).resolves.toMatchObject({
+      usedAt: '2026-06-24T01:00:00.000Z'
     });
   });
 

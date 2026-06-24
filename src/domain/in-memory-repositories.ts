@@ -1,6 +1,7 @@
 import type { AuditEvent } from './audit';
 import { assertFeatureRegistration, type RegisteredFeature } from './feature-registry';
 import type {
+  AccountSecurityRepository,
   AuditLogRepository,
   BackgroundJobRepository,
   AuthSessionRepository,
@@ -14,7 +15,7 @@ import type {
   UserCredentialRepository,
   UserRepository
 } from './repositories';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
+import type { AccountSecurityState, AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -217,6 +218,19 @@ export class InMemoryPasswordResetRepository implements PasswordResetRepository 
   }
 }
 
+export class InMemoryAccountSecurityRepository implements AccountSecurityRepository {
+  private readonly states = new Map<UUID, AccountSecurityState>();
+
+  async getByUserId(userId: UUID): Promise<AccountSecurityState | null> {
+    return this.states.get(userId) ?? null;
+  }
+
+  async save(state: AccountSecurityState): Promise<AccountSecurityState> {
+    this.states.set(state.userId, state);
+    return state;
+  }
+}
+
 export function createInMemoryBackendRepositories(): BackendRepositories & {
   auditLogs: InMemoryAuditLogRepository;
 } {
@@ -231,6 +245,7 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     featureRegistry: new InMemoryFeatureRegistryRepository(),
     authSessions: new InMemoryAuthSessionRepository(),
     mfaChallenges: new InMemoryMfaChallengeRepository(),
-    passwordResets: new InMemoryPasswordResetRepository()
+    passwordResets: new InMemoryPasswordResetRepository(),
+    accountSecurity: new InMemoryAccountSecurityRepository()
   };
 }

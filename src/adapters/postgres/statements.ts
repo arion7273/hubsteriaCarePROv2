@@ -1,4 +1,4 @@
-import type { AuditEvent, AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UserCredential, UUID } from '../../domain';
+import type { AccountSecurityState, AuditEvent, AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UserCredential, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -380,6 +380,37 @@ export const userCredentialStatements = {
         RETURNING user_id, password_hash, updated_at
       `,
       values: [credential.userId, credential.passwordHash, credential.updatedAt]
+    };
+  }
+};
+
+export const accountSecurityStatements = {
+  selectByUserId(userId: UUID): SqlStatement {
+    return {
+      text: 'SELECT user_id, failed_login_attempts, locked_until, last_failed_at, updated_at FROM account_security_states WHERE user_id = $1',
+      values: [userId]
+    };
+  },
+
+  upsert(state: AccountSecurityState): SqlStatement {
+    return {
+      text: `
+        INSERT INTO account_security_states (user_id, failed_login_attempts, locked_until, last_failed_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (user_id) DO UPDATE
+        SET failed_login_attempts = EXCLUDED.failed_login_attempts,
+            locked_until = EXCLUDED.locked_until,
+            last_failed_at = EXCLUDED.last_failed_at,
+            updated_at = EXCLUDED.updated_at
+        RETURNING user_id, failed_login_attempts, locked_until, last_failed_at, updated_at
+      `,
+      values: [
+        state.userId,
+        state.failedLoginAttempts,
+        state.lockedUntil ?? null,
+        state.lastFailedAt ?? null,
+        state.updatedAt
+      ]
     };
   }
 };
