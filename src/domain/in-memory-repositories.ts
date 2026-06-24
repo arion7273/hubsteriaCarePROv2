@@ -6,13 +6,15 @@ import type {
   BackendRepositories,
   FacilityRepository,
   FeatureRegistryRepository,
+  MedicationAdministrationRepository,
+  MedicationOrderRepository,
   MfaChallengeRepository,
   OrganizationRepository,
   PasswordResetRepository,
   ResidentRepository,
   UserRepository
 } from './repositories';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
+import type { AuthSession, Facility, MedicationAdministration, MedicationOrder, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -85,6 +87,29 @@ export class InMemoryResidentRepository implements ResidentRepository {
   async save(resident: Resident): Promise<Resident> {
     this.residents.set(resident.id, resident);
     return resident;
+  }
+}
+
+export class InMemoryMedicationOrderRepository implements MedicationOrderRepository {
+  private readonly orders = new Map<UUID, MedicationOrder>();
+  async getById(id: UUID): Promise<MedicationOrder | null> { return this.orders.get(id) ?? null; }
+  async listByResident(residentId: UUID): Promise<MedicationOrder[]> {
+    return [...this.orders.values()].filter((order) => order.residentId === residentId);
+  }
+  async save(order: MedicationOrder): Promise<MedicationOrder> {
+    this.orders.set(order.id, order);
+    return order;
+  }
+}
+
+export class InMemoryMedicationAdministrationRepository implements MedicationAdministrationRepository {
+  private readonly administrations = new Map<UUID, MedicationAdministration>();
+  async listByResident(residentId: UUID): Promise<MedicationAdministration[]> {
+    return [...this.administrations.values()].filter((administration) => administration.residentId === residentId);
+  }
+  async save(administration: MedicationAdministration): Promise<MedicationAdministration> {
+    this.administrations.set(administration.id, administration);
+    return administration;
   }
 }
 
@@ -177,6 +202,8 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     facilities: new InMemoryFacilityRepository(),
     users: new InMemoryUserRepository(),
     residents: new InMemoryResidentRepository(),
+    medicationOrders: new InMemoryMedicationOrderRepository(),
+    medicationAdministrations: new InMemoryMedicationAdministrationRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
     featureRegistry: new InMemoryFeatureRegistryRepository(),
     authSessions: new InMemoryAuthSessionRepository(),

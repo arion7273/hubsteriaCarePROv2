@@ -1,7 +1,7 @@
 import type { RegisteredFeature } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
-import type { CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
+import type { CreateFacilityBody, CreateMedicationOrderBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, RecordMedicationAdministrationBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -142,6 +142,14 @@ export function isUpdateUserBody(body: unknown): body is UpdateUserBody {
       (Array.isArray(body.updates.permissions) && body.updates.permissions.every((permission) => typeof permission === 'string'))) &&
     (body.updates.status === undefined || ['active', 'inactive'].includes(String(body.updates.status)))
   );
+}
+
+export function isCreateMedicationOrderBody(body: unknown): body is CreateMedicationOrderBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.medication) && isNonEmptyString(body.dosage) && isNonEmptyString(body.route) && isNonEmptyString(body.schedule) && ['active', 'future', 'prn', 'discontinued', 'hold'].includes(String(body.status)) && optionalString(body.instructions);
+}
+
+export function isRecordMedicationAdministrationBody(body: unknown): body is RecordMedicationAdministrationBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.medicationOrderId) && ['given', 'refused', 'held', 'resident_absent', 'not_available'].includes(String(body.action)) && optionalString(body.reason) && optionalString(body.outcome);
 }
 
 function isRecord(body: unknown): body is Record<string, unknown> {

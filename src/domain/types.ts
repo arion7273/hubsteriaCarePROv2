@@ -42,6 +42,32 @@ export type Resident = {
   status: 'active' | 'discharged' | 'inactive';
 };
 
+export type MedicationOrder = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  medication: string;
+  dosage: string;
+  route: string;
+  schedule: string;
+  status: 'active' | 'future' | 'prn' | 'discontinued' | 'hold';
+  instructions?: string;
+};
+
+export type MedicationAdministration = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  medicationOrderId: UUID;
+  action: 'given' | 'refused' | 'held' | 'resident_absent' | 'not_available';
+  reason?: string;
+  outcome?: string;
+  administeredAt: string;
+  administeredBy: UUID;
+};
+
 export type User = {
   id: UUID;
   email: string;

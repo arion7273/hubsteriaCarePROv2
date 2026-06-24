@@ -22,6 +22,9 @@ The initial database target is PostgreSQL.
   - auth sessions
   - MFA challenges
   - password reset requests
+- `database/migrations/0007_emar_medications.sql`
+  - medication orders
+  - medication administrations
 
 Run migrations with:
 

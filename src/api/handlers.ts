@@ -1,5 +1,5 @@
 import type { RegisteredFeature } from '../domain';
-import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type Facility, type Organization, type Resident, type User, type UUID } from '../domain';
+import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type Facility, type MedicationAdministration, type MedicationOrder, type Organization, type Resident, type User, type UUID } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -52,6 +52,9 @@ export type UpdateUserBody = {
   userId: UUID;
   updates: Partial<Omit<User, 'id'>>;
 };
+
+export type CreateMedicationOrderBody = Omit<MedicationOrder, 'id'>;
+export type RecordMedicationAdministrationBody = Omit<MedicationAdministration, 'id' | 'administeredAt' | 'administeredBy'>;
 
 export async function loginHandler(services: ApiServices, request: ApiRequest<LoginBody>): Promise<ApiResponse> {
   return toApiResponse(async () => {
@@ -226,6 +229,39 @@ export async function updateUserHandler(services: ApiServices, request: ApiReque
   return withContext(services, request, async (context) => {
     assertBody(request.body);
     return services.backend.updateUser(context, request.body.userId, request.body.updates);
+  });
+}
+
+export async function createMedicationOrderHandler(services: ApiServices, request: ApiRequest<CreateMedicationOrderBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.createMedicationOrder(context, request.body);
+  }, 201);
+}
+
+export async function listMedicationOrdersHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const residentId = request.query?.residentId;
+    if (!residentId) throw new Error('residentId is required');
+    return services.backend.listMedicationOrdersByResident(context, residentId);
+  });
+}
+
+export async function recordMedicationAdministrationHandler(
+  services: ApiServices,
+  request: ApiRequest<RecordMedicationAdministrationBody>
+): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.recordMedicationAdministration(context, request.body);
+  }, 201);
+}
+
+export async function listMedicationAdministrationsHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const residentId = request.query?.residentId;
+    if (!residentId) throw new Error('residentId is required');
+    return services.backend.listMedicationAdministrationsByResident(context, residentId);
   });
 }
 

@@ -2,7 +2,7 @@ import { createAuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
 import type { BackendRepositories } from './repositories';
 import { requirePermission } from './access-control';
-import type { AccessContext, Facility, Organization, Resident, User, UUID } from './types';
+import type { AccessContext, Facility, MedicationAdministration, MedicationOrder, Organization, Resident, User, UUID } from './types';
 
 export type IdFactory = () => UUID;
 export type Clock = () => Date;
@@ -377,6 +377,51 @@ export class BackendFoundationService {
     return saved;
   }
 
+  async createMedicationOrder(context: AccessContext, input: Omit<MedicationOrder, 'id'>): Promise<MedicationOrder> {
+    const resident = await this.getResident(context, input.residentId);
+    const decision = requirePermission(
+      context,
+      { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id },
+      'medication:manage'
+    );
+    assertAllowed(decision);
+    const order = await this.repositories.medicationOrders.save({ id: this.createId(), ...input });
+    await this.auditResidentEntity(context, 'MedicationOrder', order.id, order, order.organizationId, order.facilityId, order.residentId);
+    return order;
+  }
+
+  async listMedicationOrdersByResident(context: AccessContext, residentId: UUID): Promise<MedicationOrder[]> {
+    await this.getResident(context, residentId);
+    return this.repositories.medicationOrders.listByResident(residentId);
+  }
+
+  async recordMedicationAdministration(
+    context: AccessContext,
+    input: Omit<MedicationAdministration, 'id' | 'administeredAt' | 'administeredBy'>
+  ): Promise<MedicationAdministration> {
+    const order = await this.repositories.medicationOrders.getById(input.medicationOrderId);
+    if (!order) throw new Error('Medication order not found');
+    const decision = requirePermission(
+      context,
+      { scope: 'resident', organizationId: order.organizationId, facilityId: order.facilityId, residentId: order.residentId },
+      'medication:manage'
+    );
+    assertAllowed(decision);
+    const administration = await this.repositories.medicationAdministrations.save({
+      id: this.createId(),
+      administeredAt: this.clock().toISOString(),
+      administeredBy: context.user.id,
+      ...input
+    });
+    await this.auditResidentEntity(context, 'MedicationAdministration', administration.id, administration, administration.organizationId, administration.facilityId, administration.residentId);
+    return administration;
+  }
+
+  async listMedicationAdministrationsByResident(context: AccessContext, residentId: UUID): Promise<MedicationAdministration[]> {
+    await this.getResident(context, residentId);
+    return this.repositories.medicationAdministrations.listByResident(residentId);
+  }
+
   async createUser(
     context: AccessContext,
     input: Omit<User, 'id' | 'status'>
@@ -452,6 +497,31 @@ export class BackendFoundationService {
     );
 
     return saved;
+  }
+
+  private async auditResidentEntity(
+    context: AccessContext,
+    entityType: string,
+    entityId: UUID,
+    afterState: unknown,
+    organizationId: UUID,
+    facilityId: UUID,
+    residentId: UUID
+  ): Promise<void> {
+    await this.repositories.auditLogs.append(
+      createAuditEvent({
+        id: this.createId(),
+        action: 'create',
+        actorUserId: context.user.id,
+        actorRole: context.user.roleTier,
+        entityType,
+        entityId,
+        scope: { scope: 'resident', organizationId, facilityId, residentId },
+        beforeState: null,
+        afterState,
+        now: this.clock()
+      })
+    );
   }
 }
 
