@@ -1,7 +1,11 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('HubsteriaCarePRO foundation', () => {
   it('renders the brand, global protocol, and bootstrap account without exposing a plain-text password', () => {
@@ -12,6 +16,86 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText('b094650@gmail.com')).toBeInTheDocument();
     expect(screen.getByText(/without storing a plain-text password/i)).toBeInTheDocument();
     expect(screen.queryByText(/Ariana1617/i)).not.toBeInTheDocument();
+  });
+
+  it('renders API connection center and connected endpoints', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { name: 'UI connected to backend API contracts' })).toBeInTheDocument();
+    expect(screen.getByText('http://localhost:3000')).toBeInTheDocument();
+
+    const endpoints = screen.getByLabelText('Connected API endpoints');
+    expect(within(endpoints).getByText('POST /auth/login')).toBeInTheDocument();
+    expect(within(endpoints).getByText('GET /organizations')).toBeInTheDocument();
+    expect(within(endpoints).getByText('POST /facilities')).toBeInTheDocument();
+    expect(within(endpoints).getByText('POST /residents')).toBeInTheDocument();
+    expect(within(endpoints).getByText('GET /users')).toBeInTheDocument();
+  });
+
+  it('checks backend API health from the UI', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' }
+      })
+    );
+
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Check API health' }));
+
+    const apiStatus = screen.getByText('API base URL').closest('.api-status-card');
+    expect(apiStatus).not.toBeNull();
+    expect(within(apiStatus as HTMLElement).getByText('Connected')).toBeInTheDocument();
+    expect(globalThis.fetch).toHaveBeenCalledWith('http://localhost:3000/healthz');
+  });
+
+  it('runs first UI-to-API workflow actions from the connection center', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ok: true,
+            status: 200,
+            data: {
+              session: { id: 'session-1' },
+              mfaChallenge: { id: 'mfa-1' }
+            }
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, status: 200, data: { id: 'session-1', mfaVerified: true } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, status: 201, data: { id: 'org-1' } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      );
+
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Demo login + MFA' }));
+    expect(await screen.findByText(/Demo login: ok, session session-1/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Create organization' }));
+    expect(await screen.findByText(/Create organization: ok 201/)).toBeInTheDocument();
+
+    const loginCall = fetchMock.mock.calls[0] as unknown as [URL, RequestInit];
+    expect(loginCall[0].toString()).toBe('http://localhost:3000/auth/login');
+    const orgCall = fetchMock.mock.calls[2] as unknown as [URL, RequestInit];
+    expect(orgCall[0].toString()).toBe('http://localhost:3000/organizations');
+    expect(orgCall[1]).toMatchObject({
+      headers: {
+        'content-type': 'application/json',
+        'x-session-id': 'session-1'
+      }
+    });
   });
 
   it('switches between T1, T2, and T3 role-aware dashboards', async () => {
