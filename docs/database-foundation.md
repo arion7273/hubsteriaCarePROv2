@@ -27,6 +27,8 @@ The initial database target is PostgreSQL.
 - `database/migrations/0004_user_credentials.sql`
   - user credential hashes
   - no plain-text password storage
+- `database/migrations/0005_auth_hardening.sql`
+  - account security state for failed login attempts and lockout windows
 
 Run migrations with:
 

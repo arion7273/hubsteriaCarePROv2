@@ -71,6 +71,8 @@ describe('HubsteriaApiClient', () => {
     const client = new HubsteriaApiClient({ baseUrl: 'http://api.example.com', fetchImpl: fetchMock as unknown as typeof fetch });
 
     await client.verifyMfa('session-1', 'challenge-1', '123456');
+    await client.logout('session-1');
+    await client.completePasswordReset('reset-1', 'new-secure-password');
     await client.createOrganization('session-1', 'Northstar Senior Living');
     await client.createFacility('session-1', { organizationId: 'org-1', name: 'Cedar Grove' });
     await client.listOrganizations('session-1');
@@ -85,11 +87,13 @@ describe('HubsteriaApiClient', () => {
     });
 
     expect((fetchMock.mock.calls[0] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/auth/mfa/verify');
-    expect((fetchMock.mock.calls[1] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/organizations');
-    expect((fetchMock.mock.calls[2] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/facilities');
-    expect((fetchMock.mock.calls[4] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/facilities?organizationId=org-1');
-    expect((fetchMock.mock.calls[5] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/users?organizationId=org-1');
-    expect((fetchMock.mock.calls[6] as unknown as [URL, RequestInit])[1].body).toBe(
+    expect((fetchMock.mock.calls[1] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/auth/logout');
+    expect((fetchMock.mock.calls[2] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/auth/password-reset/complete');
+    expect((fetchMock.mock.calls[3] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/organizations');
+    expect((fetchMock.mock.calls[4] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/facilities');
+    expect((fetchMock.mock.calls[6] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/facilities?organizationId=org-1');
+    expect((fetchMock.mock.calls[7] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/users?organizationId=org-1');
+    expect((fetchMock.mock.calls[8] as unknown as [URL, RequestInit])[1].body).toBe(
       JSON.stringify({
         email: 'caregiver@example.com',
         roleTier: 'EMPLOYEE',

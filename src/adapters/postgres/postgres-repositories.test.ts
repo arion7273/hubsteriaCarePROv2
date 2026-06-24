@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createAuditEvent } from '../../domain';
 import {
+  PostgresAccountSecurityRepository,
   PostgresAuditLogRepository,
   PostgresAuthSessionRepository,
   PostgresFacilityRepository,
@@ -209,5 +210,30 @@ describe('Postgres repository classes', () => {
       updatedAt: '2026-06-24T01:00:00.000Z'
     });
     expect(client.statements[1].text).toContain('INSERT INTO user_credentials');
+  });
+
+  it('maps account security repository operations', async () => {
+    const client = new FakePostgresClient([
+      {
+        user_id: 'user-1',
+        failed_login_attempts: 5,
+        locked_until: '2026-06-24T01:15:00.000Z',
+        last_failed_at: '2026-06-24T01:00:00.000Z',
+        updated_at: '2026-06-24T01:00:00.000Z'
+      }
+    ]);
+    const repository = new PostgresAccountSecurityRepository(client);
+
+    await expect(repository.getByUserId('user-1')).resolves.toMatchObject({
+      userId: 'user-1',
+      failedLoginAttempts: 5,
+      lockedUntil: '2026-06-24T01:15:00.000Z'
+    });
+    await repository.save({
+      userId: 'user-1',
+      failedLoginAttempts: 0,
+      updatedAt: '2026-06-24T01:20:00.000Z'
+    });
+    expect(client.statements[1].text).toContain('INSERT INTO account_security_states');
   });
 });

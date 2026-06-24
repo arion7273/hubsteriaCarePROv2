@@ -59,7 +59,7 @@ describe('HubsteriaCarePRO foundation', () => {
             ok: true,
             status: 200,
             data: {
-              session: { id: 'session-1' },
+              session: { id: 'session-1', expiresAt: '2026-06-24T09:00:00.000Z' },
               mfaChallenge: { id: 'mfa-1' }
             }
           }),
@@ -77,6 +77,12 @@ describe('HubsteriaCarePRO foundation', () => {
           status: 200,
           headers: { 'content-type': 'application/json' }
         })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, status: 200, data: { revokedAt: '2026-06-24T01:00:00.000Z' } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
       );
 
     render(<App />);
@@ -85,6 +91,11 @@ describe('HubsteriaCarePRO foundation', () => {
 
     await user.click(screen.getByRole('button', { name: 'Create organization' }));
     expect(await screen.findByText(/Create organization: ok 201/)).toBeInTheDocument();
+    expect(screen.getByText(/Session expires/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Logout session' }));
+    expect(await screen.findByText(/Logout: ok 200/)).toBeInTheDocument();
+    expect(screen.getByText('No active session')).toBeInTheDocument();
 
     const loginCall = fetchMock.mock.calls[0] as unknown as [URL, RequestInit];
     expect(loginCall[0].toString()).toBe('http://localhost:3000/auth/login');
@@ -96,6 +107,8 @@ describe('HubsteriaCarePRO foundation', () => {
         'x-session-id': 'session-1'
       }
     });
+    const logoutCall = fetchMock.mock.calls[3] as unknown as [URL, RequestInit];
+    expect(logoutCall[0].toString()).toBe('http://localhost:3000/auth/logout');
   });
 
   it('switches between T1, T2, and T3 role-aware dashboards', async () => {

@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { createAuditEvent } from '../../domain';
 import {
   auditLogStatements,
+  accountSecurityStatements,
   facilityStatements,
   featureRegistryStatements,
   mapAuditRow,
+  mapAccountSecurityStateRow,
   mapFacilityRow,
   mapFeatureRow,
   mapOrganizationRow,
@@ -100,6 +102,26 @@ describe('Postgres statement builders', () => {
     expect(audit.text).not.toMatch(/\bUPDATE\b|\bDELETE\b/i);
     expect(audit.values[9]).toBe(JSON.stringify({ room: '214A' }));
     expect(audit.values[10]).toBe(JSON.stringify({ room: '214B' }));
+  });
+
+  it('builds account security statements for lockout persistence', () => {
+    const statement = accountSecurityStatements.upsert({
+      userId: 'user-1',
+      failedLoginAttempts: 5,
+      lockedUntil: '2026-06-24T01:15:00.000Z',
+      lastFailedAt: '2026-06-24T01:00:00.000Z',
+      updatedAt: '2026-06-24T01:00:00.000Z'
+    });
+
+    expect(statement.text).toContain('INSERT INTO account_security_states');
+    expect(statement.values).toEqual([
+      'user-1',
+      5,
+      '2026-06-24T01:15:00.000Z',
+      '2026-06-24T01:00:00.000Z',
+      '2026-06-24T01:00:00.000Z'
+    ]);
+    expect(accountSecurityStatements.selectByUserId('user-1').values).toEqual(['user-1']);
   });
 });
 
@@ -212,5 +234,23 @@ describe('Postgres row mappers', () => {
       afterState: { room: '214B' }
     });
     expect(Object.isFrozen(audit)).toBe(true);
+  });
+
+  it('maps account security lockout rows', () => {
+    expect(
+      mapAccountSecurityStateRow({
+        user_id: 'user-1',
+        failed_login_attempts: 5,
+        locked_until: '2026-06-24T01:15:00.000Z',
+        last_failed_at: '2026-06-24T01:00:00.000Z',
+        updated_at: '2026-06-24T01:00:00.000Z'
+      })
+    ).toEqual({
+      userId: 'user-1',
+      failedLoginAttempts: 5,
+      lockedUntil: '2026-06-24T01:15:00.000Z',
+      lastFailedAt: '2026-06-24T01:00:00.000Z',
+      updatedAt: '2026-06-24T01:00:00.000Z'
+    });
   });
 });

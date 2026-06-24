@@ -1,6 +1,7 @@
 import { assertFeatureRegistration, type AuditEvent, type RegisteredFeature } from '../../domain';
 import type {
   AuditLogRepository,
+  AccountSecurityRepository,
   BackgroundJobRepository,
   AuthSessionRepository,
   FacilityRepository,
@@ -12,8 +13,9 @@ import type {
   UserCredentialRepository,
   UserRepository
 } from '../../domain/repositories';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UserCredential, UUID } from '../../domain/types';
+import type { AccountSecurityState, AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UserCredential, UUID } from '../../domain/types';
 import {
+  accountSecurityStatements,
   auditLogStatements,
   backgroundJobStatements,
   authSessionStatements,
@@ -28,6 +30,7 @@ import {
 } from './statements';
 import {
   mapAuditRow,
+  mapAccountSecurityStateRow,
   mapBackgroundJobRow,
   mapAuthSessionRow,
   mapFacilityRow,
@@ -216,6 +219,18 @@ export class PostgresUserCredentialRepository implements UserCredentialRepositor
 
   async save(credential: UserCredential): Promise<UserCredential> {
     return requiredFirst(await this.client.query(userCredentialStatements.upsert(credential)), mapUserCredentialRow);
+  }
+}
+
+export class PostgresAccountSecurityRepository implements AccountSecurityRepository {
+  constructor(private readonly client: PostgresClient) {}
+
+  async getByUserId(userId: UUID): Promise<AccountSecurityState | null> {
+    return first(await this.client.query(accountSecurityStatements.selectByUserId(userId)), mapAccountSecurityStateRow);
+  }
+
+  async save(state: AccountSecurityState): Promise<AccountSecurityState> {
+    return requiredFirst(await this.client.query(accountSecurityStatements.upsert(state)), mapAccountSecurityStateRow);
   }
 }
 

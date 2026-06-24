@@ -1,7 +1,7 @@
 import type { RegisteredFeature } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
-import type { CompleteBackgroundJobBody, CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, EnqueueAiGenerationJobBody, EnqueueBackgroundJobBody, EnqueueDigitalRxSyncJobBody, EnqueueNotificationJobBody, EnqueuePrintJobBody, EnqueueWorkflowActionJobBody, FailBackgroundJobBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
+import type { CompleteBackgroundJobBody, CompletePasswordResetBody, CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, EnqueueAiGenerationJobBody, EnqueueBackgroundJobBody, EnqueueDigitalRxSyncJobBody, EnqueueNotificationJobBody, EnqueuePrintJobBody, EnqueueWorkflowActionJobBody, FailBackgroundJobBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -45,6 +45,10 @@ export function isVerifyMfaBody(body: unknown): body is VerifyMfaBody {
 
 export function isPasswordResetBody(body: unknown): body is { email: string } {
   return isRecord(body) && isNonEmptyString(body.email);
+}
+
+export function isCompletePasswordResetBody(body: unknown): body is CompletePasswordResetBody {
+  return isRecord(body) && isNonEmptyString(body.requestId) && isNonEmptyString(body.newPassword) && body.newPassword.length >= 12;
 }
 
 export function isCreateOrganizationBody(body: unknown): body is CreateOrganizationBody {
