@@ -37,12 +37,16 @@ describe('production readiness workflow', () => {
 
   it('documents security, HIPAA, and go-live governance gates', () => {
     const security = readFileSync('SECURITY.md', 'utf8');
+    const backend = readFileSync('docs/backend-foundation.md', 'utf8');
     const hipaa = readFileSync('docs/hipaa-security-readiness.md', 'utf8');
     const goLive = readFileSync('docs/go-live-checklist.md', 'utf8');
     const runbook = readFileSync('docs/operational-runbook.md', 'utf8');
 
     expect(security).toContain('Report security concerns');
     expect(security).toContain('HIPAA security review');
+    expect(backend).toContain('Server-side authentication');
+    expect(backend).toContain('Tenant-isolated data access');
+    expect(backend).toContain('Immutable audit logs');
     expect(hipaa).toContain('Administrative safeguards');
     expect(hipaa).toContain('Technical safeguards');
     expect(goLive).toContain('Tenant isolation tests completed');
