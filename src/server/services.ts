@@ -3,6 +3,7 @@ import { createPostgresBackendRepositories, PgPostgresClient } from '../adapters
 import {
   AuthService,
   BackendFoundationService,
+  RepositoryPasswordVerifier,
   createInMemoryBackendRepositories,
   type BackendRepositories,
   type User
@@ -16,17 +17,16 @@ export type RuntimeServices = ApiServices & {
 
 export function createRuntimeServices(config: ServerConfig = readServerConfig()): RuntimeServices {
   const runtime = createRepositories(config);
+  const passwordVerifier = config.demoPassword
+    ? {
+        async verify({ password }: { password: string }) {
+          return password === config.demoPassword;
+        }
+      }
+    : new RepositoryPasswordVerifier(runtime.repositories);
   const auth = new AuthService(
     runtime.repositories,
-    {
-      async verify({ password }) {
-        if (!config.demoPassword) {
-          throw new Error('Password verifier is not configured');
-        }
-
-        return password === config.demoPassword;
-      }
-    },
+    passwordVerifier,
     {
       async verify({ code }) {
         if (!config.demoMfaCode) {

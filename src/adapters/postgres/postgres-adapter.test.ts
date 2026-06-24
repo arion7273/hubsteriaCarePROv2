@@ -9,9 +9,11 @@ import {
   mapFeatureRow,
   mapOrganizationRow,
   mapResidentRow,
+  mapUserCredentialRow,
   mapUserRow,
   organizationStatements,
   residentStatements,
+  userCredentialStatements,
   userStatements
 } from '.';
 
@@ -45,6 +47,10 @@ describe('Postgres statement builders', () => {
       values: ['user-1']
     });
     expect(userStatements.insertFacility('user-1', 'facility-1').text).toContain('INSERT INTO user_facilities');
+    expect(userCredentialStatements.selectByUserId('user-1')).toMatchObject({
+      text: 'SELECT user_id, password_hash, updated_at FROM user_credentials WHERE user_id = $1',
+      values: ['user-1']
+    });
   });
 
   it('uses tenant-scoped resident statements', () => {
@@ -130,6 +136,18 @@ describe('Postgres row mappers', () => {
       facilityIds: ['facility-1'],
       permissions: ['resident:read'],
       status: 'active'
+    });
+
+    expect(
+      mapUserCredentialRow({
+        user_id: 'user-1',
+        password_hash: 'pbkdf2-sha512$1000$salt$hash',
+        updated_at: '2026-06-24T01:00:00.000Z'
+      })
+    ).toEqual({
+      userId: 'user-1',
+      passwordHash: 'pbkdf2-sha512$1000$salt$hash',
+      updatedAt: '2026-06-24T01:00:00.000Z'
     });
 
     expect(

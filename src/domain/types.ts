@@ -116,6 +116,12 @@ export type User = {
   status: 'active' | 'inactive';
 };
 
+export type UserCredential = {
+  userId: UUID;
+  passwordHash: string;
+  updatedAt: string;
+};
+
 export type AccessContext = {
   user: User;
   activeOrganizationId?: UUID;

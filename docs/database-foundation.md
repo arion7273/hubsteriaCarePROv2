@@ -24,6 +24,9 @@ The initial database target is PostgreSQL.
   - password reset requests
 - `database/migrations/0011_background_jobs.sql`
   - background job queue records
+- `database/migrations/0004_user_credentials.sql`
+  - user credential hashes
+  - no plain-text password storage
 
 Run migrations with:
 
@@ -81,3 +84,4 @@ See `docs/postgres-adapters.md` for the statement builders and row mappers that 
 - MFA challenges must expire.
 - Password reset requests must expire and be single-use.
 - Login, MFA verification, logout, and password reset requests must create audit records.
+- User credentials must store password hashes only.

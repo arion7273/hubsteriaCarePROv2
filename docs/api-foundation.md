@@ -4,6 +4,10 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 
 ## API contracts
 
+- `src/client/api-client.ts`
+  - typed browser client for UI-to-API calls
+  - uses `VITE_API_BASE_URL`
+  - supports auth, resident, and user API operations
 - `src/api/http.ts`
   - request envelope
   - response envelope

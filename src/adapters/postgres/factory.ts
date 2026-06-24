@@ -9,6 +9,7 @@ import {
   PostgresOrganizationRepository,
   PostgresPasswordResetRepository,
   PostgresResidentRepository,
+  PostgresUserCredentialRepository,
   PostgresUserRepository
 } from './repositories';
 import type { PostgresClient } from './types';
@@ -26,6 +27,7 @@ export function createPostgresBackendRepositories(
     organizations: new PostgresOrganizationRepository(client),
     facilities: new PostgresFacilityRepository(client),
     users: new PostgresUserRepository(client, options.roleIdForTier),
+    userCredentials: new PostgresUserCredentialRepository(client),
     residents: new PostgresResidentRepository(client),
     backgroundJobs: new PostgresBackgroundJobRepository(client),
     auditLogs: new PostgresAuditLogRepository(client),

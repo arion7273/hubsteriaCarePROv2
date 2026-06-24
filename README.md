@@ -37,6 +37,12 @@ npm install
 npm run dev
 ```
 
+Set `VITE_API_BASE_URL` to connect the UI to a running backend API. By default the UI expects:
+
+```bash
+VITE_API_BASE_URL=http://localhost:3000
+```
+
 ## Verification
 
 ```bash

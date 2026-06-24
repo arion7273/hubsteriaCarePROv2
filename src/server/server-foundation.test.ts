@@ -45,12 +45,12 @@ describe('server runtime services', () => {
     });
   });
 
-  it('fails auth verification when demo verifier is not configured', async () => {
+  it('uses repository-backed credentials when demo verifier is not configured', async () => {
     const services = createRuntimeServices(readServerConfig({}));
     await seedDemoMasterAdmin(services);
 
     await expect(services.auth.login({ email: 'b094650@gmail.com', password: 'anything' })).rejects.toThrow(
-      'Password verifier is not configured'
+      'Invalid credentials'
     );
   });
 });

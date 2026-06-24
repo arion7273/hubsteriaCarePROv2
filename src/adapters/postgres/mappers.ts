@@ -1,6 +1,6 @@
 import type { RegisteredFeature } from '../../domain';
 import type { AuditEvent } from '../../domain/audit';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
+import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User, UserCredential } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -121,6 +121,14 @@ export function mapPasswordResetRequestRow(row: PostgresRow): PasswordResetReque
     createdAt: toIsoString(row.created_at),
     expiresAt: toIsoString(row.expires_at),
     usedAt: row.used_at ? toIsoString(row.used_at) : undefined
+  };
+}
+
+export function mapUserCredentialRow(row: PostgresRow): UserCredential {
+  return {
+    userId: String(row.user_id),
+    passwordHash: String(row.password_hash),
+    updatedAt: toIsoString(row.updated_at)
   };
 }
 

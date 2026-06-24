@@ -1,4 +1,4 @@
-import type { AuditEvent, AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
+import type { AuditEvent, AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UserCredential, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -357,6 +357,29 @@ export const passwordResetStatements = {
         RETURNING id, user_id, created_at, expires_at, used_at
       `,
       values: [request.id, request.userId, request.createdAt, request.expiresAt, request.usedAt ?? null]
+    };
+  }
+};
+
+export const userCredentialStatements = {
+  selectByUserId(userId: UUID): SqlStatement {
+    return {
+      text: 'SELECT user_id, password_hash, updated_at FROM user_credentials WHERE user_id = $1',
+      values: [userId]
+    };
+  },
+
+  upsert(credential: UserCredential): SqlStatement {
+    return {
+      text: `
+        INSERT INTO user_credentials (user_id, password_hash, updated_at)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (user_id) DO UPDATE
+        SET password_hash = EXCLUDED.password_hash,
+            updated_at = EXCLUDED.updated_at
+        RETURNING user_id, password_hash, updated_at
+      `,
+      values: [credential.userId, credential.passwordHash, credential.updatedAt]
     };
   }
 };

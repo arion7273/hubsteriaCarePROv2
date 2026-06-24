@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 const schema = readFileSync('database/migrations/0001_multitenant_foundation.sql', 'utf8');
 const seed = readFileSync('database/migrations/0002_seed_permissions.sql', 'utf8');
 const authSchema = readFileSync('database/migrations/0003_auth_sessions.sql', 'utf8');
+const credentialSchema = readFileSync('database/migrations/0004_user_credentials.sql', 'utf8');
 const docs = readFileSync('docs/database-foundation.md', 'utf8');
 
 describe('database foundation migrations', () => {
@@ -21,9 +22,10 @@ describe('database foundation migrations', () => {
       'CREATE TABLE audit_logs',
       'CREATE TABLE auth_sessions',
       'CREATE TABLE mfa_challenges',
-      'CREATE TABLE password_reset_requests'
+      'CREATE TABLE password_reset_requests',
+      'CREATE TABLE user_credentials'
     ].forEach((statement) => {
-      expect(`${schema}\n${authSchema}`).toContain(statement);
+      expect(`${schema}\n${authSchema}\n${credentialSchema}`).toContain(statement);
     });
   });
 
@@ -33,6 +35,7 @@ describe('database foundation migrations', () => {
     expect(schema).toContain('CREATE INDEX idx_residents_tenant');
     expect(schema).toContain('CREATE INDEX idx_audit_logs_tenant');
     expect(schema).toContain('CREATE INDEX idx_feature_registry_module');
+    expect(credentialSchema).toContain('CREATE INDEX idx_user_credentials_updated_at');
   });
 
   it('documents append-only audit log expectations', () => {
