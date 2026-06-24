@@ -1,7 +1,20 @@
 import type { RegisteredFeature } from '../../domain';
 import type { AuditEvent } from '../../domain/audit';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User, UserCredential } from '../../domain/types';
-import type { Assessment, AuthSession, CarePlan, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
+import type {
+  Assessment,
+  AuthSession,
+  BackgroundJob,
+  CarePlan,
+  Facility,
+  MfaChallenge,
+  Organization,
+  PasswordResetRequest,
+  Permission,
+  Resident,
+  RoleTier,
+  User,
+  UserCredential
+} from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -64,6 +77,9 @@ export function mapBackgroundJobRow(row: PostgresRow): BackgroundJob {
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
     lastError: row.last_error ? String(row.last_error) : undefined
+  };
+}
+
 export function mapAssessmentRow(row: PostgresRow): Assessment {
   return {
     id: String(row.id),

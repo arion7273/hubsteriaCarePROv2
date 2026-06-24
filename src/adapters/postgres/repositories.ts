@@ -1,8 +1,8 @@
 import { assertFeatureRegistration, type AuditEvent, type RegisteredFeature } from '../../domain';
 import type {
   AuditLogRepository,
-  BackgroundJobRepository,
   AssessmentRepository,
+  BackgroundJobRepository,
   AuthSessionRepository,
   CarePlanRepository,
   FacilityRepository,
@@ -14,8 +14,21 @@ import type {
   UserCredentialRepository,
   UserRepository
 } from '../../domain/repositories';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UserCredential, UUID } from '../../domain/types';
-import type { Assessment, AuthSession, CarePlan, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UUID } from '../../domain/types';
+import type {
+  Assessment,
+  AuthSession,
+  BackgroundJob,
+  CarePlan,
+  Facility,
+  MfaChallenge,
+  Organization,
+  PasswordResetRequest,
+  Resident,
+  RoleTier,
+  User,
+  UserCredential,
+  UUID
+} from '../../domain/types';
 import {
   assessmentStatements,
   auditLogStatements,
@@ -142,6 +155,8 @@ export class PostgresBackgroundJobRepository implements BackgroundJobRepository 
   async listQueued(limit: number): Promise<BackgroundJob[]> { return (await this.client.query(backgroundJobStatements.listQueued(limit))).rows.map(mapBackgroundJobRow); }
   async listByScope(scope: { organizationId?: UUID; facilityId?: UUID; residentId?: UUID }): Promise<BackgroundJob[]> { return (await this.client.query(backgroundJobStatements.listByScope(scope))).rows.map(mapBackgroundJobRow); }
   async save(job: BackgroundJob): Promise<BackgroundJob> { return requiredFirst(await this.client.query(backgroundJobStatements.upsert(job)), mapBackgroundJobRow); }
+}
+
 export class PostgresAssessmentRepository implements AssessmentRepository {
   constructor(private readonly client: PostgresClient) {}
 

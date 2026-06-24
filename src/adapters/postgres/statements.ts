@@ -1,5 +1,19 @@
-import type { AuditEvent, AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UserCredential, UUID } from '../../domain';
-import type { Assessment, AuditEvent, AuthSession, CarePlan, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
+import type {
+  Assessment,
+  AuditEvent,
+  AuthSession,
+  BackgroundJob,
+  CarePlan,
+  Facility,
+  MfaChallenge,
+  Organization,
+  PasswordResetRequest,
+  RegisteredFeature,
+  Resident,
+  User,
+  UserCredential,
+  UUID
+} from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -203,6 +217,9 @@ export const backgroundJobStatements = {
       ON CONFLICT (id) DO UPDATE SET status=EXCLUDED.status, payload=EXCLUDED.payload, attempts=EXCLUDED.attempts, updated_at=EXCLUDED.updated_at, last_error=EXCLUDED.last_error
       RETURNING *
     `, values: [job.id, job.organizationId ?? null, job.facilityId ?? null, job.residentId ?? null, job.type, job.status, job.priority, JSON.stringify(job.payload), job.attempts, job.maxAttempts, job.availableAt, job.createdAt, job.updatedAt, job.lastError ?? null] };
+  }
+};
+
 export const assessmentStatements = {
   selectById(id: UUID): SqlStatement {
     return {

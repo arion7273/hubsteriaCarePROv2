@@ -228,6 +228,8 @@ describe('BackendFoundationService', () => {
     await expect(service.enqueueDigitalRxSyncJob({ user: t1User }, { organizationId: 'org-1', event: 'refill_updated', payload: { refillId: 'refill-1' } })).resolves.toMatchObject({ type: 'digitalrx_sync' });
     await expect(service.enqueueAiGenerationJob({ user: t1User }, { task: 'resident_summary', payload: { residentId: 'resident-1' } })).resolves.toMatchObject({ type: 'ai_generation' });
     await expect(service.enqueueWorkflowActionJob({ user: t1User }, { trigger: 'Assessment Due', action: 'Create Task', payload: { residentId: 'resident-1' } })).resolves.toMatchObject({ type: 'workflow_action' });
+  });
+
   it('creates and lists assessments and care plans with audit logs', async () => {
     const { repositories, service } = createTestService();
     await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });

@@ -104,6 +104,8 @@ export type WorkflowActionJobInput = {
   action: string;
   payload: Record<string, unknown>;
   priority?: BackgroundJob['priority'];
+};
+
 export type Assessment = {
   id: UUID;
   organizationId: UUID;

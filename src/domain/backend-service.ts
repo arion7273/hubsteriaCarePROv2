@@ -5,7 +5,9 @@ import { requirePermission } from './access-control';
 import type {
   AccessContext,
   AiGenerationJobInput,
+  Assessment,
   BackgroundJob,
+  CarePlan,
   DigitalRxSyncJobInput,
   Facility,
   NotificationJobInput,
@@ -16,7 +18,6 @@ import type {
   UUID,
   WorkflowActionJobInput
 } from './types';
-import type { AccessContext, Assessment, CarePlan, Facility, Organization, Resident, User, UUID } from './types';
 
 export type IdFactory = () => UUID;
 export type Clock = () => Date;
@@ -542,6 +543,8 @@ export class BackendFoundationService {
         ...input.payload
       }
     });
+  }
+
   async createAssessment(context: AccessContext, input: Omit<Assessment, 'id'>): Promise<Assessment> {
     const resident = await this.getResident(context, input.residentId);
     const decision = requirePermission(

@@ -2,8 +2,8 @@ import type { AuditEvent } from './audit';
 import { assertFeatureRegistration, type RegisteredFeature } from './feature-registry';
 import type {
   AuditLogRepository,
-  BackgroundJobRepository,
   AssessmentRepository,
+  BackgroundJobRepository,
   AuthSessionRepository,
   BackendRepositories,
   CarePlanRepository,
@@ -16,8 +16,20 @@ import type {
   UserCredentialRepository,
   UserRepository
 } from './repositories';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
-import type { Assessment, AuthSession, CarePlan, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
+import type {
+  Assessment,
+  AuthSession,
+  BackgroundJob,
+  CarePlan,
+  Facility,
+  MfaChallenge,
+  Organization,
+  PasswordResetRequest,
+  Resident,
+  User,
+  UserCredential,
+  UUID
+} from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -137,6 +149,8 @@ export class InMemoryBackgroundJobRepository implements BackgroundJobRepository 
 
 function priorityValue(priority: BackgroundJob['priority']): number {
   return { low: 0, normal: 1, high: 2, critical: 3 }[priority];
+}
+
 export class InMemoryAssessmentRepository implements AssessmentRepository {
   private readonly assessments = new Map<UUID, Assessment>();
 

@@ -1,8 +1,28 @@
 import type { RegisteredFeature } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
-import type { CompleteBackgroundJobBody, CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, EnqueueAiGenerationJobBody, EnqueueBackgroundJobBody, EnqueueDigitalRxSyncJobBody, EnqueueNotificationJobBody, EnqueuePrintJobBody, EnqueueWorkflowActionJobBody, FailBackgroundJobBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
-import type { CreateAssessmentBody, CreateCarePlanBody, CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
+import type {
+  CompleteBackgroundJobBody,
+  CreateAssessmentBody,
+  CreateCarePlanBody,
+  CreateFacilityBody,
+  CreateOrganizationBody,
+  CreateResidentBody,
+  CreateUserBody,
+  EnqueueAiGenerationJobBody,
+  EnqueueBackgroundJobBody,
+  EnqueueDigitalRxSyncJobBody,
+  EnqueueNotificationJobBody,
+  EnqueuePrintJobBody,
+  EnqueueWorkflowActionJobBody,
+  FailBackgroundJobBody,
+  LoginBody,
+  UpdateFacilityBody,
+  UpdateOrganizationBody,
+  UpdateResidentBody,
+  UpdateUserBody,
+  VerifyMfaBody
+} from './handlers';
 
 export type ValidationResult =
   | {
@@ -175,6 +195,8 @@ export function isEnqueueAiGenerationJobBody(body: unknown): body is EnqueueAiGe
 
 export function isEnqueueWorkflowActionJobBody(body: unknown): body is EnqueueWorkflowActionJobBody {
   return isRecord(body) && isNonEmptyString(body.trigger) && isNonEmptyString(body.action) && isRecord(body.payload);
+}
+
 export function isCreateAssessmentBody(body: unknown): body is CreateAssessmentBody {
   return (
     isRecord(body) &&

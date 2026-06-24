@@ -202,7 +202,7 @@ const routeConfigs: RouteConfig[] = [
   { method: 'POST', path: '/jobs/print', validate: isEnqueuePrintJobBody, handler: enqueuePrintJobHandler as RouteHandler },
   { method: 'POST', path: '/jobs/digitalrx', validate: isEnqueueDigitalRxSyncJobBody, handler: enqueueDigitalRxSyncJobHandler as RouteHandler },
   { method: 'POST', path: '/jobs/ai', validate: isEnqueueAiGenerationJobBody, handler: enqueueAiGenerationJobHandler as RouteHandler },
-  { method: 'POST', path: '/jobs/workflow-actions', validate: isEnqueueWorkflowActionJobBody, handler: enqueueWorkflowActionJobHandler as RouteHandler }
+  { method: 'POST', path: '/jobs/workflow-actions', validate: isEnqueueWorkflowActionJobBody, handler: enqueueWorkflowActionJobHandler as RouteHandler },
   {
     method: 'POST',
     path: '/assessments',
