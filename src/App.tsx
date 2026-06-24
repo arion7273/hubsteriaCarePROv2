@@ -34,6 +34,17 @@ import {
   taskTypes
 } from './data/tasks';
 import {
+  barcodeVerificationSteps,
+  controlledSubstanceChecks,
+  medicationAlerts,
+  medicationComplianceItems,
+  medicationIntegrationRequirements,
+  medicationMetrics,
+  medicationOrders,
+  medPassResidents,
+  prnManagement
+} from './data/medications';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -158,12 +169,21 @@ function App() {
             'Configuration Center',
             'Assessments & Care Plans',
             'Tasks ADLs & Services',
+            'eMAR & Medication',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
           ].map((item) => (
             <a
-              href={item === 'Assessments & Care Plans' ? '#assessments-care-plans' : `#${item.toLowerCase().replaceAll(' ', '-')}`}
+              href={
+                item === 'Assessments & Care Plans'
+                  ? '#assessments-care-plans'
+                  : item === 'Tasks ADLs & Services'
+                    ? '#tasks-adls-services'
+                    : item === 'eMAR & Medication'
+                      ? '#emar-medication-management'
+                      : `#${item.toLowerCase().replaceAll(' ', '-')}`
+              }
               key={item}
             >
               {item}
@@ -174,8 +194,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-7</strong>
-            <span>Caregiver workflows active</span>
+            <strong>Phase 0-8</strong>
+            <span>Medication workflows active</span>
           </div>
         </div>
       </aside>
@@ -217,6 +237,9 @@ function App() {
               </a>
               <a className="button secondary" href="#tasks-adls-services">
                 Open Tasks & ADLs
+              </a>
+              <a className="button secondary" href="#emar-medication-management">
+                Open eMAR
               </a>
             </div>
           </div>
@@ -987,6 +1010,171 @@ function App() {
             </div>
             <ul className="check-list">
               {taskIntegrationRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className="content-card medication-center" id="emar-medication-management" aria-labelledby="medication-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 8</p>
+              <h2 id="medication-title">eMAR & Medication Management</h2>
+              <p>
+                Flagship medication workflows for orders, med pass, PRNs, controlled substances, barcode
+                verification, safety alerts, compliance monitoring, and mobile-first medication administration.
+              </p>
+            </div>
+            <div className="medication-status">
+              <span>Mobile med pass</span>
+              <strong>Safety-first workflow</strong>
+            </div>
+          </div>
+
+          <div className="medication-metric-grid">
+            {medicationMetrics.map((metric) => (
+              <article className="medication-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="medication-layout">
+            <div className="medication-panel">
+              <div className="card-heading">
+                <span>Medication Orders</span>
+                <strong>Order status and instructions</strong>
+              </div>
+              <div className="medication-order-list" aria-label="Medication orders">
+                {medicationOrders.map((order) => (
+                  <article key={`${order.medication}-${order.status}`}>
+                    <div>
+                      <strong>{order.medication}</strong>
+                      <span>
+                        {order.dosage} | {order.route} | {order.schedule}
+                      </span>
+                    </div>
+                    <p>{order.instructions}</p>
+                    <span className={`medication-status-pill ${order.status.toLowerCase()}`}>{order.status}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="medication-panel">
+              <div className="card-heading">
+                <span>Med Pass Center</span>
+                <strong>Resident-first administration</strong>
+              </div>
+              <div className="med-pass-list" aria-label="Med pass residents">
+                {medPassResidents.map((resident) => (
+                  <article key={`${resident.resident}-${resident.medication}`}>
+                    <div className="med-pass-header">
+                      <div className="med-pass-avatar">{resident.photo}</div>
+                      <div>
+                        <strong>{resident.resident}</strong>
+                        <span>Room {resident.room}</span>
+                      </div>
+                    </div>
+                    <p>
+                      {resident.medication} {resident.dosage} | {resident.route} | {resident.schedule}
+                    </p>
+                    <small>{resident.instructions}</small>
+                    <div className="med-action-row">
+                      {resident.actions.map((action) => (
+                        <button type="button" key={action}>
+                          {action}
+                        </button>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="medication-layout">
+            <div className="medication-panel">
+              <div className="card-heading">
+                <span>PRN and controlled substances</span>
+                <strong>Reason, outcome, counts, witnesses</strong>
+              </div>
+              <div className="medication-subgrid">
+                <div>
+                  <h3>PRN Management</h3>
+                  <ul>
+                    {prnManagement.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3>Controlled Substance Module</h3>
+                  <ul>
+                    {controlledSubstanceChecks.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="medication-panel">
+              <div className="card-heading">
+                <span>Barcode scanning and alerts</span>
+                <strong>Verification before action</strong>
+              </div>
+              <ol className="barcode-list">
+                {barcodeVerificationSteps.map((step) => (
+                  <li key={step}>{step}</li>
+                ))}
+              </ol>
+              <div className="medication-alert-grid" aria-label="Medication alerts">
+                {medicationAlerts.map((alert) => (
+                  <span key={alert}>{alert}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="medication-layout">
+            <div className="medication-panel">
+              <div className="card-heading">
+                <span>Compliance monitoring</span>
+                <strong>Late, missed, refused, expiring</strong>
+              </div>
+              <div className="medication-compliance-list" aria-label="Medication compliance items">
+                {medicationComplianceItems.map((item) => (
+                  <article key={item.label}>
+                    <strong>{item.label}</strong>
+                    <p>{item.detail}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="medication-panel mobile-med-pass-card">
+              <div className="card-heading">
+                <span>Mobile med pass mode</span>
+                <strong>Designed for tablets and phones first</strong>
+              </div>
+              <p>
+                Large resident cards, high-contrast actions, barcode-ready verification, PRN follow-up prompts,
+                allergy warnings, and sticky action buttons keep med pass fast and safe on mobile devices.
+              </p>
+            </div>
+          </div>
+
+          <div className="medication-panel integration-panel">
+            <div className="card-heading">
+              <span>Medication integration contract</span>
+              <strong>Resident, notification, print, configuration, and audit hooks</strong>
+            </div>
+            <ul className="check-list">
+              {medicationIntegrationRequirements.map((requirement) => (
                 <li key={requirement}>{requirement}</li>
               ))}
             </ul>

@@ -329,4 +329,46 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Resident Command Center displays service plans, open tasks, ADL history/i)).toBeInTheDocument();
     expect(screen.getByText(/Notification Center Pro alerts staff for late, missed, overdue, and unassigned tasks/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 8 eMAR medication orders and med pass actions', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'eMAR & Medication Management' })).toBeInTheDocument();
+    expect(screen.getAllByText('Med Pass Completion').length).toBeGreaterThan(0);
+
+    const orders = screen.getByLabelText('Medication orders');
+    ['Lisinopril', 'Acetaminophen', 'Memantine', 'Warfarin'].forEach((medication) => {
+      expect(within(orders).getByText(medication)).toBeInTheDocument();
+    });
+    expect(within(orders).getByText('Hold pending INR review')).toBeInTheDocument();
+
+    const medPass = screen.getByLabelText('Med pass residents');
+    expect(within(medPass).getByText('Maria Alvarez')).toBeInTheDocument();
+    ['Given', 'Refused', 'Held', 'Resident Absent', 'Not Available'].forEach((action) => {
+      expect(within(medPass).getAllByRole('button', { name: action }).length).toBeGreaterThan(0);
+    });
+  });
+
+  it('supports PRNs controlled substances barcode alerts compliance and medication integrations', () => {
+    render(<App />);
+
+    expect(screen.getByText('Track PRN reason before administration')).toBeInTheDocument();
+    expect(screen.getByText('Witness signatures')).toBeInTheDocument();
+    expect(screen.getByText('Scan resident wristband or profile barcode')).toBeInTheDocument();
+
+    const alerts = screen.getByLabelText('Medication alerts');
+    ['Allergies', 'Interactions', 'Duplicates', 'Expiring Orders', 'Late Medications', 'Missed Medications', 'Refusals'].forEach(
+      (alert) => {
+        expect(within(alerts).getByText(alert)).toBeInTheDocument();
+      }
+    );
+
+    const compliance = screen.getByLabelText('Medication compliance items');
+    expect(within(compliance).getByText('Late medication review')).toBeInTheDocument();
+    expect(within(compliance).getByText('Refusal trend')).toBeInTheDocument();
+
+    expect(screen.getByText(/Large resident cards, high-contrast actions, barcode-ready verification/i)).toBeInTheDocument();
+    expect(screen.getByText(/Resident Command Center displays medication orders, med pass activity/i)).toBeInTheDocument();
+    expect(screen.getByText(/Print Center Pro exports medication administration records/i)).toBeInTheDocument();
+  });
 });

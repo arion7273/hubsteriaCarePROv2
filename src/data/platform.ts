@@ -294,6 +294,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Notification Center Integration', 'Task and ADL Tracking'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Medication Orders and Med Pass',
+    module: 'eMAR & Medication Management',
+    status: 'registered',
+    dependencies: ['Resident Command Center', 'Notification Center Integration', 'Print Center Integration'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'PRN Controlled Substance and Barcode Safety',
+    module: 'eMAR & Medication Management',
+    status: 'registered',
+    dependencies: ['Medication Orders and Med Pass', 'Audit Log Contract', 'Configuration Center'],
+    version: '0.1.0'
   }
 ];
 

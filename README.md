@@ -14,6 +14,7 @@ This repository currently implements the first product foundation milestone:
 - Phase 5.5 Configuration Center with centralized roles, permissions, templates, DigitalRX settings, facility settings, branding, feature toggles, and audit guardrails
 - Phase 6 Assessments & Care Plans Engine with assessment templates, scheduler, builder controls, scoring-driven suggestions, review queues, and resident-linked care plans
 - Phase 7 Tasks, ADLs & Services with recurring tasks, ADL tracking, resident service plans, missed-task detection, shift dashboards, and one-tap mobile completion
+- Phase 8 eMAR & Medication Management with medication orders, med pass, PRNs, controlled substances, barcode verification, safety alerts, compliance monitoring, and mobile med pass mode
 - Roadmap registry for phases 0-20
 - Regression tests for the foundation shell
 

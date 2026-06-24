@@ -1988,6 +1988,215 @@ p {
   background: var(--surface);
 }
 
+.medication-center {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.medication-status {
+  display: grid;
+  gap: 0.2rem;
+  min-width: min(100%, 17rem);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.medication-status span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.medication-status strong {
+  color: var(--primary-strong);
+}
+
+.medication-metric-grid,
+.medication-layout,
+.medication-subgrid {
+  display: grid;
+  gap: 1rem;
+}
+
+.medication-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.medication-layout,
+.medication-subgrid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.medication-metric-card,
+.medication-panel,
+.medication-order-list article,
+.med-pass-list article,
+.medication-compliance-list article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.medication-metric-card,
+.medication-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.medication-metric-card span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.medication-metric-card strong {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  letter-spacing: -0.05em;
+}
+
+.medication-metric-card small {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.medication-order-list,
+.med-pass-list,
+.medication-compliance-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.medication-order-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.7fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.medication-order-list span:not(.medication-status-pill),
+.med-pass-list small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.medication-order-list p,
+.medication-compliance-list p,
+.mobile-med-pass-card p {
+  margin: 0;
+}
+
+.medication-status-pill {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.medication-status-pill.active,
+.medication-status-pill.prn {
+  background: #ddf6ed;
+  color: var(--success);
+}
+
+.medication-status-pill.future {
+  background: #e8eef9;
+  color: #355985;
+}
+
+.medication-status-pill.hold,
+.medication-status-pill.discontinued {
+  background: #fff4da;
+  color: var(--warning);
+}
+
+.med-pass-list article {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.med-pass-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.med-pass-avatar {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 1rem;
+  background: #dff6ef;
+  color: var(--primary-strong);
+  font-weight: 900;
+}
+
+.med-action-row,
+.medication-alert-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.med-action-row button {
+  min-height: 2.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  cursor: pointer;
+  font-weight: 900;
+  padding: 0.6rem 0.8rem;
+}
+
+.med-action-row button:first-child {
+  background: var(--primary);
+  color: white;
+}
+
+.medication-subgrid > div,
+.mobile-med-pass-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 1rem;
+}
+
+.medication-subgrid ul,
+.barcode-list {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.medication-alert-grid span {
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 0.55rem 0.75rem;
+}
+
+.medication-compliance-list article {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
 .role-grid,
 .roadmap-grid {
   display: grid;
@@ -2138,6 +2347,7 @@ summary {
   .assessment-metric-grid,
   .task-metric-grid,
   .shift-dashboard-grid,
+  .medication-metric-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -2156,6 +2366,8 @@ summary {
   .resident-layout,
   .assessment-layout,
   .tasks-layout,
+  .medication-layout,
+  .medication-subgrid,
   .module-connection-panel,
   .notification-layout,
   .notification-bottom-grid,
@@ -2197,6 +2409,7 @@ summary {
   .assessment-metric-grid,
   .task-metric-grid,
   .shift-dashboard-grid,
+  .medication-metric-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -2276,6 +2489,7 @@ summary {
   .batch-list article,
   .suggestion-list article,
   .caregiver-task-list article,
+  .medication-order-list article,
   .configuration-audit-list article,
   .toggle-list article,
   .preview-sheet dl {

@@ -146,7 +146,7 @@ export const clinicalOperationsPhases: Phase[] = [
   {
     id: '8',
     title: 'eMAR & Medication Management',
-    status: 'future',
+    status: 'foundation',
     milestone: 'Medication Safety',
     summary:
       'Medication orders, med pass, PRNs, controlled substances, barcode scanning, alerts, compliance, and mobile med pass mode.',
