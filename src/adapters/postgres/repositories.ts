@@ -1,43 +1,42 @@
 import { assertFeatureRegistration, type AuditEvent, type RegisteredFeature } from '../../domain';
 import type {
+  AdlEntryRepository,
   AuditLogRepository,
   AssessmentRepository,
   BackgroundJobRepository,
-  AdlEntryRepository,
   AuthSessionRepository,
   CarePlanRepository,
+  CareTaskRepository,
   FacilityRepository,
   FeatureRegistryRepository,
   MfaChallengeRepository,
   OrganizationRepository,
   PasswordResetRepository,
   ResidentRepository,
+  ServicePlanRepository,
   UserCredentialRepository,
   UserRepository
 } from '../../domain/repositories';
 import type {
+  AdlEntry,
   Assessment,
   AuthSession,
   BackgroundJob,
   CarePlan,
+  CareTask,
   Facility,
   MfaChallenge,
   Organization,
   PasswordResetRequest,
   Resident,
   RoleTier,
+  ServicePlanRecord,
   User,
   UserCredential,
   UUID
 } from '../../domain/types';
 import {
   assessmentStatements,
-  CareTaskRepository,
-  ServicePlanRepository,
-  UserRepository
-} from '../../domain/repositories';
-import type { AdlEntry, AuthSession, CareTask, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, ServicePlanRecord, User, UUID } from '../../domain/types';
-import {
   adlEntryStatements,
   auditLogStatements,
   backgroundJobStatements,
@@ -50,15 +49,12 @@ import {
   organizationStatements,
   passwordResetStatements,
   residentStatements,
+  servicePlanStatements,
   userCredentialStatements,
   userStatements
 } from './statements';
 import {
   mapAssessmentRow,
-  servicePlanStatements,
-  userStatements
-} from './statements';
-import {
   mapAdlEntryRow,
   mapAuditRow,
   mapBackgroundJobRow,
@@ -71,8 +67,8 @@ import {
   mapOrganizationRow,
   mapPasswordResetRequestRow,
   mapResidentRow,
-  mapUserCredentialRow,
   mapServicePlanRow,
+  mapUserCredentialRow,
   mapUserRow
 } from './mappers';
 import type { PostgresClient, PostgresRow } from './types';
@@ -205,6 +201,8 @@ export class PostgresCarePlanRepository implements CarePlanRepository {
   async save(carePlan: CarePlan): Promise<CarePlan> {
     return requiredFirst(await this.client.query(carePlanStatements.upsert(carePlan)), mapCarePlanRow);
   }
+}
+
 export class PostgresCareTaskRepository implements CareTaskRepository {
   constructor(private readonly client: PostgresClient) {}
   async getById(id: UUID): Promise<CareTask | null> { return first(await this.client.query(careTaskStatements.selectById(id)), mapCareTaskRow); }

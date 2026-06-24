@@ -1,15 +1,13 @@
 import type { AuditEvent } from './audit';
 import { assertFeatureRegistration, type RegisteredFeature } from './feature-registry';
 import type {
+  AdlEntryRepository,
   AuditLogRepository,
   AssessmentRepository,
   BackgroundJobRepository,
   AuthSessionRepository,
   BackendRepositories,
   CarePlanRepository,
-  AdlEntryRepository,
-  AuthSessionRepository,
-  BackendRepositories,
   CareTaskRepository,
   FacilityRepository,
   FeatureRegistryRepository,
@@ -17,27 +15,27 @@ import type {
   OrganizationRepository,
   PasswordResetRepository,
   ResidentRepository,
+  ServicePlanRepository,
   UserCredentialRepository,
   UserRepository
 } from './repositories';
 import type {
   Assessment,
+  AdlEntry,
   AuthSession,
   BackgroundJob,
   CarePlan,
+  CareTask,
   Facility,
   MfaChallenge,
   Organization,
   PasswordResetRequest,
   Resident,
+  ServicePlanRecord,
   User,
   UserCredential,
   UUID
 } from './types';
-  ServicePlanRepository,
-  UserRepository
-} from './repositories';
-import type { AdlEntry, AuthSession, CareTask, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, ServicePlanRecord, User, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -190,6 +188,9 @@ export class InMemoryCarePlanRepository implements CarePlanRepository {
   async save(carePlan: CarePlan): Promise<CarePlan> {
     this.carePlans.set(carePlan.id, carePlan);
     return carePlan;
+  }
+}
+
 export class InMemoryCareTaskRepository implements CareTaskRepository {
   private readonly tasks = new Map<UUID, CareTask>();
   async getById(id: UUID): Promise<CareTask | null> { return this.tasks.get(id) ?? null; }

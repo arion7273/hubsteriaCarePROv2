@@ -4,21 +4,23 @@ import type { BackendRepositories } from './repositories';
 import { requirePermission } from './access-control';
 import type {
   AccessContext,
+  AdlEntry,
   AiGenerationJobInput,
   Assessment,
   BackgroundJob,
   CarePlan,
+  CareTask,
   DigitalRxSyncJobInput,
   Facility,
   NotificationJobInput,
   Organization,
   PrintJobInput,
   Resident,
+  ServicePlanRecord,
   User,
   UUID,
   WorkflowActionJobInput
 } from './types';
-import type { AccessContext, AdlEntry, CareTask, Facility, Organization, Resident, ServicePlanRecord, User, UUID } from './types';
 
 export type IdFactory = () => UUID;
 export type Clock = () => Date;
@@ -614,6 +616,8 @@ export class BackendFoundationService {
   async listCarePlansByResident(context: AccessContext, residentId: UUID): Promise<CarePlan[]> {
     await this.getResident(context, residentId);
     return this.repositories.carePlans.listByResident(residentId);
+  }
+
   async createCareTask(context: AccessContext, input: Omit<CareTask, 'id'>): Promise<CareTask> {
     const resident = await this.getResident(context, input.residentId);
     const decision = requirePermission(context, { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id }, 'resident:write');
@@ -756,7 +760,6 @@ export class BackendFoundationService {
     return updated;
   }
 
-  private async auditJob(context: AccessContext, job: BackgroundJob, beforeState: BackgroundJob | null): Promise<void> {
   private async auditEntity(
     context: AccessContext,
     entityType: string,
@@ -770,16 +773,31 @@ export class BackendFoundationService {
       action: beforeState ? 'update' : 'create',
       actorUserId: context.user.id,
       actorRole: context.user.roleTier,
-      entityType: 'BackgroundJob',
-      entityId: job.id,
-      scope: { scope: job.residentId ? 'resident' : job.facilityId ? 'facility' : job.organizationId ? 'organization' : 'platform', organizationId: job.organizationId, facilityId: job.facilityId, residentId: job.residentId },
-      beforeState,
-      afterState: job,
       entityType,
       entityId,
       scope,
       beforeState,
       afterState,
+      now: this.clock()
+    }));
+  }
+
+  private async auditJob(context: AccessContext, job: BackgroundJob, beforeState: BackgroundJob | null): Promise<void> {
+    await this.repositories.auditLogs.append(createAuditEvent({
+      id: this.createId(),
+      action: beforeState ? 'update' : 'create',
+      actorUserId: context.user.id,
+      actorRole: context.user.roleTier,
+      entityType: 'BackgroundJob',
+      entityId: job.id,
+      scope: {
+        scope: job.residentId ? 'resident' : job.facilityId ? 'facility' : job.organizationId ? 'organization' : 'platform',
+        organizationId: job.organizationId,
+        facilityId: job.facilityId,
+        residentId: job.residentId
+      },
+      beforeState,
+      afterState: job,
       now: this.clock()
     }));
   }

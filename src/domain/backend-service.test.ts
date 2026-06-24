@@ -31,7 +31,6 @@ const t3User: User = {
 };
 
 function createTestService() {
-  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'job-1', 'audit-job-1', 'audit-job-fail', 'job-2', 'audit-job-2', 'audit-job-complete', 'audit-4', 'user-1', 'audit-user', 'audit-user-update', 'feature-audit'];
   const ids = [
     'org-1',
     'audit-1',
@@ -251,7 +250,6 @@ describe('BackendFoundationService', () => {
   });
 
   it('creates and lists assessments and care plans with audit logs', async () => {
-  it('creates tasks, completes tasks, logs ADLs, and creates service plans with audit logs', async () => {
     const { repositories, service } = createTestService();
     await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
     await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
@@ -262,12 +260,6 @@ describe('BackendFoundationService', () => {
 
     const assessment = await service.createAssessment(
       { user: { ...t3User, permissions: ['assessment:manage'] } },
-      { user: { ...t3User, permissions: ['resident:write'] } },
-      { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
-    );
-
-    const task = await service.createCareTask(
-      { user: { ...t3User, permissions: ['resident:write'] } },
       {
         organizationId: 'org-1',
         facilityId: 'facility-1',
@@ -284,6 +276,40 @@ describe('BackendFoundationService', () => {
 
     const carePlan = await service.createCarePlan(
       { user: { ...t3User, permissions: ['assessment:manage'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        goal: 'Reduce fall risk',
+        interventions: ['Escort to dining room'],
+        outcome: 'No falls',
+        reviewDate: '2026-07-24',
+        assignedStaff: 'Wellness Director',
+        status: 'active'
+      }
+    );
+
+    expect(carePlan).toMatchObject({ goal: 'Reduce fall risk' });
+    await expect(service.listCarePlansByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+    await expect(repositories.auditLogs.listByEntity('Assessment', assessment.id)).resolves.toHaveLength(1);
+    await expect(repositories.auditLogs.listByEntity('CarePlan', carePlan.id)).resolves.toHaveLength(1);
+  });
+
+  it('creates tasks, completes tasks, logs ADLs, and creates service plans with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+    await service.createResident(
+      { user: { ...t3User, permissions: ['resident:write'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
+    );
+
+    const task = await service.createCareTask(
+      { user: { ...t3User, permissions: ['resident:write'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
         title: 'Breakfast ADL documentation',
         taskType: 'daily',
         dueAt: '2026-06-24T09:30:00.000Z',
@@ -303,19 +329,6 @@ describe('BackendFoundationService', () => {
         organizationId: 'org-1',
         facilityId: 'facility-1',
         residentId: 'resident-1',
-        goal: 'Reduce fall risk',
-        interventions: ['Escort to dining room'],
-        outcome: 'No falls',
-        reviewDate: '2026-07-24',
-        assignedStaff: 'Wellness Director',
-        status: 'active'
-      }
-    );
-
-    expect(carePlan).toMatchObject({ goal: 'Reduce fall risk' });
-    await expect(service.listCarePlansByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
-    await expect(repositories.auditLogs.listByEntity('Assessment', assessment.id)).resolves.toHaveLength(1);
-    await expect(repositories.auditLogs.listByEntity('CarePlan', carePlan.id)).resolves.toHaveLength(1);
         category: 'Feeding',
         outcome: '75% breakfast intake'
       }

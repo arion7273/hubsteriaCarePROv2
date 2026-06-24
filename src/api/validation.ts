@@ -3,11 +3,14 @@ import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
 import type {
   CompleteBackgroundJobBody,
+  CompleteCareTaskBody,
   CreateAssessmentBody,
   CreateCarePlanBody,
+  CreateCareTaskBody,
   CreateFacilityBody,
   CreateOrganizationBody,
   CreateResidentBody,
+  CreateServicePlanBody,
   CreateUserBody,
   EnqueueAiGenerationJobBody,
   EnqueueBackgroundJobBody,
@@ -16,6 +19,7 @@ import type {
   EnqueuePrintJobBody,
   EnqueueWorkflowActionJobBody,
   FailBackgroundJobBody,
+  LogAdlBody,
   LoginBody,
   UpdateFacilityBody,
   UpdateOrganizationBody,
@@ -23,7 +27,6 @@ import type {
   UpdateUserBody,
   VerifyMfaBody
 } from './handlers';
-import type { CompleteCareTaskBody, CreateCareTaskBody, CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateServicePlanBody, CreateUserBody, LogAdlBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -225,6 +228,8 @@ export function isCreateCarePlanBody(body: unknown): body is CreateCarePlanBody 
     isNonEmptyString(body.assignedStaff) &&
     ['active', 'resolved', 'inactive'].includes(String(body.status))
   );
+}
+
 export function isCreateCareTaskBody(body: unknown): body is CreateCareTaskBody {
   return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.title) && ['one_time', 'daily', 'weekly', 'monthly', 'custom_recurring'].includes(String(body.taskType)) && isNonEmptyString(body.dueAt) && isNonEmptyString(body.assignedStaff) && ['due', 'overdue', 'complete', 'missed', 'unassigned'].includes(String(body.status));
 }

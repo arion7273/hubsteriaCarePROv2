@@ -235,7 +235,7 @@ const routeConfigs: RouteConfig[] = [
     method: 'GET',
     path: '/care-plans',
     handler: listCarePlansHandler
-  }
+  },
   { method: 'POST', path: '/tasks', validate: isCreateCareTaskBody, handler: createCareTaskHandler as RouteHandler },
   { method: 'GET', path: '/tasks', handler: listCareTasksHandler },
   { method: 'PATCH', path: '/tasks/complete', validate: isCompleteCareTaskBody, handler: completeCareTaskHandler as RouteHandler },

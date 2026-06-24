@@ -1,20 +1,22 @@
 import type {
+  AdlEntry,
   Assessment,
   AuditEvent,
   AuthSession,
   BackgroundJob,
   CarePlan,
+  CareTask,
   Facility,
   MfaChallenge,
   Organization,
   PasswordResetRequest,
   RegisteredFeature,
   Resident,
+  ServicePlanRecord,
   User,
   UserCredential,
   UUID
 } from '../../domain';
-import type { AdlEntry, AuditEvent, AuthSession, CareTask, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, ServicePlanRecord, User, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -324,6 +326,9 @@ export const carePlanStatements = {
         carePlan.status
       ]
     };
+  }
+};
+
 export const careTaskStatements = {
   selectById(id: UUID): SqlStatement { return { text: 'SELECT * FROM care_tasks WHERE id = $1', values: [id] }; },
   listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM care_tasks WHERE resident_id = $1 ORDER BY due_at ASC', values: [residentId] }; },

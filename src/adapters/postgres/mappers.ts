@@ -5,6 +5,7 @@ import type {
   AuthSession,
   BackgroundJob,
   CarePlan,
+  CareTask,
   Facility,
   MfaChallenge,
   Organization,
@@ -12,10 +13,11 @@ import type {
   Permission,
   Resident,
   RoleTier,
+  ServicePlanRecord,
   User,
   UserCredential
 } from '../../domain/types';
-import type { AdlEntry, AuthSession, CareTask, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, ServicePlanRecord, User } from '../../domain/types';
+import type { AdlEntry } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -106,6 +108,9 @@ export function mapCarePlanRow(row: PostgresRow): CarePlan {
     reviewDate: String(row.review_date),
     assignedStaff: String(row.assigned_staff),
     status: String(row.status) as CarePlan['status']
+  };
+}
+
 export function mapCareTaskRow(row: PostgresRow): CareTask {
   return {
     id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),

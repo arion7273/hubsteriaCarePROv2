@@ -3,22 +3,24 @@ import {
   AuthService,
   BackendFoundationService,
   type AccessContext,
+  type AdlEntry,
   type AiGenerationJobInput,
   type Assessment,
   type BackgroundJob,
   type BackendRepositories,
   type CarePlan,
+  type CareTask,
   type DigitalRxSyncJobInput,
   type Facility,
   type NotificationJobInput,
   type Organization,
   type PrintJobInput,
   type Resident,
+  type ServicePlanRecord,
   type User,
   type UUID,
   type WorkflowActionJobInput
 } from '../domain';
-import { AuthService, BackendFoundationService, type AccessContext, type AdlEntry, type BackendRepositories, type CareTask, type Facility, type Organization, type Resident, type ServicePlanRecord, type User, type UUID } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -369,6 +371,9 @@ export async function listCarePlansHandler(services: ApiServices, request: ApiRe
     }
 
     return services.backend.listCarePlansByResident(context, residentId);
+  });
+}
+
 export async function createCareTaskHandler(services: ApiServices, request: ApiRequest<CreateCareTaskBody>): Promise<ApiResponse> {
   return withContext(services, request, async (context) => {
     assertBody(request.body);

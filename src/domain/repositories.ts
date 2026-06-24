@@ -1,20 +1,22 @@
 import type { AuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
 import type {
+  AdlEntry,
   Assessment,
   AuthSession,
   BackgroundJob,
   CarePlan,
+  CareTask,
   Facility,
   MfaChallenge,
   Organization,
   PasswordResetRequest,
   Resident,
+  ServicePlanRecord,
   User,
   UserCredential,
   UUID
 } from './types';
-import type { AdlEntry, AuthSession, CareTask, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, ServicePlanRecord, User, UUID } from './types';
 
 export interface OrganizationRepository {
   getById(id: UUID): Promise<Organization | null>;
@@ -63,6 +65,8 @@ export interface CarePlanRepository {
   getById(id: UUID): Promise<CarePlan | null>;
   listByResident(residentId: UUID): Promise<CarePlan[]>;
   save(carePlan: CarePlan): Promise<CarePlan>;
+}
+
 export interface CareTaskRepository {
   getById(id: UUID): Promise<CareTask | null>;
   listByResident(residentId: UUID): Promise<CareTask[]>;
