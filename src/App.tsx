@@ -7,6 +7,12 @@ import {
   type Phase
 } from './data/roadmap';
 import {
+  configurationAreas,
+  configurationAuditEvents,
+  configurationGuardrails,
+  featureToggles
+} from './data/configuration';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -128,6 +134,7 @@ function App() {
             'Productivity System',
             'Notification Center Pro',
             'Print Center Pro',
+            'Configuration Center',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -141,8 +148,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-5</strong>
-            <span>Print engine active</span>
+            <strong>Phase 0-5.5</strong>
+            <span>Configuration active</span>
           </div>
         </div>
       </aside>
@@ -175,6 +182,9 @@ function App() {
               </a>
               <a className="button secondary" href="#print-center-pro">
                 Open Print Center
+              </a>
+              <a className="button secondary" href="#configuration-center">
+                Open Configuration
               </a>
             </div>
           </div>
@@ -568,6 +578,96 @@ function App() {
             <ul className="check-list">
               {printIntegrationRequirements.map((requirement) => (
                 <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className="content-card configuration-center" id="configuration-center" aria-labelledby="configuration-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 5.5</p>
+              <h2 id="configuration-title">Configuration Center</h2>
+              <p>
+                Centralized administration control room for roles, permissions, templates, notification rules,
+                print settings, workflows, DigitalRX, facility settings, branding, and feature toggles.
+              </p>
+            </div>
+            <div className="configuration-status">
+              <span>Control room</span>
+              <strong>Pre-clinical foundation</strong>
+            </div>
+          </div>
+
+          <div className="configuration-area-grid">
+            {configurationAreas.map((area) => (
+              <article className="configuration-area-card" key={area.name}>
+                <div className="configuration-area-header">
+                  <div>
+                    <span>{area.scope}</span>
+                    <h3>{area.name}</h3>
+                  </div>
+                  <strong>{area.owner}</strong>
+                </div>
+                <div className="configuration-chip-row">
+                  {area.settings.map((setting) => (
+                    <span key={setting}>{setting}</span>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="configuration-layout">
+            <div className="configuration-panel">
+              <div className="card-heading">
+                <span>Feature toggles</span>
+                <strong>Safe rollout controls</strong>
+              </div>
+              <div className="toggle-list" aria-label="Feature toggles">
+                {featureToggles.map((toggle) => (
+                  <article key={toggle.name}>
+                    <div>
+                      <strong>{toggle.name}</strong>
+                      <span>{toggle.module}</span>
+                    </div>
+                    <p>{toggle.scope}</p>
+                    <span className={`toggle-status ${toggle.status.toLowerCase()}`}>{toggle.status}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="configuration-panel">
+              <div className="card-heading">
+                <span>Configuration audit</span>
+                <strong>Immutable setting history</strong>
+              </div>
+              <div className="configuration-audit-list" aria-label="Configuration audit events">
+                {configurationAuditEvents.map((event) => (
+                  <article key={`${event.action}-${event.entity}`}>
+                    <span>{event.action}</span>
+                    <div>
+                      <strong>{event.entity}</strong>
+                      <p>
+                        {event.actor} | {event.scope}
+                      </p>
+                    </div>
+                    <time>{event.timestamp}</time>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="configuration-panel integration-panel">
+            <div className="card-heading">
+              <span>Configuration guardrails</span>
+              <strong>Required before clinical expansion</strong>
+            </div>
+            <ul className="check-list">
+              {configurationGuardrails.map((guardrail) => (
+                <li key={guardrail}>{guardrail}</li>
               ))}
             </ul>
           </div>

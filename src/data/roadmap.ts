@@ -111,7 +111,7 @@ export const foundationPhases: Phase[] = [
   {
     id: '5.5',
     title: 'Configuration Center',
-    status: 'planned',
+    status: 'foundation',
     milestone: 'Administration Control Room',
     summary:
       'Centralized configuration for permissions, templates, settings, branding, feature toggles, integrations, and workflow rules.',

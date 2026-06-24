@@ -252,6 +252,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['PDF', 'CSV', 'Excel', 'Audit Log Contract'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Configuration Center',
+    module: 'Administration',
+    status: 'registered',
+    dependencies: ['Roles', 'Permissions', 'Templates', 'Feature Toggles', 'Audit Log Contract'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Feature Toggle Registry',
+    module: 'Configuration Center',
+    status: 'registered',
+    dependencies: ['Tenant Isolation Guard', 'Audit Log Contract'],
+    version: '0.1.0'
   }
 ];
 

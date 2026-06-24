@@ -49,7 +49,7 @@ describe('HubsteriaCarePRO foundation', () => {
 
     expect(screen.getAllByText(/Master Administrator/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Organization Administrator/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Regional Administrator/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Regional Administrator/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Facility Administrator/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Permission-Based Staff/i)).toBeInTheDocument();
   });
@@ -202,5 +202,45 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Every major record can route to Print Center Pro/i)).toBeInTheDocument();
     expect(screen.getByText(/Preview is required before final print, export, or batch generation/i)).toBeInTheDocument();
     expect(screen.getByText(/Print actions create immutable audit records/i)).toBeInTheDocument();
+  });
+
+  it('renders Phase 5.5 Configuration Center centralized administration areas', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Configuration Center' })).toBeInTheDocument();
+    [
+      'Roles & Permissions',
+      'Assessment Templates',
+      'Incident Types',
+      'Notification Rules',
+      'Print Templates',
+      'Workflow Templates',
+      'DigitalRX Settings',
+      'Facility Settings',
+      'Branding'
+    ].forEach((area) => {
+      expect(screen.getAllByText(area).length).toBeGreaterThan(0);
+    });
+
+    expect(screen.getByText('Permission matrix')).toBeInTheDocument();
+    expect(screen.getByText('API endpoint')).toBeInTheDocument();
+    expect(screen.getByText('Feature toggles')).toBeInTheDocument();
+  });
+
+  it('tracks configuration feature toggles, audit events, and guardrails', () => {
+    render(<App />);
+
+    const toggles = screen.getByLabelText('Feature toggles');
+    expect(within(toggles).getByText('Regional Administrator T2.5')).toBeInTheDocument();
+    expect(within(toggles).getByText('DigitalRX Pharmacy Hub')).toBeInTheDocument();
+    expect(within(toggles).getAllByText('Pilot').length).toBeGreaterThan(0);
+
+    const audit = screen.getByLabelText('Configuration audit events');
+    expect(within(audit).getByText('Medication Refused notification route')).toBeInTheDocument();
+    expect(within(audit).getByText('Resident Face Sheet print template')).toBeInTheDocument();
+
+    expect(screen.getByText(/Settings are centralized so clinical modules do not scatter administration/i)).toBeInTheDocument();
+    expect(screen.getByText(/Every configuration change creates an immutable audit log record/i)).toBeInTheDocument();
+    expect(screen.getByText(/Feature toggles support safe rollout, pilots, and future enterprise expansion/i)).toBeInTheDocument();
   });
 });

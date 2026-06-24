@@ -11,7 +11,7 @@ This repository currently implements the first product foundation milestone:
 - Phase 3 Productivity System with global search, Ctrl+K command bar, pinned actions, favorites, dark mode, and personalized dashboards
 - Phase 4 Notification Center Pro with channels, templates, routing, escalation rules, delivery/read tracking, and role-based targeting
 - Phase 5 Print Center Pro with PDF/CSV/Excel output, template builder, preview, CRUD templates, batch printing, and integration contracts
-- Phase 5.5 configuration-center planning surface
+- Phase 5.5 Configuration Center with centralized roles, permissions, templates, DigitalRX settings, facility settings, branding, feature toggles, and audit guardrails
 - Roadmap registry for phases 0-20
 - Regression tests for the foundation shell
 
