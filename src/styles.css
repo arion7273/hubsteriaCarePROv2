@@ -3104,6 +3104,175 @@ p {
   background: var(--surface);
 }
 
+.workflow-center {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.workflow-status {
+  display: grid;
+  gap: 0.2rem;
+  min-width: min(100%, 17rem);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.workflow-status span {
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.workflow-status strong {
+  color: var(--primary-strong);
+}
+
+.workflow-metric-grid,
+.workflow-layout,
+.workflow-builder-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.workflow-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.workflow-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.workflow-builder-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.workflow-metric-card,
+.workflow-builder-panel,
+.workflow-panel,
+.workflow-template-list article,
+.automation-activity-list article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.workflow-metric-card,
+.workflow-builder-panel,
+.workflow-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.workflow-metric-card span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.workflow-metric-card strong {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  letter-spacing: -0.05em;
+}
+
+.workflow-metric-card small {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.workflow-builder-grid span,
+.automation-example-list span {
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 0.55rem 0.75rem;
+}
+
+.workflow-template-list,
+.automation-example-list,
+.automation-activity-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.workflow-template-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.workflow-template-list span:not(.workflow-status-pill) {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.workflow-template-list dl {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.workflow-template-list dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.workflow-template-list dd {
+  margin: 0;
+}
+
+.workflow-status-pill {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.workflow-status-pill.active {
+  background: #ddf6ed;
+  color: var(--success);
+}
+
+.workflow-status-pill.draft {
+  background: #e8eef9;
+  color: #355985;
+}
+
+.workflow-status-pill.paused {
+  background: #fff4da;
+  color: var(--warning);
+}
+
+.automation-activity-list article {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.automation-activity-list p {
+  margin: 0;
+}
+
+.automation-activity-list span,
+.automation-activity-list small {
+  color: var(--muted);
+  font-weight: 800;
+}
+
 .role-grid,
 .roadmap-grid {
   display: grid;
@@ -3264,6 +3433,8 @@ summary {
   .billing-metric-grid,
   .billing-operation-grid,
   .aging-grid,
+  .workflow-metric-grid,
+  .workflow-builder-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -3289,6 +3460,7 @@ summary {
   .communication-layout,
   .family-layout,
   .billing-layout,
+  .workflow-layout,
   .module-connection-panel,
   .notification-layout,
   .notification-bottom-grid,
@@ -3340,6 +3512,8 @@ summary {
   .billing-metric-grid,
   .billing-operation-grid,
   .aging-grid,
+  .workflow-metric-grid,
+  .workflow-builder-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -3430,6 +3604,7 @@ summary {
   .charge-list article,
   .invoice-list article,
   .payment-list article,
+  .workflow-template-list article,
   .sync-field-list article,
   .refill-list article,
   .configuration-audit-list article,

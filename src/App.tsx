@@ -88,6 +88,14 @@ import {
   paymentActivity
 } from './data/billing';
 import {
+  automationActivity,
+  automationExamples,
+  workflowBuilderParts,
+  workflowIntegrationRequirements,
+  workflowMetrics,
+  workflowTemplates
+} from './data/workflows';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -218,6 +226,7 @@ function App() {
             'Communication Center',
             'Family Portal',
             'Billing Center',
+            'Workflow Automation',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -240,7 +249,9 @@ function App() {
                               ? '#family-portal'
                               : item === 'Billing Center'
                                 ? '#billing-center'
-                                : `#${item.toLowerCase().replaceAll(' ', '-')}`
+                                : item === 'Workflow Automation'
+                                  ? '#workflow-automation-engine'
+                                  : `#${item.toLowerCase().replaceAll(' ', '-')}`
               }
               key={item}
             >
@@ -252,8 +263,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-13</strong>
-            <span>Billing center active</span>
+            <strong>Phase 0-14</strong>
+            <span>Automation active</span>
           </div>
         </div>
       </aside>
@@ -313,6 +324,9 @@ function App() {
               </a>
               <a className="button secondary" href="#billing-center">
                 Open Billing
+              </a>
+              <a className="button secondary" href="#workflow-automation-engine">
+                Open Automation
               </a>
             </div>
           </div>
@@ -1871,6 +1885,109 @@ function App() {
             </div>
             <ul className="check-list">
               {billingIntegrationRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className="content-card workflow-center" id="workflow-automation-engine" aria-labelledby="workflow-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 14</p>
+              <h2 id="workflow-title">Workflow Automation Engine</h2>
+              <p>
+                No-code workflow builder using trigger, condition, and action logic to automate notifications,
+                tasks, family updates, pharmacy follow-up, document requests, and review queues.
+              </p>
+            </div>
+            <div className="workflow-status">
+              <span>No-code builder</span>
+              <strong>Audit every action</strong>
+            </div>
+          </div>
+
+          <div className="workflow-metric-grid">
+            {workflowMetrics.map((metric) => (
+              <article className="workflow-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="workflow-builder-panel">
+            <div className="card-heading">
+              <span>Workflow Structure</span>
+              <strong>Trigger, condition, action</strong>
+            </div>
+            <div className="workflow-builder-grid" aria-label="Workflow builder parts">
+              {workflowBuilderParts.map((part) => (
+                <span key={part}>{part}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="workflow-layout">
+            <div className="workflow-panel">
+              <div className="card-heading">
+                <span>Workflow Templates</span>
+                <strong>Reusable automation rules</strong>
+              </div>
+              <div className="workflow-template-list" aria-label="Workflow templates">
+                {workflowTemplates.map((template) => (
+                  <article key={template.name}>
+                    <div>
+                      <strong>{template.name}</strong>
+                      <span>{template.trigger}</span>
+                    </div>
+                    <dl>
+                      <div>
+                        <dt>Condition</dt>
+                        <dd>{template.condition}</dd>
+                      </div>
+                      <div>
+                        <dt>Action</dt>
+                        <dd>{template.action}</dd>
+                      </div>
+                    </dl>
+                    <span className={`workflow-status-pill ${template.status.toLowerCase()}`}>{template.status}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="workflow-panel">
+              <div className="card-heading">
+                <span>Automation Examples</span>
+                <strong>Cross-module triggers</strong>
+              </div>
+              <div className="automation-example-list" aria-label="Automation examples">
+                {automationExamples.map((example) => (
+                  <span key={example}>{example}</span>
+                ))}
+              </div>
+              <div className="automation-activity-list" aria-label="Automation activity">
+                {automationActivity.map((activity) => (
+                  <article key={`${activity.workflow}-${activity.timestamp}`}>
+                    <strong>{activity.workflow}</strong>
+                    <p>{activity.event}</p>
+                    <span>{activity.result}</span>
+                    <small>{activity.timestamp}</small>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="workflow-panel integration-panel">
+            <div className="card-heading">
+              <span>Workflow integration contract</span>
+              <strong>Configuration, notification, resident, tasks, family, pharmacy, and audit hooks</strong>
+            </div>
+            <ul className="check-list">
+              {workflowIntegrationRequirements.map((requirement) => (
                 <li key={requirement}>{requirement}</li>
               ))}
             </ul>

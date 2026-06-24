@@ -562,4 +562,40 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Print Center Pro exports invoices, statements, receipts, aging reports/i)).toBeInTheDocument();
     expect(screen.getByText(/All charges, invoices, statements, payments, credits, refunds, and billing adjustments/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 14 Workflow Automation builder templates and examples', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Workflow Automation Engine' })).toBeInTheDocument();
+    expect(screen.getByText('Active Workflows')).toBeInTheDocument();
+
+    const builder = screen.getByLabelText('Workflow builder parts');
+    ['Trigger', 'Condition', 'Action', 'Template', 'Audit Trail', 'Notification Route', 'Task Creation'].forEach((part) => {
+      expect(within(builder).getByText(part)).toBeInTheDocument();
+    });
+
+    const templates = screen.getByLabelText('Workflow templates');
+    expect(within(templates).getByText('Medication Refused Escalation')).toBeInTheDocument();
+    expect(within(templates).getByText('Assessment Due Task')).toBeInTheDocument();
+    expect(within(templates).getByText('Incident Family Notification')).toBeInTheDocument();
+    expect(within(templates).getAllByText('Refill Running Low').length).toBeGreaterThan(0);
+
+    const examples = screen.getByLabelText('Automation examples');
+    expect(within(examples).getByText('Medication Refused -> Notify Administrator')).toBeInTheDocument();
+    expect(within(examples).getByText('Assessment Due -> Create Task')).toBeInTheDocument();
+  });
+
+  it('tracks automation activity and workflow integration requirements', () => {
+    render(<App />);
+
+    const activity = screen.getByLabelText('Automation activity');
+    expect(within(activity).getByText('Maria Alvarez refused Lisinopril')).toBeInTheDocument();
+    expect(within(activity).getByText('Task created for Wellness Director')).toBeInTheDocument();
+    expect(within(activity).getByText('Pharmacy notification queued')).toBeInTheDocument();
+
+    expect(screen.getByText(/Configuration Center owns workflow templates, triggers, conditions, actions/i)).toBeInTheDocument();
+    expect(screen.getByText(/Notification Center Pro executes workflow notification actions/i)).toBeInTheDocument();
+    expect(screen.getByText(/Workflow actions can create tasks, notify families, notify pharmacies/i)).toBeInTheDocument();
+    expect(screen.getByText(/Every automation trigger, condition result, action, failure, pause/i)).toBeInTheDocument();
+  });
 });

@@ -200,7 +200,7 @@ export const enterprisePhases: Phase[] = [
   {
     id: '14',
     title: 'Workflow Automation Engine',
-    status: 'future',
+    status: 'foundation',
     milestone: 'No-Code Automation',
     summary: 'Trigger, condition, action automation with templates and complete audit tracking.',
     deliverables: ['Workflow builder', 'Templates', 'Automation audit', 'Cross-module actions']

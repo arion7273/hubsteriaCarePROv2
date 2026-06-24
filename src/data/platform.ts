@@ -378,6 +378,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Billing Charges Invoices and Payments', 'Print Center Integration'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Workflow Automation Builder',
+    module: 'Workflow Automation Engine',
+    status: 'registered',
+    dependencies: ['Configuration Center', 'Notification Center Integration', 'Audit Log Contract'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Automation Templates and Audit',
+    module: 'Workflow Automation Engine',
+    status: 'registered',
+    dependencies: ['Workflow Automation Builder', 'Resident Command Center', 'Task and ADL Tracking'],
+    version: '0.1.0'
   }
 ];
 
