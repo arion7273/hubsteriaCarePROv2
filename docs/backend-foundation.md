@@ -23,6 +23,8 @@ Backend-facing TypeScript contracts live in `src/domain`.
 - `audit.ts` defines immutable audit event creation.
 - `feature-registry.ts` validates feature registration requirements.
 - `repositories.ts` defines persistence interfaces for future database adapters.
+- `in-memory-repositories.ts` provides executable in-memory adapters for tests and local service development.
+- `backend-service.ts` provides tenant-safe service operations that enforce permissions and append audit events.
 
 ## Access rules
 
@@ -48,7 +50,15 @@ All significant actions must write immutable audit records with:
 
 ## Next implementation step
 
-Choose a backend stack and implement repository adapters:
+The current backend foundation includes executable service-layer behavior for:
+
+- Creating organizations
+- Creating facilities
+- Registering features
+- Enforcing tenant scope and permissions
+- Appending immutable audit events
+
+Next, choose a backend stack and implement repository adapters:
 
 - API routes or service layer
 - PostgreSQL or equivalent relational datastore
