@@ -1,6 +1,6 @@
 import type { AuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
-import type { Facility, Organization, User, UUID } from './types';
+import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, User, UUID } from './types';
 
 export interface OrganizationRepository {
   getById(id: UUID): Promise<Organization | null>;
@@ -31,10 +31,29 @@ export interface FeatureRegistryRepository {
   list(): Promise<RegisteredFeature[]>;
 }
 
+export interface AuthSessionRepository {
+  getById(id: UUID): Promise<AuthSession | null>;
+  save(session: AuthSession): Promise<AuthSession>;
+  revoke(id: UUID, revokedAt: string): Promise<AuthSession | null>;
+}
+
+export interface MfaChallengeRepository {
+  getById(id: UUID): Promise<MfaChallenge | null>;
+  save(challenge: MfaChallenge): Promise<MfaChallenge>;
+}
+
+export interface PasswordResetRepository {
+  getById(id: UUID): Promise<PasswordResetRequest | null>;
+  save(request: PasswordResetRequest): Promise<PasswordResetRequest>;
+}
+
 export type BackendRepositories = {
   organizations: OrganizationRepository;
   facilities: FacilityRepository;
   users: UserRepository;
   auditLogs: AuditLogRepository;
   featureRegistry: FeatureRegistryRepository;
+  authSessions: AuthSessionRepository;
+  mfaChallenges: MfaChallengeRepository;
+  passwordResets: PasswordResetRepository;
 };

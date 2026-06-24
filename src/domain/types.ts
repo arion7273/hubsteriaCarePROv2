@@ -58,6 +58,31 @@ export type AccessDecision = {
   reason: string;
 };
 
+export type AuthSession = {
+  id: UUID;
+  userId: UUID;
+  createdAt: string;
+  expiresAt: string;
+  mfaVerified: boolean;
+  revokedAt?: string;
+};
+
+export type MfaChallenge = {
+  id: UUID;
+  userId: UUID;
+  createdAt: string;
+  expiresAt: string;
+  verifiedAt?: string;
+};
+
+export type PasswordResetRequest = {
+  id: UUID;
+  userId: UUID;
+  createdAt: string;
+  expiresAt: string;
+  usedAt?: string;
+};
+
 export const masterAdminBootstrap = {
   email: 'b094650@gmail.com',
   credentialStorage: 'managed-secret',

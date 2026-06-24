@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 const schema = readFileSync('database/migrations/0001_multitenant_foundation.sql', 'utf8');
 const seed = readFileSync('database/migrations/0002_seed_permissions.sql', 'utf8');
+const authSchema = readFileSync('database/migrations/0003_auth_sessions.sql', 'utf8');
 const docs = readFileSync('docs/database-foundation.md', 'utf8');
 
 describe('database foundation migrations', () => {
@@ -17,9 +18,12 @@ describe('database foundation migrations', () => {
       'CREATE TABLE user_facilities',
       'CREATE TABLE residents',
       'CREATE TABLE feature_registry',
-      'CREATE TABLE audit_logs'
+      'CREATE TABLE audit_logs',
+      'CREATE TABLE auth_sessions',
+      'CREATE TABLE mfa_challenges',
+      'CREATE TABLE password_reset_requests'
     ].forEach((statement) => {
-      expect(schema).toContain(statement);
+      expect(`${schema}\n${authSchema}`).toContain(statement);
     });
   });
 

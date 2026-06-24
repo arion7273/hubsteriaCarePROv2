@@ -18,6 +18,10 @@ The initial database target is PostgreSQL.
   - tenant/access indexes
 - `database/migrations/0002_seed_permissions.sql`
   - base permission keys aligned with `src/domain/types.ts`
+- `database/migrations/0003_auth_sessions.sql`
+  - auth sessions
+  - MFA challenges
+  - password reset requests
 
 ## Tenant isolation rules
 
@@ -57,3 +61,11 @@ Audit events must include:
 ## Next step
 
 Implement PostgreSQL repository adapters for `src/domain/repositories.ts`, then wire them to an API layer.
+
+## Authentication persistence rules
+
+- Sessions must expire.
+- Sessions must be revocable on logout.
+- MFA challenges must expire.
+- Password reset requests must expire and be single-use.
+- Login, MFA verification, logout, and password reset requests must create audit records.

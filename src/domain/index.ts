@@ -1,5 +1,6 @@
 export * from './access-control';
 export * from './audit';
+export * from './auth-service';
 export * from './backend-service';
 export * from './feature-registry';
 export * from './in-memory-repositories';

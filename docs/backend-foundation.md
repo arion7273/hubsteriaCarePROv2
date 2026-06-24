@@ -25,6 +25,7 @@ Backend-facing TypeScript contracts live in `src/domain`.
 - `repositories.ts` defines persistence interfaces for future database adapters.
 - `in-memory-repositories.ts` provides executable in-memory adapters for tests and local service development.
 - `backend-service.ts` provides tenant-safe service operations that enforce permissions and append audit events.
+- `auth-service.ts` provides login, MFA verification, logout, and password reset request workflows with audit writes.
 - `database/migrations` contains the initial PostgreSQL schema and permission seed data.
 
 ## Access rules
@@ -56,6 +57,10 @@ The current backend foundation includes executable service-layer behavior for:
 - Creating organizations
 - Creating facilities
 - Registering features
+- Authenticating users
+- Creating MFA challenges
+- Revoking sessions on logout
+- Creating password reset requests
 - Enforcing tenant scope and permissions
 - Appending immutable audit events
 

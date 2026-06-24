@@ -2,13 +2,16 @@ import type { AuditEvent } from './audit';
 import { assertFeatureRegistration, type RegisteredFeature } from './feature-registry';
 import type {
   AuditLogRepository,
+  AuthSessionRepository,
   BackendRepositories,
   FacilityRepository,
   FeatureRegistryRepository,
+  MfaChallengeRepository,
   OrganizationRepository,
+  PasswordResetRepository,
   UserRepository
 } from './repositories';
-import type { Facility, Organization, User, UUID } from './types';
+import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, User, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -95,6 +98,57 @@ export class InMemoryFeatureRegistryRepository implements FeatureRegistryReposit
   }
 }
 
+export class InMemoryAuthSessionRepository implements AuthSessionRepository {
+  private readonly sessions = new Map<UUID, AuthSession>();
+
+  async getById(id: UUID): Promise<AuthSession | null> {
+    return this.sessions.get(id) ?? null;
+  }
+
+  async save(session: AuthSession): Promise<AuthSession> {
+    this.sessions.set(session.id, session);
+    return session;
+  }
+
+  async revoke(id: UUID, revokedAt: string): Promise<AuthSession | null> {
+    const session = this.sessions.get(id);
+
+    if (!session) {
+      return null;
+    }
+
+    const revokedSession = { ...session, revokedAt };
+    this.sessions.set(id, revokedSession);
+    return revokedSession;
+  }
+}
+
+export class InMemoryMfaChallengeRepository implements MfaChallengeRepository {
+  private readonly challenges = new Map<UUID, MfaChallenge>();
+
+  async getById(id: UUID): Promise<MfaChallenge | null> {
+    return this.challenges.get(id) ?? null;
+  }
+
+  async save(challenge: MfaChallenge): Promise<MfaChallenge> {
+    this.challenges.set(challenge.id, challenge);
+    return challenge;
+  }
+}
+
+export class InMemoryPasswordResetRepository implements PasswordResetRepository {
+  private readonly requests = new Map<UUID, PasswordResetRequest>();
+
+  async getById(id: UUID): Promise<PasswordResetRequest | null> {
+    return this.requests.get(id) ?? null;
+  }
+
+  async save(request: PasswordResetRequest): Promise<PasswordResetRequest> {
+    this.requests.set(request.id, request);
+    return request;
+  }
+}
+
 export function createInMemoryBackendRepositories(): BackendRepositories & {
   auditLogs: InMemoryAuditLogRepository;
 } {
@@ -103,6 +157,9 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     facilities: new InMemoryFacilityRepository(),
     users: new InMemoryUserRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
-    featureRegistry: new InMemoryFeatureRegistryRepository()
+    featureRegistry: new InMemoryFeatureRegistryRepository(),
+    authSessions: new InMemoryAuthSessionRepository(),
+    mfaChallenges: new InMemoryMfaChallengeRepository(),
+    passwordResets: new InMemoryPasswordResetRepository()
   };
 }

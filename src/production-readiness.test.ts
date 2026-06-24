@@ -38,6 +38,7 @@ describe('production readiness workflow', () => {
   it('documents security, HIPAA, and go-live governance gates', () => {
     const security = readFileSync('SECURITY.md', 'utf8');
     const backend = readFileSync('docs/backend-foundation.md', 'utf8');
+    const auth = readFileSync('docs/authentication-foundation.md', 'utf8');
     const database = readFileSync('docs/database-foundation.md', 'utf8');
     const hipaa = readFileSync('docs/hipaa-security-readiness.md', 'utf8');
     const goLive = readFileSync('docs/go-live-checklist.md', 'utf8');
@@ -48,6 +49,9 @@ describe('production readiness workflow', () => {
     expect(backend).toContain('Server-side authentication');
     expect(backend).toContain('Tenant-isolated data access');
     expect(backend).toContain('Immutable audit logs');
+    expect(auth).toContain('MFA verification');
+    expect(auth).toContain('Plain-text passwords must never be stored');
+    expect(auth).toContain('Sessions must expire and be revocable');
     expect(database).toContain('PostgreSQL');
     expect(database).toContain('Tenant isolation rules');
     expect(database).toContain('`audit_logs` is append-only');
