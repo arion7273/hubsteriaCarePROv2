@@ -216,7 +216,7 @@ export const enterprisePhases: Phase[] = [
   {
     id: '16',
     title: 'Help Desk & Support Center',
-    status: 'future',
+    status: 'foundation',
     milestone: 'Support Operations',
     summary: 'Ticketing, screenshots, screen recording support, knowledge linking, remote assistance, and analytics.',
     deliverables: ['Tickets', 'Uploads', 'Knowledge linking', 'Support analytics']

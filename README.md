@@ -22,6 +22,7 @@ This repository currently implements the first product foundation milestone:
 - Phase 13 Billing & Financial Operations with recurring charges, level-of-care billing, invoices, statements, payments, credits, refunds, aging reports, and revenue dashboards
 - Phase 14 Workflow Automation Engine with no-code trigger/condition/action workflows, templates, cross-module automation examples, and immutable automation audit tracking
 - Phase 15 Hubsteria Academy with knowledge base, videos, interactive walkthroughs, role-based learning paths, certifications, expiring certification tracking, and AI help guidance
+- Phase 16 Help Desk & Support Center with ticket categories, screenshot/screen-recording support, knowledge base linking, remote assistance guardrails, support analytics, and SLA tracking
 - Roadmap registry for phases 0-20
 - Regression tests for the foundation shell
 

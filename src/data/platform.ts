@@ -406,6 +406,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Training Center and Learning Paths', 'Audit Log Contract'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Help Desk Ticket System',
+    module: 'Help Desk & Support Center',
+    status: 'registered',
+    dependencies: ['Notification Center Integration', 'Hubsteria Academy', 'Audit Log Contract'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Remote Assistance and Support Analytics',
+    module: 'Help Desk & Support Center',
+    status: 'registered',
+    dependencies: ['Help Desk Ticket System', 'Configuration Center'],
+    version: '0.1.0'
   }
 ];
 

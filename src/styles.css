@@ -3441,6 +3441,166 @@ p {
   margin: 0;
 }
 
+.support-center {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.support-status {
+  display: grid;
+  gap: 0.2rem;
+  min-width: min(100%, 17rem);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.support-status span {
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.support-status strong {
+  color: var(--primary-strong);
+}
+
+.support-metric-grid,
+.support-layout,
+.support-capability-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.support-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.support-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.support-capability-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.support-metric-card,
+.support-panel,
+.support-ticket-list article,
+.support-knowledge-list article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.support-metric-card,
+.support-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.support-metric-card span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.support-metric-card strong {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  letter-spacing: -0.05em;
+}
+
+.support-metric-card small {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.support-ticket-list,
+.support-knowledge-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.support-ticket-list article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.8fr) auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.support-ticket-list span:not(.support-priority, .support-ticket-status),
+.support-knowledge-list span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.support-ticket-list p {
+  margin: 0;
+}
+
+.support-priority,
+.support-ticket-status {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.support-priority.critical,
+.support-priority.high {
+  background: #ffe4e2;
+  color: var(--danger);
+}
+
+.support-priority.medium {
+  background: #fff4da;
+  color: var(--warning);
+}
+
+.support-priority.low,
+.support-ticket-status.resolved {
+  background: #ddf6ed;
+  color: var(--success);
+}
+
+.support-ticket-status.open,
+.support-ticket-status.in-progress,
+.support-ticket-status.waiting-on-customer {
+  background: #e8eef9;
+  color: #355985;
+}
+
+.support-capability-grid span {
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 0.55rem 0.75rem;
+}
+
+.support-knowledge-list article {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.remote-assistance-list {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
 .role-grid,
 .roadmap-grid {
   display: grid;
@@ -3604,6 +3764,8 @@ summary {
   .workflow-metric-grid,
   .workflow-builder-grid,
   .academy-metric-grid,
+  .support-metric-grid,
+  .support-capability-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -3631,6 +3793,7 @@ summary {
   .billing-layout,
   .workflow-layout,
   .academy-layout,
+  .support-layout,
   .module-connection-panel,
   .notification-layout,
   .notification-bottom-grid,
@@ -3685,6 +3848,8 @@ summary {
   .workflow-metric-grid,
   .workflow-builder-grid,
   .academy-metric-grid,
+  .support-metric-grid,
+  .support-capability-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -3778,6 +3943,7 @@ summary {
   .workflow-template-list article,
   .training-resource-list article,
   .certification-list article,
+  .support-ticket-list article,
   .sync-field-list article,
   .refill-list article,
   .configuration-audit-list article,

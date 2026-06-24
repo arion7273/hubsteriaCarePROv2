@@ -635,4 +635,38 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Notification Center Pro alerts staff and administrators when required training/i)).toBeInTheDocument();
     expect(screen.getByText(/All course completions, certification changes, AI help searches/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 16 Help Desk tickets capabilities and knowledge links', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Help Desk & Support Center' })).toBeInTheDocument();
+    expect(screen.getByText('Open Tickets')).toBeInTheDocument();
+    expect(screen.getByText('Avg Response Time')).toBeInTheDocument();
+
+    const tickets = screen.getByLabelText('Support tickets');
+    expect(within(tickets).getByText('HD-1043')).toBeInTheDocument();
+    expect(within(tickets).getByText('Barcode scan mismatch')).toBeInTheDocument();
+    expect(within(tickets).getByText('Critical')).toBeInTheDocument();
+
+    const capabilities = screen.getByLabelText('Support capabilities');
+    ['Ticket System', 'Screenshot Uploads', 'Screen Recording Support', 'Knowledge Base Linking', 'Remote Assistance'].forEach(
+      (capability) => {
+        expect(within(capabilities).getByText(capability)).toBeInTheDocument();
+      }
+    );
+
+    const knowledge = screen.getByLabelText('Support knowledge links');
+    expect(within(knowledge).getByText('How to troubleshoot barcode scan mismatch')).toBeInTheDocument();
+    expect(within(knowledge).getByText(/HD-1043/)).toBeInTheDocument();
+  });
+
+  it('supports remote assistance guardrails and support integrations', () => {
+    render(<App />);
+
+    expect(screen.getByText(/Support staff must request permission before remote assistance begins/i)).toBeInTheDocument();
+    expect(screen.getByText(/Screen recordings and screenshots are attached only to authorized support tickets/i)).toBeInTheDocument();
+    expect(screen.getByText(/Notification Center Pro alerts requesters and assigned support staff/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hubsteria Academy links relevant knowledge base articles/i)).toBeInTheDocument();
+    expect(screen.getByText(/All support tickets, screenshots, screen recordings, knowledge links/i)).toBeInTheDocument();
+  });
 });

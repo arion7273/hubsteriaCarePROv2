@@ -104,6 +104,14 @@ import {
   trainingResources
 } from './data/academy';
 import {
+  remoteAssistanceRules,
+  supportCapabilities,
+  supportIntegrationRequirements,
+  supportKnowledgeLinks,
+  supportMetrics,
+  supportTickets
+} from './data/support';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -236,6 +244,7 @@ function App() {
             'Billing Center',
             'Workflow Automation',
             'Hubsteria Academy',
+            'Help Desk',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -262,7 +271,9 @@ function App() {
                                   ? '#workflow-automation-engine'
                                   : item === 'Hubsteria Academy'
                                     ? '#hubsteria-academy'
-                                    : `#${item.toLowerCase().replaceAll(' ', '-')}`
+                                    : item === 'Help Desk'
+                                      ? '#help-desk-support-center'
+                                      : `#${item.toLowerCase().replaceAll(' ', '-')}`
               }
               key={item}
             >
@@ -274,8 +285,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-15</strong>
-            <span>Academy active</span>
+            <strong>Phase 0-16</strong>
+            <span>Support center active</span>
           </div>
         </div>
       </aside>
@@ -341,6 +352,9 @@ function App() {
               </a>
               <a className="button secondary" href="#hubsteria-academy">
                 Open Academy
+              </a>
+              <a className="button secondary" href="#help-desk-support-center">
+                Open Help Desk
               </a>
             </div>
           </div>
@@ -2125,6 +2139,114 @@ function App() {
             </div>
             <ul className="check-list">
               {academyIntegrationRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className="content-card support-center" id="help-desk-support-center" aria-labelledby="support-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 16</p>
+              <h2 id="support-title">Help Desk & Support Center</h2>
+              <p>
+                Production support operations with ticket categories, screenshots, screen recordings, knowledge
+                base linking, permission-based remote assistance, response tracking, and resolution analytics.
+              </p>
+            </div>
+            <div className="support-status">
+              <span>Support operations</span>
+              <strong>Permission based</strong>
+            </div>
+          </div>
+
+          <div className="support-metric-grid">
+            {supportMetrics.map((metric) => (
+              <article className="support-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="support-layout">
+            <div className="support-panel">
+              <div className="card-heading">
+                <span>Ticket System</span>
+                <strong>Clinical, medication, billing, technical</strong>
+              </div>
+              <div className="support-ticket-list" aria-label="Support tickets">
+                {supportTickets.map((ticket) => (
+                  <article key={ticket.ticket}>
+                    <div>
+                      <strong>{ticket.ticket}</strong>
+                      <span>
+                        {ticket.category} | {ticket.requester}
+                      </span>
+                    </div>
+                    <p>{ticket.subject}</p>
+                    <span className={`support-priority ${ticket.priority.toLowerCase()}`}>{ticket.priority}</span>
+                    <span className={`support-ticket-status ${ticket.status.toLowerCase().replaceAll(' ', '-')}`}>
+                      {ticket.status}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="support-panel">
+              <div className="card-heading">
+                <span>Support Capabilities</span>
+                <strong>Production support toolkit</strong>
+              </div>
+              <div className="support-capability-grid" aria-label="Support capabilities">
+                {supportCapabilities.map((capability) => (
+                  <span key={capability}>{capability}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="support-layout">
+            <div className="support-panel">
+              <div className="card-heading">
+                <span>Knowledge Base Linking</span>
+                <strong>Articles connected to tickets</strong>
+              </div>
+              <div className="support-knowledge-list" aria-label="Support knowledge links">
+                {supportKnowledgeLinks.map((link) => (
+                  <article key={link.article}>
+                    <strong>{link.article}</strong>
+                    <span>
+                      {link.linkedTicket} | {link.module}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="support-panel">
+              <div className="card-heading">
+                <span>Remote Assistance</span>
+                <strong>Permission-based sessions</strong>
+              </div>
+              <ul className="remote-assistance-list">
+                {remoteAssistanceRules.map((rule) => (
+                  <li key={rule}>{rule}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="support-panel integration-panel">
+            <div className="card-heading">
+              <span>Support integration contract</span>
+              <strong>Notifications, Academy, configuration, executive analytics, and audit hooks</strong>
+            </div>
+            <ul className="check-list">
+              {supportIntegrationRequirements.map((requirement) => (
                 <li key={requirement}>{requirement}</li>
               ))}
             </ul>
