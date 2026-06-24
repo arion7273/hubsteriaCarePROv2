@@ -63,7 +63,6 @@ function createTestService() {
     'user-1', 'audit-user', 'audit-user-update',
     'feature-audit'
   ];
-  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'charge-1', 'audit-charge', 'invoice-1', 'audit-invoice', 'payment-1', 'audit-payment', 'audit-4', 'user-1', 'audit-user', 'audit-user-update', 'feature-audit'];
   const repositories = createInMemoryBackendRepositories();
   const service = new BackendFoundationService(
     repositories,
@@ -263,7 +262,6 @@ describe('BackendFoundationService', () => {
   });
 
   it('creates and lists assessments and care plans with audit logs', async () => {
-  it('creates and lists billing charges invoices and payments with audit logs', async () => {
     const { repositories, service } = createTestService();
     await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
     await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
@@ -455,6 +453,13 @@ describe('BackendFoundationService', () => {
     await expect(service.listComplianceIssuesByFacility({ user: t3User }, 'org-1', 'facility-1')).resolves.toHaveLength(1);
     await expect(repositories.auditLogs.listByEntity('Incident', incident.id)).resolves.toHaveLength(2);
     await expect(repositories.auditLogs.listByEntity('ComplianceIssue', issue.id)).resolves.toHaveLength(1);
+  });
+
+  it('creates charges, invoices, and payment transactions with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+    await service.createResident(
       { user: { ...t3User, permissions: ['resident:write', 'billing:manage'] } },
       { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
     );

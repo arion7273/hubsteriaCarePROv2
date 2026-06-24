@@ -4,15 +4,18 @@ import type {
   Assessment,
   AuthSession,
   BackgroundJob,
+  BillingCharge,
   CarePlan,
   CareTask,
   ComplianceIssue,
   Facility,
   Incident,
+  Invoice,
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
   Organization,
+  PaymentTransaction,
   PasswordResetRequest,
   Permission,
   Resident,
@@ -22,7 +25,6 @@ import type {
   UserCredential
 } from '../../domain/types';
 import type { AdlEntry } from '../../domain/types';
-import type { AuthSession, BillingCharge, Facility, Invoice, MfaChallenge, Organization, PaymentTransaction, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -216,6 +218,9 @@ export function mapComplianceIssueRow(row: PostgresRow): ComplianceIssue {
     severity: String(row.severity) as ComplianceIssue['severity'],
     status: String(row.status) as ComplianceIssue['status'],
     resolutionLink: String(row.resolution_link)
+  };
+}
+
 export function mapBillingChargeRow(row: PostgresRow): BillingCharge {
   return {
     id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),

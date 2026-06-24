@@ -118,7 +118,6 @@ export type Assessment = {
 };
 
 export type CarePlan = {
-export type BillingCharge = {
   id: UUID;
   organizationId: UUID;
   facilityId: UUID;
@@ -132,13 +131,6 @@ export type BillingCharge = {
 };
 
 export type CareTask = {
-  type: 'recurring' | 'level_of_care' | 'move_in' | 'move_out' | 'ancillary';
-  description: string;
-  amountCents: number;
-  status: 'draft' | 'posted' | 'void';
-};
-
-export type Invoice = {
   id: UUID;
   organizationId: UUID;
   facilityId: UUID;
@@ -151,6 +143,33 @@ export type Invoice = {
 };
 
 export type AdlEntry = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  category: string;
+  outcome: string;
+  note?: string;
+  recordedAt: string;
+  recordedBy: UUID;
+};
+
+export type BillingCharge = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  type: 'recurring' | 'level_of_care' | 'move_in' | 'move_out' | 'ancillary';
+  description: string;
+  amountCents: number;
+  status: 'draft' | 'posted' | 'void';
+};
+
+export type Invoice = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
   invoiceNumber: string;
   balanceCents: number;
   dueDate: string;
@@ -162,11 +181,12 @@ export type PaymentTransaction = {
   organizationId: UUID;
   facilityId: UUID;
   residentId: UUID;
-  category: string;
-  outcome: string;
-  note?: string;
-  recordedAt: string;
-  recordedBy: UUID;
+  invoiceId?: UUID;
+  type: 'payment' | 'credit' | 'refund';
+  amountCents: number;
+  method: string;
+  postedAt: string;
+  postedBy: UUID;
 };
 
 export type ServicePlanRecord = {
@@ -232,12 +252,6 @@ export type ComplianceIssue = {
   severity: 'info' | 'warning' | 'critical';
   status: 'open' | 'resolved';
   resolutionLink: string;
-  invoiceId?: UUID;
-  type: 'payment' | 'credit' | 'refund';
-  amountCents: number;
-  method: string;
-  postedAt: string;
-  postedBy: UUID;
 };
 
 export type User = {

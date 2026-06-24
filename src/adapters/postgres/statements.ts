@@ -4,15 +4,18 @@ import type {
   AuditEvent,
   AuthSession,
   BackgroundJob,
+  BillingCharge,
   CarePlan,
   CareTask,
   ComplianceIssue,
   Facility,
   Incident,
+  Invoice,
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
   Organization,
+  PaymentTransaction,
   PasswordResetRequest,
   RegisteredFeature,
   Resident,
@@ -21,7 +24,6 @@ import type {
   UserCredential,
   UUID
 } from '../../domain';
-import type { AuditEvent, AuthSession, BillingCharge, Facility, Invoice, MfaChallenge, Organization, PaymentTransaction, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -417,6 +419,9 @@ export const complianceIssueStatements = {
       ON CONFLICT (id) DO UPDATE SET issue=EXCLUDED.issue, severity=EXCLUDED.severity, status=EXCLUDED.status, resolution_link=EXCLUDED.resolution_link, updated_at=now()
       RETURNING *
     `, values: [issue.id, issue.organizationId, issue.facilityId, issue.residentId ?? null, issue.issue, issue.severity, issue.status, issue.resolutionLink] };
+  }
+};
+
 export const billingChargeStatements = {
   listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM billing_charges WHERE resident_id = $1 ORDER BY created_at DESC', values: [residentId] }; },
   upsert(charge: BillingCharge): SqlStatement {

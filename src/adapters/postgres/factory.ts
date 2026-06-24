@@ -14,8 +14,6 @@ import {
   PostgresMedicationOrderRepository,
   PostgresIncidentRepository,
   PostgresBillingChargeRepository,
-  PostgresFacilityRepository,
-  PostgresFeatureRegistryRepository,
   PostgresInvoiceRepository,
   PostgresMfaChallengeRepository,
   PostgresOrganizationRepository,

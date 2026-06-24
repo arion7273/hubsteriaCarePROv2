@@ -8,16 +8,19 @@ import type {
   AiGenerationJobInput,
   Assessment,
   BackgroundJob,
+  BillingCharge,
   CarePlan,
   CareTask,
+  ComplianceIssue,
   DigitalRxSyncJobInput,
   Facility,
   Incident,
-  ComplianceIssue,
+  Invoice,
   MedicationAdministration,
   MedicationOrder,
   NotificationJobInput,
   Organization,
+  PaymentTransaction,
   PrintJobInput,
   Resident,
   ServicePlanRecord,
@@ -25,7 +28,6 @@ import type {
   UUID,
   WorkflowActionJobInput
 } from './types';
-import type { AccessContext, BillingCharge, Facility, Invoice, Organization, PaymentTransaction, Resident, User, UUID } from './types';
 
 export type IdFactory = () => UUID;
 export type Clock = () => Date;
@@ -795,12 +797,14 @@ export class BackendFoundationService {
     const decision = requirePermission(context, { scope: 'facility', organizationId, facilityId }, 'facility:manage');
     assertAllowed(decision);
     return this.repositories.complianceIssues.listByFacility(organizationId, facilityId);
+  }
+
   async createBillingCharge(context: AccessContext, input: Omit<BillingCharge, 'id'>): Promise<BillingCharge> {
     const resident = await this.getResident(context, input.residentId);
     const decision = requirePermission(context, { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id }, 'billing:manage');
     assertAllowed(decision);
     const charge = await this.repositories.billingCharges.save({ id: this.createId(), ...input });
-    await this.auditBillingEntity(context, 'BillingCharge', charge.id, charge, charge.organizationId, charge.facilityId, charge.residentId);
+    await this.auditEntity(context, 'BillingCharge', charge.id, charge, { scope: 'resident', organizationId: charge.organizationId, facilityId: charge.facilityId, residentId: charge.residentId });
     return charge;
   }
 
@@ -814,7 +818,7 @@ export class BackendFoundationService {
     const decision = requirePermission(context, { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id }, 'billing:manage');
     assertAllowed(decision);
     const invoice = await this.repositories.invoices.save({ id: this.createId(), ...input });
-    await this.auditBillingEntity(context, 'Invoice', invoice.id, invoice, invoice.organizationId, invoice.facilityId, invoice.residentId);
+    await this.auditEntity(context, 'Invoice', invoice.id, invoice, { scope: 'resident', organizationId: invoice.organizationId, facilityId: invoice.facilityId, residentId: invoice.residentId });
     return invoice;
   }
 
@@ -828,7 +832,7 @@ export class BackendFoundationService {
     const decision = requirePermission(context, { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id }, 'billing:manage');
     assertAllowed(decision);
     const transaction = await this.repositories.paymentTransactions.save({ id: this.createId(), postedAt: this.clock().toISOString(), postedBy: context.user.id, ...input });
-    await this.auditBillingEntity(context, 'PaymentTransaction', transaction.id, transaction, transaction.organizationId, transaction.facilityId, transaction.residentId);
+    await this.auditEntity(context, 'PaymentTransaction', transaction.id, transaction, { scope: 'resident', organizationId: transaction.organizationId, facilityId: transaction.facilityId, residentId: transaction.residentId });
     return transaction;
   }
 
@@ -938,18 +942,12 @@ export class BackendFoundationService {
     await this.repositories.auditLogs.append(createAuditEvent({
       id: this.createId(),
       action: beforeState ? 'update' : 'create',
-  private async auditBillingEntity(context: AccessContext, entityType: string, entityId: UUID, afterState: unknown, organizationId: UUID, facilityId: UUID, residentId: UUID): Promise<void> {
-    await this.repositories.auditLogs.append(createAuditEvent({
-      id: this.createId(),
-      action: 'create',
       actorUserId: context.user.id,
       actorRole: context.user.roleTier,
       entityType,
       entityId,
       scope,
       beforeState,
-      scope: { scope: 'resident', organizationId, facilityId, residentId },
-      beforeState: null,
       afterState,
       now: this.clock()
     }));

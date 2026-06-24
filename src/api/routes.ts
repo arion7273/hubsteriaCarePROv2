@@ -221,6 +221,7 @@ export const apiRoutes: ApiRouteDefinition[] = [
     path: '/compliance-issues',
     authRequired: true,
     description: 'List compliance issues by facility'
+  },
   {
     method: 'POST',
     path: '/billing/charges',

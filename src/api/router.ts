@@ -274,7 +274,7 @@ const routeConfigs: RouteConfig[] = [
   { method: 'GET', path: '/incidents', handler: listIncidentsHandler },
   { method: 'PATCH', path: '/incidents', validate: isUpdateIncidentBody, handler: updateIncidentHandler as RouteHandler },
   { method: 'POST', path: '/compliance-issues', validate: isCreateComplianceIssueBody, handler: createComplianceIssueHandler as RouteHandler },
-  { method: 'GET', path: '/compliance-issues', handler: listComplianceIssuesHandler }
+  { method: 'GET', path: '/compliance-issues', handler: listComplianceIssuesHandler },
   { method: 'POST', path: '/billing/charges', validate: isCreateBillingChargeBody, handler: createBillingChargeHandler as RouteHandler },
   { method: 'GET', path: '/billing/charges', handler: listBillingChargesHandler },
   { method: 'POST', path: '/billing/invoices', validate: isCreateInvoiceBody, handler: createInvoiceHandler as RouteHandler },

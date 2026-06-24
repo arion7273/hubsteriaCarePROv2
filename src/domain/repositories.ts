@@ -5,15 +5,18 @@ import type {
   Assessment,
   AuthSession,
   BackgroundJob,
+  BillingCharge,
   CarePlan,
   CareTask,
   ComplianceIssue,
   Facility,
   Incident,
+  Invoice,
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
   Organization,
+  PaymentTransaction,
   PasswordResetRequest,
   Resident,
   ServicePlanRecord,
@@ -21,7 +24,6 @@ import type {
   UserCredential,
   UUID
 } from './types';
-import type { AuthSession, BillingCharge, Facility, Invoice, MfaChallenge, Organization, PaymentTransaction, PasswordResetRequest, Resident, User, UUID } from './types';
 
 export interface OrganizationRepository {
   getById(id: UUID): Promise<Organization | null>;
@@ -109,6 +111,8 @@ export interface IncidentRepository {
 export interface ComplianceIssueRepository {
   listByFacility(organizationId: UUID, facilityId: UUID): Promise<ComplianceIssue[]>;
   save(issue: ComplianceIssue): Promise<ComplianceIssue>;
+}
+
 export interface BillingChargeRepository {
   listByResident(residentId: UUID): Promise<BillingCharge[]>;
   save(charge: BillingCharge): Promise<BillingCharge>;

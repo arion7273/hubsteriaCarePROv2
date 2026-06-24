@@ -8,16 +8,19 @@ import {
   type Assessment,
   type BackgroundJob,
   type BackendRepositories,
+  type BillingCharge,
   type CarePlan,
   type CareTask,
   type ComplianceIssue,
   type DigitalRxSyncJobInput,
   type Facility,
   type Incident,
+  type Invoice,
   type MedicationAdministration,
   type MedicationOrder,
   type NotificationJobInput,
   type Organization,
+  type PaymentTransaction,
   type PrintJobInput,
   type Resident,
   type ServicePlanRecord,
@@ -25,7 +28,6 @@ import {
   type UUID,
   type WorkflowActionJobInput
 } from '../domain';
-import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type BillingCharge, type Facility, type Invoice, type Organization, type PaymentTransaction, type Resident, type User, type UUID } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -512,6 +514,9 @@ export async function listComplianceIssuesHandler(services: ApiServices, request
     const facilityId = request.query?.facilityId;
     if (!organizationId || !facilityId) throw new Error('organizationId and facilityId are required');
     return services.backend.listComplianceIssuesByFacility(context, organizationId, facilityId);
+  });
+}
+
 export async function createBillingChargeHandler(services: ApiServices, request: ApiRequest<CreateBillingChargeBody>): Promise<ApiResponse> {
   return withContext(services, request, async (context) => {
     assertBody(request.body);

@@ -4,6 +4,7 @@ import type {
   AuditLogRepository,
   AssessmentRepository,
   BackgroundJobRepository,
+  BillingChargeRepository,
   ComplianceIssueRepository,
   AuthSessionRepository,
   CarePlanRepository,
@@ -13,9 +14,6 @@ import type {
   MedicationAdministrationRepository,
   MedicationOrderRepository,
   IncidentRepository,
-  BillingChargeRepository,
-  FacilityRepository,
-  FeatureRegistryRepository,
   InvoiceRepository,
   MfaChallengeRepository,
   OrganizationRepository,
@@ -31,15 +29,18 @@ import type {
   Assessment,
   AuthSession,
   BackgroundJob,
+  BillingCharge,
   CarePlan,
   CareTask,
   ComplianceIssue,
   Facility,
   Incident,
+  Invoice,
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
   Organization,
+  PaymentTransaction,
   PasswordResetRequest,
   Resident,
   RoleTier,
@@ -48,7 +49,6 @@ import type {
   UserCredential,
   UUID
 } from '../../domain/types';
-import type { AuthSession, BillingCharge, Facility, Invoice, MfaChallenge, Organization, PaymentTransaction, PasswordResetRequest, Resident, RoleTier, User, UUID } from '../../domain/types';
 import {
   assessmentStatements,
   adlEntryStatements,
@@ -64,8 +64,6 @@ import {
   complianceIssueStatements,
   incidentStatements,
   billingChargeStatements,
-  facilityStatements,
-  featureRegistryStatements,
   invoiceStatements,
   mfaChallengeStatements,
   organizationStatements,
@@ -91,8 +89,6 @@ import {
   mapComplianceIssueRow,
   mapIncidentRow,
   mapBillingChargeRow,
-  mapFacilityRow,
-  mapFeatureRow,
   mapInvoiceRow,
   mapMfaChallengeRow,
   mapOrganizationRow,
@@ -279,6 +275,8 @@ export class PostgresComplianceIssueRepository implements ComplianceIssueReposit
   constructor(private readonly client: PostgresClient) {}
   async listByFacility(organizationId: UUID, facilityId: UUID): Promise<ComplianceIssue[]> { return (await this.client.query(complianceIssueStatements.listByFacility(organizationId, facilityId))).rows.map(mapComplianceIssueRow); }
   async save(issue: ComplianceIssue): Promise<ComplianceIssue> { return requiredFirst(await this.client.query(complianceIssueStatements.upsert(issue)), mapComplianceIssueRow); }
+}
+
 export class PostgresBillingChargeRepository implements BillingChargeRepository {
   constructor(private readonly client: PostgresClient) {}
   async listByResident(residentId: UUID): Promise<BillingCharge[]> { return (await this.client.query(billingChargeStatements.listByResident(residentId))).rows.map(mapBillingChargeRow); }

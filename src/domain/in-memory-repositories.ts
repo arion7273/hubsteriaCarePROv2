@@ -5,6 +5,7 @@ import type {
   AuditLogRepository,
   AssessmentRepository,
   BackgroundJobRepository,
+  BillingChargeRepository,
   AuthSessionRepository,
   BackendRepositories,
   CarePlanRepository,
@@ -15,9 +16,6 @@ import type {
   FacilityRepository,
   FeatureRegistryRepository,
   IncidentRepository,
-  BillingChargeRepository,
-  FacilityRepository,
-  FeatureRegistryRepository,
   InvoiceRepository,
   MfaChallengeRepository,
   OrganizationRepository,
@@ -33,15 +31,18 @@ import type {
   AdlEntry,
   AuthSession,
   BackgroundJob,
+  BillingCharge,
   CarePlan,
   CareTask,
   ComplianceIssue,
   Facility,
   Incident,
+  Invoice,
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
   Organization,
+  PaymentTransaction,
   PasswordResetRequest,
   Resident,
   ServicePlanRecord,
@@ -49,7 +50,6 @@ import type {
   UserCredential,
   UUID
 } from './types';
-import type { AuthSession, BillingCharge, Facility, Invoice, MfaChallenge, Organization, PaymentTransaction, PasswordResetRequest, Resident, User, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -285,6 +285,9 @@ export class InMemoryComplianceIssueRepository implements ComplianceIssueReposit
   async save(issue: ComplianceIssue): Promise<ComplianceIssue> {
     this.issues.set(issue.id, issue);
     return issue;
+  }
+}
+
 export class InMemoryBillingChargeRepository implements BillingChargeRepository {
   private readonly charges = new Map<UUID, BillingCharge>();
   async listByResident(residentId: UUID): Promise<BillingCharge[]> {
