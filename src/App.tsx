@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   allPhases,
   clinicalOperationsPhases,
@@ -17,6 +17,13 @@ import {
   organizationMetrics,
   type DashboardMetric
 } from './data/platform';
+import {
+  commandCapabilities,
+  favorites,
+  personalizedDashboards,
+  pinnedActions,
+  productivitySearchIndex
+} from './data/productivity';
 import { residentCommandCenter } from './data/resident';
 
 type DashboardScope = 'T1 Master' | 'T2 Organization' | 'T3 Facility';
@@ -33,18 +40,23 @@ const quickActions: Record<DashboardScope, string[]> = {
   'T3 Facility': ['Add Resident', 'Start Assessment', 'Log Incident', 'Create Medication Order', 'Assign Task']
 };
 
-const commandSuggestions = [
-  'Search resident: Maria Alvarez',
-  'Create incident report',
-  'Open Print Center Pro',
-  'Review DigitalRX sync warnings',
-  'Launch medication compliance dashboard',
-  'Invite facility administrator'
-];
-
 function App() {
   const [scope, setScope] = useState<DashboardScope>('T1 Master');
   const [query, setQuery] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
+  const globalSearchRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleKeyboardShortcut = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        globalSearchRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyboardShortcut);
+    return () => window.removeEventListener('keydown', handleKeyboardShortcut);
+  }, []);
 
   const filteredPhases = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -61,8 +73,25 @@ function App() {
     });
   }, [query]);
 
+  const productivityResults = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return productivitySearchIndex;
+    }
+
+    return productivitySearchIndex.filter((record) => {
+      const searchable = [record.category, record.title, record.description, record.location, record.action]
+        .join(' ')
+        .toLowerCase();
+      return searchable.includes(normalizedQuery);
+    });
+  }, [query]);
+
+  const activePersonalizedDashboard = personalizedDashboards.find((dashboard) => dashboard.role === scope);
+
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${darkMode ? 'dark-mode' : ''}`}>
       <aside className="sidebar" aria-label="HubsteriaCarePRO navigation">
         <div className="brand-lockup">
           <span className="brand-mark" aria-hidden="true">
@@ -80,6 +109,7 @@ function App() {
             'Global Rules',
             'Dashboards',
             'Resident Command Center',
+            'Productivity System',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -93,8 +123,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-2</strong>
-            <span>Resident core active</span>
+            <strong>Phase 0-3</strong>
+            <span>Productivity layer active</span>
           </div>
         </div>
       </aside>
@@ -118,6 +148,9 @@ function App() {
               </a>
               <a className="button secondary" href="#resident-command-center">
                 Open Resident Center
+              </a>
+              <a className="button secondary" href="#productivity-system">
+                Open Productivity
               </a>
             </div>
           </div>
@@ -149,24 +182,111 @@ function App() {
             <p className="eyebrow">Ctrl + K ready</p>
             <h2 id="command-title">Global command and search layer</h2>
             <p>
-              Search roadmap milestones now; the same interaction model is reserved for residents, staff,
-              incidents, assessments, medications, reports, and quick actions.
+              Search residents, staff, incidents, assessments, medications, tasks, reports, and roadmap
+              milestones from one mobile-friendly command surface.
             </p>
+            <div className="command-meta">
+              <kbd>Ctrl</kbd>
+              <span>+</span>
+              <kbd>K</kbd>
+              <strong>Command Bar</strong>
+            </div>
           </div>
           <div className="command-box">
             <label htmlFor="global-search">Global search</label>
             <input
               id="global-search"
+              ref={globalSearchRef}
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search phases, modules, integrations..."
+              placeholder="Search residents, staff, meds, reports, phases..."
             />
             <div className="suggestions" aria-label="Command suggestions">
-              {commandSuggestions.map((suggestion) => (
+              {commandCapabilities.map((suggestion) => (
                 <span key={suggestion}>{suggestion}</span>
               ))}
             </div>
+            <div className="global-results" aria-label="Global search results">
+              {productivityResults.slice(0, 5).map((result) => (
+                <article key={`${result.category}-${result.title}`}>
+                  <span>{result.category}</span>
+                  <div>
+                    <strong>{result.title}</strong>
+                    <p>{result.description}</p>
+                    <small>{result.location}</small>
+                  </div>
+                  <button type="button">{result.action}</button>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="content-card productivity-system" id="productivity-system" aria-labelledby="productivity-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 3</p>
+              <h2 id="productivity-title">Productivity System</h2>
+              <p>
+                Global search, command actions, pinned workflows, favorites, role-personalized dashboards, and
+                dark mode reduce clicks before clinical modules expand.
+              </p>
+            </div>
+            <button className="mode-toggle" type="button" onClick={() => setDarkMode((enabled) => !enabled)}>
+              {darkMode ? 'Use Light Mode' : 'Use Dark Mode'}
+            </button>
+          </div>
+
+          <div className="productivity-grid">
+            <article className="productivity-card span-two">
+              <div className="card-heading">
+                <span>Quick Actions Dock</span>
+                <strong>Pinned workflows</strong>
+              </div>
+              <div className="pinned-action-grid">
+                {pinnedActions.map((action) => (
+                  <button key={action} type="button">
+                    {action}
+                  </button>
+                ))}
+              </div>
+            </article>
+
+            <article className="productivity-card">
+              <div className="card-heading">
+                <span>Favorites</span>
+                <strong>User-pinned items</strong>
+              </div>
+              <div className="favorite-list">
+                {favorites.map((favorite) => (
+                  <div key={favorite.label}>
+                    <span>{favorite.type}</span>
+                    <strong>{favorite.label}</strong>
+                    <small>{favorite.note}</small>
+                  </div>
+                ))}
+              </div>
+            </article>
+
+            <article className="productivity-card personalized-dashboard">
+              <div className="card-heading">
+                <span>Personalized dashboard</span>
+                <strong>{scope}</strong>
+              </div>
+              <div className="dashboard-widget-list">
+                {activePersonalizedDashboard?.widgets.map((widget) => (
+                  <span key={widget}>{widget}</span>
+                ))}
+              </div>
+              <div className="shortcut-stack" aria-label={`${scope} productivity shortcuts`}>
+                {activePersonalizedDashboard?.shortcuts.map((shortcut) => (
+                  <button type="button" key={shortcut}>
+                    {shortcut}
+                  </button>
+                ))}
+              </div>
+            </article>
           </div>
         </section>
 

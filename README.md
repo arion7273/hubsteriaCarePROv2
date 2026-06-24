@@ -8,6 +8,7 @@ This repository currently implements the first product foundation milestone:
 - Phase 1 multi-tenant foundation blueprint
 - Phase 1.5 enterprise hierarchy, master consoles, and role-aware dashboards
 - Phase 2 Resident Command Center with profile sections, risk banner, quick actions, timeline, and future-module connection rules
+- Phase 3 Productivity System with global search, Ctrl+K command bar, pinned actions, favorites, dark mode, and personalized dashboards
 - Phase 5.5 configuration-center planning surface
 - Roadmap registry for phases 0-20
 - Regression tests for the foundation shell

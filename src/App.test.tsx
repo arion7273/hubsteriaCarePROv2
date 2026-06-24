@@ -23,19 +23,19 @@ describe('HubsteriaCarePRO foundation', () => {
 
     await user.click(screen.getByRole('button', { name: 'T2 Organization' }));
     expect(screen.getByText('Facility Count')).toBeInTheDocument();
-    expect(screen.getByText('Survey Readiness')).toBeInTheDocument();
+    expect(screen.getAllByText('Survey Readiness').length).toBeGreaterThan(0);
 
     await user.click(screen.getByRole('button', { name: 'T3 Facility' }));
     expect(screen.getByText('Current Residents')).toBeInTheDocument();
-    expect(screen.getByText('Med Pass Completion')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Log Incident' })).toBeInTheDocument();
+    expect(screen.getAllByText('Med Pass Completion').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: 'Log Incident' }).length).toBeGreaterThan(0);
   });
 
   it('filters roadmap milestones through global search', async () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.type(screen.getByLabelText(/Global search/i), 'DigitalRX');
+    await user.type(screen.getByRole('searchbox', { name: /Global search/i }), 'DigitalRX');
 
     const roadmap = screen.getByRole('region', { name: /Phase 0 -> Phase 1/i });
 
@@ -99,8 +99,45 @@ describe('HubsteriaCarePRO foundation', () => {
     });
 
     expect(screen.getByText(/Future modules connect here first/i)).toBeInTheDocument();
-    expect(screen.getByText('eMAR')).toBeInTheDocument();
+    expect(screen.getAllByText('eMAR').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Notification Center Pro').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Print Center Pro').length).toBeGreaterThan(0);
+  });
+
+  it('renders Phase 3 productivity surfaces with command capabilities, pinned actions, and favorites', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { name: 'Productivity System' })).toBeInTheDocument();
+    expect(screen.getByText('Command Bar')).toBeInTheDocument();
+    expect(screen.getByText('Search Resident')).toBeInTheDocument();
+    expect(screen.getByText('Create Incident')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open Med Pass' })).toBeInTheDocument();
+    expect(screen.getAllByText('Medication Compliance').length).toBeGreaterThan(0);
+    expect(screen.getByText('DigitalRX Sync Queue')).toBeInTheDocument();
+  });
+
+  it('searches across productivity records from the global command bar', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(screen.getByRole('searchbox', { name: /Global search/i }), 'Lisinopril');
+
+    const results = screen.getByLabelText('Global search results');
+    expect(within(results).getByText('Medication')).toBeInTheDocument();
+    expect(within(results).getByText('Lisinopril 10mg')).toBeInTheDocument();
+    expect(within(results).getByText('eMAR')).toBeInTheDocument();
+    expect(within(results).getByRole('button', { name: 'Open Medication' })).toBeInTheDocument();
+  });
+
+  it('supports dark mode and role-personalized dashboard content', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: 'Use Dark Mode' }));
+    expect(screen.getByRole('button', { name: 'Use Light Mode' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'T3 Facility' }));
+    expect(screen.getAllByText('Staff On Shift').length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: 'Start Assessment' }).length).toBeGreaterThan(0);
   });
 });

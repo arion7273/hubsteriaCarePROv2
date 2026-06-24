@@ -69,7 +69,7 @@ export const foundationPhases: Phase[] = [
   {
     id: '3',
     title: 'User Experience & Productivity Layer',
-    status: 'planned',
+    status: 'foundation',
     milestone: 'Productivity Core',
     summary:
       'Global search, command bar, quick actions, favorites, dark mode, and personalized role dashboards.',

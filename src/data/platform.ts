@@ -203,6 +203,27 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'gated',
     dependencies: ['Templates', 'Preview', 'Batch Printing'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Global Search and Command Bar',
+    module: 'Productivity System',
+    status: 'registered',
+    dependencies: ['Residents', 'Staff', 'Incidents', 'Assessments', 'Medications', 'Tasks', 'Reports'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Favorites and Pinned Actions',
+    module: 'Productivity System',
+    status: 'registered',
+    dependencies: ['Users', 'Roles', 'Personalized Dashboards'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Dark Mode',
+    module: 'Design System',
+    status: 'registered',
+    dependencies: ['Responsive Design Tokens', 'Accessibility Standards'],
+    version: '0.1.0'
   }
 ];
 
