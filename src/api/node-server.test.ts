@@ -36,7 +36,7 @@ function createApiServices(): ApiServices {
     () => new Date('2026-06-24T01:00:00.000Z')
   );
 
-  return { auth, backend, repositories };
+  return { auth, backend, repositories, now: () => new Date('2026-06-24T01:00:00.000Z') };
 }
 
 async function withServer<T>(services: ApiServices, test: (baseUrl: string) => Promise<T>): Promise<T> {

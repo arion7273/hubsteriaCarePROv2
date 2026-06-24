@@ -1,6 +1,6 @@
 import type { RegisteredFeature } from '../../domain';
 import type { AuditEvent } from '../../domain/audit';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
+import type { AuthSession, Facility, MfaChallenge, OperationalRecord, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -44,6 +44,21 @@ export function mapResidentRow(row: PostgresRow): Resident {
     room: row.room ? String(row.room) : undefined,
     levelOfCare: row.level_of_care ? String(row.level_of_care) : undefined,
     status: status as Resident['status']
+  };
+}
+
+export function mapOperationalRecordRow(row: PostgresRow): OperationalRecord {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: row.facility_id ? String(row.facility_id) : undefined,
+    residentId: row.resident_id ? String(row.resident_id) : undefined,
+    module: String(row.module) as OperationalRecord['module'],
+    recordType: String(row.record_type),
+    status: String(row.status) as OperationalRecord['status'],
+    data: typeof row.data === 'object' && row.data !== null ? (row.data as Record<string, unknown>) : {},
+    createdAt: String(row.created_at),
+    updatedAt: String(row.updated_at)
   };
 }
 

@@ -22,6 +22,8 @@ The initial database target is PostgreSQL.
   - auth sessions
   - MFA challenges
   - password reset requests
+- `database/migrations/0010_operational_records.sql`
+  - operational records for remaining integration and enterprise modules
 
 Run migrations with:
 

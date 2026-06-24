@@ -5,18 +5,20 @@ import type {
   FacilityRepository,
   FeatureRegistryRepository,
   MfaChallengeRepository,
+  OperationalRecordRepository,
   OrganizationRepository,
   PasswordResetRepository,
   ResidentRepository,
   UserRepository
 } from '../../domain/repositories';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UUID } from '../../domain/types';
+import type { AuthSession, Facility, MfaChallenge, OperationalModule, OperationalRecord, Organization, PasswordResetRequest, Resident, RoleTier, User, UUID } from '../../domain/types';
 import {
   auditLogStatements,
   authSessionStatements,
   facilityStatements,
   featureRegistryStatements,
   mfaChallengeStatements,
+  operationalRecordStatements,
   organizationStatements,
   passwordResetStatements,
   residentStatements,
@@ -28,6 +30,7 @@ import {
   mapFacilityRow,
   mapFeatureRow,
   mapMfaChallengeRow,
+  mapOperationalRecordRow,
   mapOrganizationRow,
   mapPasswordResetRequestRow,
   mapResidentRow,
@@ -121,6 +124,14 @@ export class PostgresResidentRepository implements ResidentRepository {
   async save(resident: Resident): Promise<Resident> {
     return requiredFirst(await this.client.query(residentStatements.upsert(resident)), mapResidentRow);
   }
+}
+
+export class PostgresOperationalRecordRepository implements OperationalRecordRepository {
+  constructor(private readonly client: PostgresClient) {}
+  async getById(id: UUID): Promise<OperationalRecord | null> { return first(await this.client.query(operationalRecordStatements.selectById(id)), mapOperationalRecordRow); }
+  async listByModule(organizationId: UUID, module: OperationalModule): Promise<OperationalRecord[]> { return (await this.client.query(operationalRecordStatements.listByModule(organizationId, module))).rows.map(mapOperationalRecordRow); }
+  async listByResident(residentId: UUID, module?: OperationalModule): Promise<OperationalRecord[]> { return (await this.client.query(operationalRecordStatements.listByResident(residentId, module))).rows.map(mapOperationalRecordRow); }
+  async save(record: OperationalRecord): Promise<OperationalRecord> { return requiredFirst(await this.client.query(operationalRecordStatements.upsert(record)), mapOperationalRecordRow); }
 }
 
 export class PostgresAuditLogRepository implements AuditLogRepository {

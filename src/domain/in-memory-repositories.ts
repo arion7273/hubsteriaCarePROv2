@@ -7,12 +7,13 @@ import type {
   FacilityRepository,
   FeatureRegistryRepository,
   MfaChallengeRepository,
+  OperationalRecordRepository,
   OrganizationRepository,
   PasswordResetRepository,
   ResidentRepository,
   UserRepository
 } from './repositories';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
+import type { AuthSession, Facility, MfaChallenge, OperationalModule, OperationalRecord, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -85,6 +86,27 @@ export class InMemoryResidentRepository implements ResidentRepository {
   async save(resident: Resident): Promise<Resident> {
     this.residents.set(resident.id, resident);
     return resident;
+  }
+}
+
+export class InMemoryOperationalRecordRepository implements OperationalRecordRepository {
+  private readonly records = new Map<UUID, OperationalRecord>();
+
+  async getById(id: UUID): Promise<OperationalRecord | null> {
+    return this.records.get(id) ?? null;
+  }
+
+  async listByModule(organizationId: UUID, module: OperationalModule): Promise<OperationalRecord[]> {
+    return [...this.records.values()].filter((record) => record.organizationId === organizationId && record.module === module);
+  }
+
+  async listByResident(residentId: UUID, module?: OperationalModule): Promise<OperationalRecord[]> {
+    return [...this.records.values()].filter((record) => record.residentId === residentId && (!module || record.module === module));
+  }
+
+  async save(record: OperationalRecord): Promise<OperationalRecord> {
+    this.records.set(record.id, record);
+    return record;
   }
 }
 
@@ -177,6 +199,7 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     facilities: new InMemoryFacilityRepository(),
     users: new InMemoryUserRepository(),
     residents: new InMemoryResidentRepository(),
+    operationalRecords: new InMemoryOperationalRecordRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
     featureRegistry: new InMemoryFeatureRegistryRepository(),
     authSessions: new InMemoryAuthSessionRepository(),

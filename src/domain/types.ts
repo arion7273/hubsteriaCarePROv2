@@ -42,6 +42,31 @@ export type Resident = {
   status: 'active' | 'discharged' | 'inactive';
 };
 
+export type OperationalModule =
+  | 'digitalrx'
+  | 'communication'
+  | 'family_portal'
+  | 'workflow'
+  | 'academy'
+  | 'support'
+  | 'executive'
+  | 'ai'
+  | 'print'
+  | 'notification';
+
+export type OperationalRecord = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId?: UUID;
+  residentId?: UUID;
+  module: OperationalModule;
+  recordType: string;
+  status: 'open' | 'active' | 'resolved' | 'archived' | 'error';
+  data: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type User = {
   id: UUID;
   email: string;

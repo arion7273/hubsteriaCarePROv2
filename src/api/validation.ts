@@ -1,7 +1,7 @@
 import type { RegisteredFeature } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
-import type { CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
+import type { CreateFacilityBody, CreateOperationalRecordBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, UpdateFacilityBody, UpdateOperationalRecordBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -142,6 +142,16 @@ export function isUpdateUserBody(body: unknown): body is UpdateUserBody {
       (Array.isArray(body.updates.permissions) && body.updates.permissions.every((permission) => typeof permission === 'string'))) &&
     (body.updates.status === undefined || ['active', 'inactive'].includes(String(body.updates.status)))
   );
+}
+
+const operationalModules = ['digitalrx', 'communication', 'family_portal', 'workflow', 'academy', 'support', 'executive', 'ai', 'print', 'notification'];
+
+export function isCreateOperationalRecordBody(body: unknown): body is CreateOperationalRecordBody {
+  return isRecord(body) && isNonEmptyString(body.organizationId) && (body.facilityId === undefined || isNonEmptyString(body.facilityId)) && (body.residentId === undefined || isNonEmptyString(body.residentId)) && operationalModules.includes(String(body.module)) && isNonEmptyString(body.recordType) && ['open', 'active', 'resolved', 'archived', 'error'].includes(String(body.status)) && isRecord(body.data);
+}
+
+export function isUpdateOperationalRecordBody(body: unknown): body is UpdateOperationalRecordBody {
+  return isRecord(body) && isNonEmptyString(body.id) && isRecord(body.updates) && (body.updates.module === undefined || operationalModules.includes(String(body.updates.module))) && (body.updates.recordType === undefined || isNonEmptyString(body.updates.recordType)) && (body.updates.status === undefined || ['open', 'active', 'resolved', 'archived', 'error'].includes(String(body.updates.status))) && (body.updates.data === undefined || isRecord(body.updates.data));
 }
 
 function isRecord(body: unknown): body is Record<string, unknown> {

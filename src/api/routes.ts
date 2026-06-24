@@ -133,5 +133,23 @@ export const apiRoutes: ApiRouteDefinition[] = [
     path: '/users',
     authRequired: true,
     description: 'Update user'
+  },
+  {
+    method: 'POST',
+    path: '/operational-records',
+    authRequired: true,
+    description: 'Create operational record'
+  },
+  {
+    method: 'GET',
+    path: '/operational-records',
+    authRequired: true,
+    description: 'List operational records'
+  },
+  {
+    method: 'PATCH',
+    path: '/operational-records',
+    authRequired: true,
+    description: 'Update operational record'
   }
 ];

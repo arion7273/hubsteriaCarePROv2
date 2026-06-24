@@ -2,7 +2,7 @@ import { createAuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
 import type { BackendRepositories } from './repositories';
 import { requirePermission } from './access-control';
-import type { AccessContext, Facility, Organization, Resident, User, UUID } from './types';
+import type { AccessContext, Facility, OperationalModule, OperationalRecord, Organization, Resident, User, UUID } from './types';
 
 export type IdFactory = () => UUID;
 export type Clock = () => Date;
@@ -377,6 +377,63 @@ export class BackendFoundationService {
     return saved;
   }
 
+  async createOperationalRecord(
+    context: AccessContext,
+    input: Omit<OperationalRecord, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<OperationalRecord> {
+    await this.assertOperationalScope(context, input.organizationId, input.facilityId, input.residentId);
+    const now = this.clock().toISOString();
+    const record = await this.repositories.operationalRecords.save({
+      id: this.createId(),
+      createdAt: now,
+      updatedAt: now,
+      ...input
+    });
+    await this.auditOperationalRecord(context, record, null);
+    return record;
+  }
+
+  async listOperationalRecordsByModule(
+    context: AccessContext,
+    organizationId: UUID,
+    module: OperationalModule
+  ): Promise<OperationalRecord[]> {
+    const decision = requirePermission(context, { scope: 'organization', organizationId }, 'report:read');
+    assertAllowed(decision);
+    return this.repositories.operationalRecords.listByModule(organizationId, module);
+  }
+
+  async listOperationalRecordsByResident(
+    context: AccessContext,
+    residentId: UUID,
+    module?: OperationalModule
+  ): Promise<OperationalRecord[]> {
+    await this.getResident(context, residentId);
+    return this.repositories.operationalRecords.listByResident(residentId, module);
+  }
+
+  async updateOperationalRecord(
+    context: AccessContext,
+    id: UUID,
+    updates: Partial<Omit<OperationalRecord, 'id' | 'organizationId' | 'facilityId' | 'residentId' | 'createdAt'>>
+  ): Promise<OperationalRecord> {
+    const existing = await this.repositories.operationalRecords.getById(id);
+    if (!existing) throw new Error('Operational record not found');
+    await this.assertOperationalScope(context, existing.organizationId, existing.facilityId, existing.residentId);
+    const updated = await this.repositories.operationalRecords.save({
+      ...existing,
+      ...updates,
+      id: existing.id,
+      organizationId: existing.organizationId,
+      facilityId: existing.facilityId,
+      residentId: existing.residentId,
+      createdAt: existing.createdAt,
+      updatedAt: this.clock().toISOString()
+    });
+    await this.auditOperationalRecord(context, updated, existing);
+    return updated;
+  }
+
   async createUser(
     context: AccessContext,
     input: Omit<User, 'id' | 'status'>
@@ -452,6 +509,47 @@ export class BackendFoundationService {
     );
 
     return saved;
+  }
+
+  private async assertOperationalScope(
+    context: AccessContext,
+    organizationId: UUID,
+    facilityId?: UUID,
+    residentId?: UUID
+  ): Promise<void> {
+    if (residentId) {
+      await this.getResident(context, residentId);
+      return;
+    }
+
+    const decision = facilityId
+      ? requirePermission(context, { scope: 'facility', organizationId, facilityId }, 'resident:write')
+      : requirePermission(context, { scope: 'organization', organizationId }, 'organization:manage');
+    assertAllowed(decision);
+  }
+
+  private async auditOperationalRecord(
+    context: AccessContext,
+    record: OperationalRecord,
+    beforeState: OperationalRecord | null
+  ): Promise<void> {
+    await this.repositories.auditLogs.append(createAuditEvent({
+      id: this.createId(),
+      action: beforeState ? 'update' : 'create',
+      actorUserId: context.user.id,
+      actorRole: context.user.roleTier,
+      entityType: 'OperationalRecord',
+      entityId: record.id,
+      scope: {
+        scope: record.residentId ? 'resident' : record.facilityId ? 'facility' : 'organization',
+        organizationId: record.organizationId,
+        facilityId: record.facilityId,
+        residentId: record.residentId
+      },
+      beforeState,
+      afterState: record,
+      now: this.clock()
+    }));
   }
 }
 

@@ -1,4 +1,4 @@
-import type { AuditEvent, AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
+import type { AuditEvent, AuthSession, Facility, MfaChallenge, OperationalRecord, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -181,6 +181,24 @@ export const residentStatements = {
         resident.status
       ]
     };
+  }
+};
+
+export const operationalRecordStatements = {
+  selectById(id: UUID): SqlStatement { return { text: 'SELECT * FROM operational_records WHERE id = $1', values: [id] }; },
+  listByModule(organizationId: UUID, module: string): SqlStatement { return { text: 'SELECT * FROM operational_records WHERE organization_id = $1 AND module = $2 ORDER BY updated_at DESC', values: [organizationId, module] }; },
+  listByResident(residentId: UUID, module?: string): SqlStatement {
+    return module
+      ? { text: 'SELECT * FROM operational_records WHERE resident_id = $1 AND module = $2 ORDER BY updated_at DESC', values: [residentId, module] }
+      : { text: 'SELECT * FROM operational_records WHERE resident_id = $1 ORDER BY updated_at DESC', values: [residentId] };
+  },
+  upsert(record: OperationalRecord): SqlStatement {
+    return { text: `
+      INSERT INTO operational_records (id, organization_id, facility_id, resident_id, module, record_type, status, data, created_at, updated_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10)
+      ON CONFLICT (id) DO UPDATE SET record_type=EXCLUDED.record_type, status=EXCLUDED.status, data=EXCLUDED.data, updated_at=EXCLUDED.updated_at
+      RETURNING *
+    `, values: [record.id, record.organizationId, record.facilityId ?? null, record.residentId ?? null, record.module, record.recordType, record.status, JSON.stringify(record.data), record.createdAt, record.updatedAt] };
   }
 };
 

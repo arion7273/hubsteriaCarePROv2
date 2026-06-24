@@ -1,5 +1,5 @@
 import type { RegisteredFeature } from '../domain';
-import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type Facility, type Organization, type Resident, type User, type UUID } from '../domain';
+import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type Facility, type OperationalModule, type OperationalRecord, type Organization, type Resident, type User, type UUID } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -7,6 +7,7 @@ export type ApiServices = {
   auth: AuthService;
   backend: BackendFoundationService;
   repositories: BackendRepositories;
+  now?: () => Date;
 };
 
 export type LoginBody = {
@@ -51,6 +52,12 @@ export type CreateUserBody = Omit<User, 'id' | 'status'>;
 export type UpdateUserBody = {
   userId: UUID;
   updates: Partial<Omit<User, 'id'>>;
+};
+
+export type CreateOperationalRecordBody = Omit<OperationalRecord, 'id' | 'createdAt' | 'updatedAt'>;
+export type UpdateOperationalRecordBody = {
+  id: UUID;
+  updates: Partial<Omit<OperationalRecord, 'id' | 'organizationId' | 'facilityId' | 'residentId' | 'createdAt'>>;
 };
 
 export async function loginHandler(services: ApiServices, request: ApiRequest<LoginBody>): Promise<ApiResponse> {
@@ -229,6 +236,31 @@ export async function updateUserHandler(services: ApiServices, request: ApiReque
   });
 }
 
+export async function createOperationalRecordHandler(services: ApiServices, request: ApiRequest<CreateOperationalRecordBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.createOperationalRecord(context, request.body);
+  }, 201);
+}
+
+export async function listOperationalRecordsHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const module = request.query?.module as OperationalModule | undefined;
+    const residentId = request.query?.residentId;
+    const organizationId = request.query?.organizationId;
+    if (residentId) return services.backend.listOperationalRecordsByResident(context, residentId, module);
+    if (organizationId && module) return services.backend.listOperationalRecordsByModule(context, organizationId, module);
+    throw new Error('residentId or organizationId/module is required');
+  });
+}
+
+export async function updateOperationalRecordHandler(services: ApiServices, request: ApiRequest<UpdateOperationalRecordBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.updateOperationalRecord(context, request.body.id, request.body.updates);
+  });
+}
+
 export async function resolveContext(services: ApiServices, sessionId: UUID | undefined): Promise<AccessContext> {
   if (!sessionId) {
     throw new Error('Session is required');
@@ -236,7 +268,9 @@ export async function resolveContext(services: ApiServices, sessionId: UUID | un
 
   const session = await services.repositories.authSessions.getById(sessionId);
 
-  if (!session || session.revokedAt || Date.parse(session.expiresAt) < Date.now()) {
+  const now = services.now?.() ?? new Date();
+
+  if (!session || session.revokedAt || Date.parse(session.expiresAt) < now.getTime()) {
     throw new Error('Session expired');
   }
 

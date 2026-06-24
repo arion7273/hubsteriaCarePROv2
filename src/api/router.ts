@@ -1,5 +1,6 @@
 import {
   createFacilityHandler,
+  createOperationalRecordHandler,
   createOrganizationHandler,
   createResidentHandler,
   createUserHandler,
@@ -8,6 +9,7 @@ import {
   getResidentHandler,
   listFeaturesHandler,
   listFacilitiesHandler,
+  listOperationalRecordsHandler,
   listOrganizationsHandler,
   listResidentsHandler,
   listUsersHandler,
@@ -16,6 +18,7 @@ import {
   passwordResetHandler,
   registerFeatureHandler,
   updateFacilityHandler,
+  updateOperationalRecordHandler,
   updateOrganizationHandler,
   updateResidentHandler,
   updateUserHandler,
@@ -28,10 +31,12 @@ import { composeMiddleware, type ApiMiddleware } from './middleware';
 import { apiRoutes } from './routes';
 import {
   isCreateFacilityBody,
+  isCreateOperationalRecordBody,
   isCreateOrganizationBody,
   isCreateResidentBody,
   isCreateUserBody,
   isUpdateFacilityBody,
+  isUpdateOperationalRecordBody,
   isUpdateOrganizationBody,
   isLoginBody,
   isPasswordResetBody,
@@ -168,7 +173,10 @@ const routeConfigs: RouteConfig[] = [
     path: '/users',
     validate: isUpdateUserBody,
     handler: updateUserHandler as RouteHandler
-  }
+  },
+  { method: 'POST', path: '/operational-records', validate: isCreateOperationalRecordBody, handler: createOperationalRecordHandler as RouteHandler },
+  { method: 'GET', path: '/operational-records', handler: listOperationalRecordsHandler },
+  { method: 'PATCH', path: '/operational-records', validate: isUpdateOperationalRecordBody, handler: updateOperationalRecordHandler as RouteHandler }
 ];
 
 export function createApiRouter(services: ApiServices, middlewares: ApiMiddleware[] = []) {

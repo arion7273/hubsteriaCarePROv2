@@ -31,7 +31,7 @@ const t3User: User = {
 };
 
 function createTestService() {
-  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'audit-4', 'user-1', 'audit-user', 'audit-user-update', 'feature-audit'];
+  const ids = ['org-1', 'audit-1', 'facility-1', 'audit-2', 'resident-1', 'audit-3', 'operational-1', 'audit-operational', 'audit-operational-update', 'audit-4', 'user-1', 'audit-user', 'audit-user-update', 'feature-audit'];
   const repositories = createInMemoryBackendRepositories();
   const service = new BackendFoundationService(
     repositories,
@@ -183,6 +183,34 @@ describe('BackendFoundationService', () => {
     ).resolves.toMatchObject({ room: '215A' });
 
     await expect(repositories.auditLogs.listByEntity('Resident', 'resident-1')).resolves.toHaveLength(2);
+  });
+
+  it('creates, lists, and updates operational records with tenant scope and audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+    await service.createResident(
+      { user: { ...t3User, permissions: ['resident:write'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
+    );
+
+    const record = await service.createOperationalRecord(
+      { user: { ...t3User, permissions: ['resident:write'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        module: 'digitalrx',
+        recordType: 'pharmacy_inbox',
+        status: 'open',
+        data: { medication: 'Lisinopril' }
+      }
+    );
+
+    expect(record).toMatchObject({ module: 'digitalrx', recordType: 'pharmacy_inbox' });
+    await expect(service.listOperationalRecordsByResident({ user: t3User }, 'resident-1', 'digitalrx')).resolves.toHaveLength(1);
+    await expect(service.updateOperationalRecord({ user: { ...t3User, permissions: ['resident:write'] } }, record.id, { status: 'resolved' })).resolves.toMatchObject({ status: 'resolved' });
+    await expect(repositories.auditLogs.listByEntity('OperationalRecord', record.id)).resolves.toHaveLength(2);
   });
 
   it('denies resident creation across facility boundaries', async () => {
