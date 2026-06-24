@@ -33,6 +33,9 @@ The current API layer is framework-agnostic. It defines handler contracts that c
   - `/healthz` endpoint
   - `/openapi.json` endpoint
   - JSON parsing and error responses
+- `src/server/index.ts`
+  - executable backend entrypoint
+  - memory/PostgreSQL service composition
 
 ## Initial routes
 
@@ -69,3 +72,9 @@ Mount these handlers into a real HTTP runtime and add:
 - integration tests against a test database
 
 The Node HTTP adapter is available as a dependency-free starting point for the deployable backend service.
+
+Run the current backend API in development:
+
+```bash
+npm run api:dev
+```

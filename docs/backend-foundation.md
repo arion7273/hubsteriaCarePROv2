@@ -27,6 +27,7 @@ Backend-facing TypeScript contracts live in `src/domain`.
 - `backend-service.ts` provides tenant-safe service operations that enforce permissions and append audit events.
 - `auth-service.ts` provides login, MFA verification, logout, and password reset request workflows with audit writes.
 - `src/api` provides framework-agnostic API handler contracts for auth, tenant admin, and feature registry operations.
+- `src/server` composes runtime services and starts the Node API server.
 - `database/migrations` contains the initial PostgreSQL schema and permission seed data.
 
 ## Access rules
@@ -76,3 +77,13 @@ Next, choose a backend stack and implement repository adapters:
 - Integration workers for notifications, DigitalRX, print, and AI
 
 See `docs/database-foundation.md` for the schema, tenant query rules, and audit log persistence requirements.
+
+## Local API runtime
+
+For local backend development:
+
+```bash
+npm run api:dev
+```
+
+The runtime defaults to in-memory repositories unless `BACKEND_REPOSITORY_MODE=postgres` is configured.

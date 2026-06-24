@@ -51,6 +51,7 @@ describe('production readiness workflow', () => {
     expect(backend).toContain('Server-side authentication');
     expect(backend).toContain('Tenant-isolated data access');
     expect(backend).toContain('Immutable audit logs');
+    expect(backend).toContain('npm run api:dev');
     expect(api).toContain('POST /auth/login');
     expect(api).toContain('Protected routes require a valid session');
     expect(api).toContain('OpenAPI documentation');
@@ -60,6 +61,7 @@ describe('production readiness workflow', () => {
     expect(api).toContain('Request logs must redact passwords');
     expect(api).toContain('Node HTTP runtime adapter');
     expect(api).toContain('/openapi.json');
+    expect(api).toContain('npm run api:dev');
     expect(auth).toContain('MFA verification');
     expect(auth).toContain('Plain-text passwords must never be stored');
     expect(auth).toContain('Sessions must expire and be revocable');
@@ -83,8 +85,9 @@ describe('production readiness workflow', () => {
 
     expect(envExample).toContain('VITE_APP_ENV=production');
     expect(envExample).toContain('VITE_APP_SUPPORT_EMAIL=');
-    expect(envExample).not.toContain('password');
-    expect(envExample).not.toContain('secret');
+    expect(envExample).toContain('DEMO_AUTH_PASSWORD=change-me-for-local-demo-only');
+    expect(envExample).not.toContain('Ariana');
+    expect(envExample).not.toContain('sk_');
     expect(codeowners).toContain('@arion7273');
     expect(gitignore).toContain('!.env.example');
   });
