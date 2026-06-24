@@ -41,6 +41,7 @@ describe('production readiness workflow', () => {
     const api = readFileSync('docs/api-foundation.md', 'utf8');
     const auth = readFileSync('docs/authentication-foundation.md', 'utf8');
     const database = readFileSync('docs/database-foundation.md', 'utf8');
+    const postgresIntegration = readFileSync('docs/postgres-integration-tests.md', 'utf8');
     const postgresAdapters = readFileSync('docs/postgres-adapters.md', 'utf8');
     const hipaa = readFileSync('docs/hipaa-security-readiness.md', 'utf8');
     const goLive = readFileSync('docs/go-live-checklist.md', 'utf8');
@@ -82,6 +83,8 @@ describe('production readiness workflow', () => {
     expect(database).toContain('schema_migrations');
     expect(postgresAdapters).toContain('parameterized SQL builders');
     expect(postgresAdapters).toContain('row-to-domain mappers');
+    expect(postgresIntegration).toContain('RUN_POSTGRES_INTEGRATION=true');
+    expect(postgresIntegration).toContain('npm run test:integration');
     expect(hipaa).toContain('Administrative safeguards');
     expect(hipaa).toContain('Technical safeguards');
     expect(goLive).toContain('Tenant isolation tests completed');

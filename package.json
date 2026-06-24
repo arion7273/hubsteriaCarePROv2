@@ -10,6 +10,7 @@
     "api:dev": "tsx src/server/index.ts",
     "db:migrate": "tsx src/server/migrate.ts",
     "test": "vitest run",
+    "test:integration": "RUN_POSTGRES_INTEGRATION=true vitest run src/integration",
     "test:watch": "vitest",
     "verify": "npm test && npm run build"
   },
