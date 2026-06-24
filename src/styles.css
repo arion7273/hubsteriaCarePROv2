@@ -1623,6 +1623,193 @@ p {
   white-space: nowrap;
 }
 
+.assessments-center {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.assessments-status {
+  display: grid;
+  gap: 0.2rem;
+  min-width: min(100%, 16rem);
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.assessments-status span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.assessments-status strong {
+  color: var(--primary-strong);
+}
+
+.assessment-metric-grid,
+.assessment-layout {
+  display: grid;
+  gap: 1rem;
+}
+
+.assessment-metric-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.assessment-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.assessment-metric-card,
+.assessment-type-panel,
+.assessment-panel,
+.assessment-template-list article,
+.builder-control-list article,
+.care-plan-list article,
+.suggestion-list article,
+.review-queue article {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.assessment-metric-card,
+.assessment-type-panel,
+.assessment-panel {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.assessment-metric-card span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.assessment-metric-card strong {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  letter-spacing: -0.05em;
+}
+
+.assessment-metric-card small {
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.assessment-type-grid,
+.assessment-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.assessment-type-grid span,
+.assessment-chip-row span {
+  border-radius: 999px;
+  background: #e8f5f4;
+  color: var(--primary-strong);
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 0.55rem 0.75rem;
+}
+
+.assessment-template-list,
+.builder-control-list,
+.care-plan-list,
+.suggestion-list,
+.review-queue {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.assessment-template-list article,
+.builder-control-list article,
+.care-plan-list article,
+.suggestion-list article,
+.review-queue article {
+  display: grid;
+  gap: 0.7rem;
+  padding: 0.9rem;
+  background: var(--surface);
+}
+
+.assessment-template-header,
+.care-plan-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.assessment-template-header span:not(.assessment-status-pill),
+.care-plan-header span,
+.review-queue span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.assessment-status-pill {
+  align-self: flex-start;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.assessment-status-pill.due,
+.assessment-status-pill.review {
+  background: #fff4da;
+  color: var(--warning);
+}
+
+.assessment-status-pill.in-progress {
+  background: #e8eef9;
+  color: #355985;
+}
+
+.assessment-status-pill.complete {
+  background: #ddf6ed;
+  color: var(--success);
+}
+
+.builder-control-list p,
+.care-plan-list p,
+.suggestion-list p {
+  margin-bottom: 0;
+}
+
+.care-plan-list ul {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.suggestion-list article {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+}
+
+.suggestion-list article > span {
+  border-radius: 999px;
+  background: #ddf6ed;
+  color: var(--success);
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 0.45rem 0.62rem;
+  text-transform: uppercase;
+}
+
+.review-queue {
+  margin-top: 1rem;
+}
+
 .role-grid,
 .roadmap-grid {
   display: grid;
@@ -1770,6 +1957,7 @@ summary {
   }
 
   .metric-grid,
+  .assessment-metric-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -1786,6 +1974,7 @@ summary {
   }
 
   .resident-layout,
+  .assessment-layout,
   .module-connection-panel,
   .notification-layout,
   .notification-bottom-grid,
@@ -1824,6 +2013,7 @@ summary {
   }
 
   .metric-grid,
+  .assessment-metric-grid,
   .configuration-area-grid,
   .notification-channel-grid,
   .notification-metric-grid,
@@ -1856,6 +2046,8 @@ summary {
   }
 
   .history-list article,
+  .assessment-template-header,
+  .care-plan-header,
   .configuration-area-header,
   .print-template-header,
   .rule-header,
@@ -1899,6 +2091,7 @@ summary {
   }
 
   .batch-list article,
+  .suggestion-list article,
   .configuration-audit-list article,
   .toggle-list article,
   .preview-sheet dl {

@@ -13,6 +13,16 @@ import {
   featureToggles
 } from './data/configuration';
 import {
+  assessmentBuilderControls,
+  assessmentIntegrationRequirements,
+  assessmentMetrics,
+  assessmentReviewQueue,
+  assessmentTemplates,
+  assessmentTypes,
+  autoCarePlanSuggestions,
+  carePlanItems
+} from './data/assessments';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -135,11 +145,15 @@ function App() {
             'Notification Center Pro',
             'Print Center Pro',
             'Configuration Center',
+            'Assessments & Care Plans',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
           ].map((item) => (
-            <a href={`#${item.toLowerCase().replaceAll(' ', '-')}`} key={item}>
+            <a
+              href={item === 'Assessments & Care Plans' ? '#assessments-care-plans' : `#${item.toLowerCase().replaceAll(' ', '-')}`}
+              key={item}
+            >
               {item}
             </a>
           ))}
@@ -148,8 +162,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-5.5</strong>
-            <span>Configuration active</span>
+            <strong>Phase 0-6</strong>
+            <span>Clinical foundation active</span>
           </div>
         </div>
       </aside>
@@ -185,6 +199,9 @@ function App() {
               </a>
               <a className="button secondary" href="#configuration-center">
                 Open Configuration
+              </a>
+              <a className="button secondary" href="#assessments-care-plans">
+                Open Assessments
               </a>
             </div>
           </div>
@@ -668,6 +685,163 @@ function App() {
             <ul className="check-list">
               {configurationGuardrails.map((guardrail) => (
                 <li key={guardrail}>{guardrail}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className="content-card assessments-center" id="assessments-care-plans" aria-labelledby="assessments-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 6</p>
+              <h2 id="assessments-title">Assessments & Care Plans Engine</h2>
+              <p>
+                Comprehensive assessment and care planning for assisted living, RCFE, memory care, and group
+                home workflows, connected to resident records, print, notifications, configuration, and audit.
+              </p>
+            </div>
+            <div className="assessments-status">
+              <span>Clinical engine</span>
+              <strong>Resident-linked</strong>
+            </div>
+          </div>
+
+          <div className="assessment-metric-grid">
+            {assessmentMetrics.map((metric) => (
+              <article className="assessment-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="assessment-type-panel">
+            <div className="card-heading">
+              <span>Assessment Center</span>
+              <strong>Supported assessment types</strong>
+            </div>
+            <div className="assessment-type-grid" aria-label="Assessment types">
+              {assessmentTypes.map((type) => (
+                <span key={type}>{type}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="assessment-layout">
+            <div className="assessment-panel">
+              <div className="card-heading">
+                <span>Templates and scheduler</span>
+                <strong>Assessment templates</strong>
+              </div>
+              <div className="assessment-template-list">
+                {assessmentTemplates.map((template) => (
+                  <article key={template.name}>
+                    <div className="assessment-template-header">
+                      <div>
+                        <strong>{template.name}</strong>
+                        <span>
+                          {template.category} | {template.cadence}
+                        </span>
+                      </div>
+                      <span className={`assessment-status-pill ${template.status.toLowerCase().replaceAll(' ', '-')}`}>
+                        {template.status}
+                      </span>
+                    </div>
+                    <div className="assessment-chip-row">
+                      {template.sections.map((section) => (
+                        <span key={section}>{section}</span>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="assessment-panel">
+              <div className="card-heading">
+                <span>Assessment Builder</span>
+                <strong>Configurable clinical logic</strong>
+              </div>
+              <div className="builder-control-list" aria-label="Assessment builder controls">
+                {assessmentBuilderControls.map((control) => (
+                  <article key={control.name}>
+                    <strong>{control.name}</strong>
+                    <p>{control.description}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="assessment-layout">
+            <div className="assessment-panel">
+              <div className="card-heading">
+                <span>Care Plan Center</span>
+                <strong>Goals, interventions, outcomes</strong>
+              </div>
+              <div className="care-plan-list">
+                {carePlanItems.map((plan) => (
+                  <article key={plan.goal}>
+                    <div className="care-plan-header">
+                      <strong>{plan.goal}</strong>
+                      <span>{plan.reviewDate}</span>
+                    </div>
+                    <ul>
+                      {plan.interventions.map((intervention) => (
+                        <li key={intervention}>{intervention}</li>
+                      ))}
+                    </ul>
+                    <p>
+                      Outcome: {plan.outcome} | Assigned: {plan.assignedStaff}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="assessment-panel">
+              <div className="card-heading">
+                <span>Auto care plan suggestions</span>
+                <strong>Generated from scores</strong>
+              </div>
+              <div className="suggestion-list" aria-label="Auto care plan suggestions">
+                {autoCarePlanSuggestions.map((suggestion) => (
+                  <article key={suggestion.suggestion}>
+                    <span>{suggestion.confidence}</span>
+                    <div>
+                      <strong>{suggestion.source}</strong>
+                      <p>{suggestion.suggestion}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              <div className="review-queue" aria-label="Assessment review queue">
+                <div className="card-heading">
+                  <span>Review Queue</span>
+                  <strong>Scheduler follow-up</strong>
+                </div>
+                {assessmentReviewQueue.map((item) => (
+                  <article key={`${item.resident}-${item.assessment}`}>
+                    <strong>{item.resident}</strong>
+                    <span>
+                      {item.assessment} | {item.due} | {item.reviewer}
+                    </span>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="assessment-panel integration-panel">
+            <div className="card-heading">
+              <span>Assessment integration contract</span>
+              <strong>Resident, print, notification, configuration, and audit hooks</strong>
+            </div>
+            <ul className="check-list">
+              {assessmentIntegrationRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
               ))}
             </ul>
           </div>

@@ -243,4 +243,48 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/Every configuration change creates an immutable audit log record/i)).toBeInTheDocument();
     expect(screen.getByText(/Feature toggles support safe rollout, pilots, and future enterprise expansion/i)).toBeInTheDocument();
   });
+
+  it('renders Phase 6 Assessments & Care Plans clinical engine', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Assessments & Care Plans Engine' })).toBeInTheDocument();
+    expect(screen.getAllByText('Assessments Due').length).toBeGreaterThan(0);
+
+    const types = screen.getByLabelText('Assessment types');
+    ['Initial Assessment', 'Move-In Assessment', 'Fall Risk Assessment', 'Medication Assessment', 'Custom Assessments'].forEach(
+      (type) => {
+        expect(within(types).getByText(type)).toBeInTheDocument();
+      }
+    );
+
+    expect(screen.getAllByText('Fall Risk Assessment').length).toBeGreaterThan(0);
+    expect(screen.getByText(/Quarterly and after incident/i)).toBeInTheDocument();
+    expect(screen.getAllByText('Move-In Assessment').length).toBeGreaterThan(0);
+  });
+
+  it('supports assessment builder controls, care plans, suggestions, and integration hooks', () => {
+    render(<App />);
+
+    const builder = screen.getByLabelText('Assessment builder controls');
+    ['Questions', 'Sections', 'Conditional Logic', 'Scoring Rules', 'Required Fields', 'Electronic Signatures'].forEach(
+      (control) => {
+        expect(within(builder).getByText(control)).toBeInTheDocument();
+      }
+    );
+
+    expect(screen.getByText('Reduce fall risk during evening shift')).toBeInTheDocument();
+    expect(screen.getByText(/Outcome: No falls for 30 consecutive days/i)).toBeInTheDocument();
+
+    const suggestions = screen.getByLabelText('Auto care plan suggestions');
+    expect(within(suggestions).getByText('Add supervised transfers during evening shift')).toBeInTheDocument();
+    expect(within(suggestions).getAllByText('High').length).toBeGreaterThan(0);
+
+    const reviewQueue = screen.getByLabelText('Assessment review queue');
+    expect(within(reviewQueue).getByText('Maria Alvarez')).toBeInTheDocument();
+    expect(within(reviewQueue).getByText(/Wellness Director/i)).toBeInTheDocument();
+
+    expect(screen.getByText(/Resident Command Center displays active care plans/i)).toBeInTheDocument();
+    expect(screen.getByText(/Print Center Pro generates assessment reports, care plans, and progress reports/i)).toBeInTheDocument();
+    expect(screen.getByText(/Notification Center Pro alerts staff when assessments are due/i)).toBeInTheDocument();
+  });
 });

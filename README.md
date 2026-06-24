@@ -12,6 +12,7 @@ This repository currently implements the first product foundation milestone:
 - Phase 4 Notification Center Pro with channels, templates, routing, escalation rules, delivery/read tracking, and role-based targeting
 - Phase 5 Print Center Pro with PDF/CSV/Excel output, template builder, preview, CRUD templates, batch printing, and integration contracts
 - Phase 5.5 Configuration Center with centralized roles, permissions, templates, DigitalRX settings, facility settings, branding, feature toggles, and audit guardrails
+- Phase 6 Assessments & Care Plans Engine with assessment templates, scheduler, builder controls, scoring-driven suggestions, review queues, and resident-linked care plans
 - Roadmap registry for phases 0-20
 - Regression tests for the foundation shell
 

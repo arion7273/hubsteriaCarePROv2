@@ -266,6 +266,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['Tenant Isolation Guard', 'Audit Log Contract'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Assessment Builder',
+    module: 'Assessments & Care Plans',
+    status: 'registered',
+    dependencies: ['Configuration Center', 'Resident Command Center', 'Audit Log Contract'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Care Plan Center',
+    module: 'Assessments & Care Plans',
+    status: 'registered',
+    dependencies: ['Assessment Builder', 'Notification Center Integration', 'Print Center Integration'],
+    version: '0.1.0'
   }
 ];
 

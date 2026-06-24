@@ -128,7 +128,7 @@ export const clinicalOperationsPhases: Phase[] = [
   {
     id: '6',
     title: 'Assessments & Care Plans Engine',
-    status: 'future',
+    status: 'foundation',
     milestone: 'Clinical Planning',
     summary:
       'Assessment dashboards, templates, categories, scheduler, scoring, review queue, care plans, signatures, and care plan suggestions.',
