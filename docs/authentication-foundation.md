@@ -10,10 +10,12 @@ HubsteriaCarePRO authentication must be server-side before real production use.
 - Logout/session revocation
 - Password reset request
 - Audit events for auth actions
+- PBKDF2-SHA512 password hashing
+- Repository-backed credential verification
 
 ## Required production implementation
 
-- Password hashes must be stored only in the backend database or identity provider.
+- Password hashes must be stored only in `user_credentials` or a trusted identity provider.
 - Plain-text passwords must never be stored.
 - MFA is required for platform, organization, facility, and employee users.
 - Sessions must expire and be revocable.
@@ -23,7 +25,9 @@ HubsteriaCarePRO authentication must be server-side before real production use.
 
 ## Next implementation step
 
-Integrate an identity provider or implement secure credentials using:
+The current foundation includes PBKDF2-SHA512 credential hashing and repository-backed verification.
+
+Next, integrate an identity provider or complete production credential operations using:
 
 - Argon2id or equivalent password hashing
 - Managed secret storage

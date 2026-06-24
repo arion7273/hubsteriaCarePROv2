@@ -71,11 +71,13 @@ describe('production readiness workflow', () => {
     expect(api).toContain('/openapi.json');
     expect(api).toContain('npm run api:dev');
     expect(auth).toContain('MFA verification');
+    expect(auth).toContain('PBKDF2-SHA512 password hashing');
     expect(auth).toContain('Plain-text passwords must never be stored');
     expect(auth).toContain('Sessions must expire and be revocable');
     expect(database).toContain('PostgreSQL');
     expect(database).toContain('Tenant isolation rules');
     expect(database).toContain('`audit_logs` is append-only');
+    expect(database).toContain('user credential hashes');
     expect(database).toContain('npm run db:migrate');
     expect(database).toContain('schema_migrations');
     expect(postgresAdapters).toContain('parameterized SQL builders');
