@@ -1,0 +1,218 @@
+export type RoleScope = 'platform' | 'organization' | 'regional' | 'facility' | 'resident';
+
+export type RoleDefinition = {
+  tier: string;
+  name: string;
+  scope: RoleScope;
+  description: string;
+  canView: string[];
+  permissions: string[];
+  invitations: string[];
+  restrictions?: string[];
+};
+
+export type DashboardMetric = {
+  label: string;
+  value: string;
+  trend: string;
+  tone: 'primary' | 'success' | 'warning' | 'danger';
+};
+
+export type FeatureRegistryItem = {
+  featureName: string;
+  module: string;
+  status: 'registered' | 'planned' | 'gated';
+  dependencies: string[];
+  version: string;
+};
+
+export const masterBootstrapAccount = {
+  email: 'b094650@gmail.com',
+  credentialSource: 'deployment secret',
+  note:
+    'The initial T1 account is represented without storing a plain-text password in the client application.'
+};
+
+export const hierarchy: RoleDefinition[] = [
+  {
+    tier: 'T1',
+    name: 'Master Administrator',
+    scope: 'platform',
+    description: 'Full HubsteriaCarePRO platform command authority across every tenant and system surface.',
+    canView: [
+      'All organizations',
+      'All facilities',
+      'All users and employees',
+      'All residents',
+      'Billing and subscriptions',
+      'Platform audit logs',
+      'System health and API health'
+    ],
+    permissions: [
+      'CRUD organizations, facilities, users, employees, T2 administrators, and T3 administrators',
+      'Suspend organizations and facilities',
+      'Deactivate users',
+      'Transfer ownership',
+      'Manage subscription plans',
+      'Manage global settings',
+      'View global reports and platform analytics',
+      'Access Master Console'
+    ],
+    invitations: ['T2 Administrators', 'T3 Administrators', 'Employees']
+  },
+  {
+    tier: 'T2',
+    name: 'Organization Administrator',
+    scope: 'organization',
+    description: 'Organization-level command authority across all facilities within one tenant organization.',
+    canView: [
+      'Assigned organization',
+      'Facilities under organization',
+      'Employees',
+      'Residents',
+      'Billing',
+      'Compliance'
+    ],
+    permissions: [
+      'CRUD facilities',
+      'CRUD employees',
+      'CRUD T3 administrators',
+      'CRUD residents',
+      'Manage organization settings',
+      'View organization reports and analytics'
+    ],
+    invitations: ['T3 Administrators', 'Employees'],
+    restrictions: [
+      'Cannot view other organizations',
+      'Cannot modify T1 accounts',
+      'Cannot access global platform settings'
+    ]
+  },
+  {
+    tier: 'T2.5',
+    name: 'Regional Administrator',
+    scope: 'regional',
+    description: 'Future disabled role for regional directors overseeing grouped facilities inside an organization.',
+    canView: ['Assigned region', 'Assigned facilities', 'Regional employees', 'Regional residents', 'Regional compliance'],
+    permissions: [
+      'View regional analytics',
+      'Coordinate assigned facility performance',
+      'Manage regional workflows when enabled'
+    ],
+    invitations: ['Facility Administrators', 'Employees'],
+    restrictions: ['Disabled initially until larger organization rollout requires regional hierarchy']
+  },
+  {
+    tier: 'T3',
+    name: 'Facility Administrator',
+    scope: 'facility',
+    description: 'Facility command authority for single-site operations and daily care management.',
+    canView: [
+      'Facility residents',
+      'Facility employees',
+      'Facility compliance',
+      'Facility operations',
+      'Family messages',
+      'Open tickets'
+    ],
+    permissions: [
+      'CRUD residents',
+      'CRUD employees',
+      'Manage facility settings',
+      'Assign staff',
+      'Manage daily operations'
+    ],
+    invitations: ['Employees', 'Caregivers', 'Nurses', 'Medication Managers'],
+    restrictions: ['Cannot access other facilities', 'Cannot access organization administration', 'Cannot access platform administration']
+  },
+  {
+    tier: 'Employee',
+    name: 'Permission-Based Staff',
+    scope: 'resident',
+    description: 'Nurses, caregivers, medication managers, billing, providers, family members, residents, and support staff.',
+    canView: ['Only records allowed by assigned permissions and facility scope'],
+    permissions: [
+      'Permission-driven access to residents, tasks, ADLs, eMAR, notes, communication, billing, training, and support'
+    ],
+    invitations: [],
+    restrictions: ['No default cross-facility access', 'No default administrative access']
+  }
+];
+
+export const masterConsoleMetrics: DashboardMetric[] = [
+  { label: 'Organizations', value: '128', trend: '+12 this quarter', tone: 'primary' },
+  { label: 'Facilities', value: '642', trend: '98.9% online', tone: 'success' },
+  { label: 'Residents', value: '38.4k', trend: 'search target <1s', tone: 'primary' },
+  { label: 'Medication Compliance', value: '97.8%', trend: '+1.6%', tone: 'success' },
+  { label: 'Open Incidents', value: '214', trend: '42 need review', tone: 'warning' },
+  { label: 'System Health', value: '99.99%', trend: 'API healthy', tone: 'success' },
+  { label: 'MRR', value: '$1.84M', trend: '+8.2%', tone: 'primary' },
+  { label: 'DigitalRX Health', value: '99.3%', trend: '6 sync warnings', tone: 'warning' }
+];
+
+export const organizationMetrics: DashboardMetric[] = [
+  { label: 'Facility Count', value: '18', trend: '3 regions', tone: 'primary' },
+  { label: 'Resident Count', value: '1,246', trend: '92% occupancy', tone: 'success' },
+  { label: 'Employee Count', value: '518', trend: '41 on shift', tone: 'primary' },
+  { label: 'Assessments Due', value: '32', trend: '11 overdue', tone: 'warning' },
+  { label: 'Medication Compliance', value: '98.1%', trend: 'above target', tone: 'success' },
+  { label: 'Survey Readiness', value: '91', trend: '+4 points', tone: 'success' }
+];
+
+export const facilityMetrics: DashboardMetric[] = [
+  { label: 'Current Residents', value: '86', trend: '4 admissions today', tone: 'primary' },
+  { label: 'Med Pass Completion', value: '94%', trend: '7 pending', tone: 'warning' },
+  { label: 'Tasks Due', value: '128', trend: '21 overdue', tone: 'warning' },
+  { label: 'Staff On Shift', value: '23', trend: '2 callouts', tone: 'danger' },
+  { label: 'Family Messages', value: '17', trend: '5 unread', tone: 'primary' },
+  { label: 'Open Tickets', value: '4', trend: '1 escalated', tone: 'warning' }
+];
+
+export const featureRegistry: FeatureRegistryItem[] = [
+  {
+    featureName: 'Tenant Isolation Guard',
+    module: 'Security & Access',
+    status: 'registered',
+    dependencies: ['Organizations', 'Facilities', 'Roles', 'Permissions'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Audit Log Contract',
+    module: 'Compliance',
+    status: 'registered',
+    dependencies: ['Users', 'Facilities', 'Organizations'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Resident Command Center Access Rule',
+    module: 'Resident Core',
+    status: 'planned',
+    dependencies: ['Resident Profile', 'Timeline', 'Quick Actions'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Notification Center Integration',
+    module: 'Platform Services',
+    status: 'gated',
+    dependencies: ['Templates', 'Rules', 'Delivery Tracking'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Print Center Integration',
+    module: 'Platform Services',
+    status: 'gated',
+    dependencies: ['Templates', 'Preview', 'Batch Printing'],
+    version: '0.1.0'
+  }
+];
+
+export const auditRequirements = ['Create', 'Update', 'Delete', 'Suspend', 'Activate', 'Invite', 'Transfer'];
+
+export const globalRules = [
+  'Mobile-first forever across pages, dashboards, modals, reports, workflows, and print screens',
+  'No horizontal scrolling; responsive grids, card layouts, large typography, and touch-friendly controls',
+  'Dashboard target under 2 seconds, resident search under 1 second, medication actions under 1 second',
+  'Regression protection for authentication, residents, users, medications, notifications, printing, and reports',
+  'HIPAA privacy with strict organization, facility, role, and permission boundaries',
+  'Connector architecture for DigitalRX, HL7, FHIR, REST APIs, and webhooks'
+];
