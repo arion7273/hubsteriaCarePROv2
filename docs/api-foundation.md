@@ -28,6 +28,11 @@ The current API layer is framework-agnostic. It defines handler contracts that c
   - rate limiting middleware
   - CSRF middleware for cookie-backed unsafe requests
   - redacted request logging
+- `src/api/node-server.ts`
+  - Node HTTP runtime adapter
+  - `/healthz` endpoint
+  - `/openapi.json` endpoint
+  - JSON parsing and error responses
 
 ## Initial routes
 
@@ -62,3 +67,5 @@ Mount these handlers into a real HTTP runtime and add:
 - production logging
 - generated OpenAPI documentation publishing
 - integration tests against a test database
+
+The Node HTTP adapter is available as a dependency-free starting point for the deployable backend service.

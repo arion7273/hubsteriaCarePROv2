@@ -57,6 +57,8 @@ describe('production readiness workflow', () => {
     expect(api).toContain('Invalid request bodies must return `400`');
     expect(api).toContain('Rate-limited requests must return `429`');
     expect(api).toContain('Request logs must redact passwords');
+    expect(api).toContain('Node HTTP runtime adapter');
+    expect(api).toContain('/openapi.json');
     expect(auth).toContain('MFA verification');
     expect(auth).toContain('Plain-text passwords must never be stored');
     expect(auth).toContain('Sessions must expire and be revocable');
