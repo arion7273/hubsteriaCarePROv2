@@ -8,13 +8,14 @@ import type {
   FacilityRepository,
   FeatureRegistryRepository,
   MfaChallengeRepository,
+  OperationalRecordRepository,
   OrganizationRepository,
   PasswordResetRepository,
   ResidentRepository,
   UserCredentialRepository,
   UserRepository
 } from './repositories';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
+import type { AuthSession, BackgroundJob, Facility, MfaChallenge, OperationalRecord, Organization, PasswordResetRequest, Resident, User, UserCredential, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -136,6 +137,31 @@ function priorityValue(priority: BackgroundJob['priority']): number {
   return { low: 0, normal: 1, high: 2, critical: 3 }[priority];
 }
 
+export class InMemoryOperationalRecordRepository implements OperationalRecordRepository {
+  private readonly records = new Map<UUID, OperationalRecord>();
+
+  async getById(id: UUID): Promise<OperationalRecord | null> {
+    return this.records.get(id) ?? null;
+  }
+
+  async listByScope(scope: { organizationId: UUID; facilityId?: UUID; residentId?: UUID; module?: OperationalRecord['module'] }): Promise<OperationalRecord[]> {
+    return [...this.records.values()]
+      .filter(
+        (record) =>
+          record.organizationId === scope.organizationId &&
+          (!scope.facilityId || record.facilityId === scope.facilityId) &&
+          (!scope.residentId || record.residentId === scope.residentId) &&
+          (!scope.module || record.module === scope.module)
+      )
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  async save(record: OperationalRecord): Promise<OperationalRecord> {
+    this.records.set(record.id, record);
+    return record;
+  }
+}
+
 export class InMemoryAuditLogRepository implements AuditLogRepository {
   private readonly events: AuditEvent[] = [];
 
@@ -227,6 +253,7 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     userCredentials: new InMemoryUserCredentialRepository(),
     residents: new InMemoryResidentRepository(),
     backgroundJobs: new InMemoryBackgroundJobRepository(),
+    operationalRecords: new InMemoryOperationalRecordRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
     featureRegistry: new InMemoryFeatureRegistryRepository(),
     authSessions: new InMemoryAuthSessionRepository(),

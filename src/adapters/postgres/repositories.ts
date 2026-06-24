@@ -6,13 +6,14 @@ import type {
   FacilityRepository,
   FeatureRegistryRepository,
   MfaChallengeRepository,
+  OperationalRecordRepository,
   OrganizationRepository,
   PasswordResetRepository,
   ResidentRepository,
   UserCredentialRepository,
   UserRepository
 } from '../../domain/repositories';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UserCredential, UUID } from '../../domain/types';
+import type { AuthSession, BackgroundJob, Facility, MfaChallenge, OperationalRecord, Organization, PasswordResetRequest, Resident, RoleTier, User, UserCredential, UUID } from '../../domain/types';
 import {
   auditLogStatements,
   backgroundJobStatements,
@@ -20,6 +21,7 @@ import {
   facilityStatements,
   featureRegistryStatements,
   mfaChallengeStatements,
+  operationalRecordStatements,
   organizationStatements,
   passwordResetStatements,
   residentStatements,
@@ -33,6 +35,7 @@ import {
   mapFacilityRow,
   mapFeatureRow,
   mapMfaChallengeRow,
+  mapOperationalRecordRow,
   mapOrganizationRow,
   mapPasswordResetRequestRow,
   mapResidentRow,
@@ -135,6 +138,23 @@ export class PostgresBackgroundJobRepository implements BackgroundJobRepository 
   async listQueued(limit: number): Promise<BackgroundJob[]> { return (await this.client.query(backgroundJobStatements.listQueued(limit))).rows.map(mapBackgroundJobRow); }
   async listByScope(scope: { organizationId?: UUID; facilityId?: UUID; residentId?: UUID }): Promise<BackgroundJob[]> { return (await this.client.query(backgroundJobStatements.listByScope(scope))).rows.map(mapBackgroundJobRow); }
   async save(job: BackgroundJob): Promise<BackgroundJob> { return requiredFirst(await this.client.query(backgroundJobStatements.upsert(job)), mapBackgroundJobRow); }
+}
+
+export class PostgresOperationalRecordRepository implements OperationalRecordRepository {
+  constructor(private readonly client: PostgresClient) {}
+
+  async getById(id: UUID): Promise<OperationalRecord | null> {
+    return first(await this.client.query(operationalRecordStatements.selectById(id)), mapOperationalRecordRow);
+  }
+
+  async listByScope(scope: { organizationId: UUID; facilityId?: UUID; residentId?: UUID; module?: OperationalRecord['module'] }): Promise<OperationalRecord[]> {
+    const result = await this.client.query(operationalRecordStatements.listByScope(scope));
+    return result.rows.map(mapOperationalRecordRow);
+  }
+
+  async save(record: OperationalRecord): Promise<OperationalRecord> {
+    return requiredFirst(await this.client.query(operationalRecordStatements.upsert(record)), mapOperationalRecordRow);
+  }
 }
 
 export class PostgresAuditLogRepository implements AuditLogRepository {

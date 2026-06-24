@@ -68,6 +68,10 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - `POST /jobs/digitalrx`
 - `POST /jobs/ai`
 - `POST /jobs/workflow-actions`
+- `POST /operational-records`
+- `GET /operational-records`
+- `GET /operational-records/get`
+- `PATCH /operational-records`
 
 ## Security requirements
 
@@ -81,6 +85,7 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - User APIs must enforce organization scope and administrative permissions.
 - Background job APIs must enforce platform or tenant scope depending on job ownership.
 - Typed job producer APIs enqueue notification, print, DigitalRX, AI, and workflow work into the shared background queue.
+- Operational record APIs provide a tenant-scoped ledger for notification, print, DigitalRX, workflow, AI, and integration activity.
 - Background job processors must register handlers per job type and dead-letter jobs that cannot be handled after retries.
 - Invalid request bodies must return `400`.
 - Wrong methods must return `405`.

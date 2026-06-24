@@ -62,11 +62,13 @@ describe('production readiness workflow', () => {
     expect(api).toContain('POST /background-jobs');
     expect(api).toContain('POST /jobs/notifications');
     expect(api).toContain('POST /jobs/digitalrx');
+    expect(api).toContain('POST /operational-records');
     expect(api).toContain('Protected routes require a valid session');
     expect(api).toContain('Resident APIs must enforce organization and facility scope');
     expect(api).toContain('User APIs must enforce organization scope');
     expect(api).toContain('Background job APIs must enforce platform or tenant scope');
     expect(api).toContain('Typed job producer APIs enqueue notification, print, DigitalRX, AI, and workflow work');
+    expect(api).toContain('Operational record APIs provide a tenant-scoped ledger');
     expect(api).toContain('Background job processors must register handlers per job type');
     expect(api).toContain('OpenAPI documentation');
     expect(api).toContain('framework-agnostic dispatcher');
@@ -84,6 +86,7 @@ describe('production readiness workflow', () => {
     expect(database).toContain('Tenant isolation rules');
     expect(database).toContain('`audit_logs` is append-only');
     expect(database).toContain('user credential hashes');
+    expect(database).toContain('operational records');
     expect(database).toContain('npm run db:migrate');
     expect(database).toContain('schema_migrations');
     expect(postgresAdapters).toContain('parameterized SQL builders');

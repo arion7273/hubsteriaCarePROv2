@@ -1,5 +1,6 @@
 import {
   completeBackgroundJobHandler,
+  createOperationalRecordHandler,
   createFacilityHandler,
   enqueueBackgroundJobHandler,
   enqueueAiGenerationJobHandler,
@@ -12,11 +13,13 @@ import {
   createResidentHandler,
   createUserHandler,
   getFacilityHandler,
+  getOperationalRecordHandler,
   getOrganizationHandler,
   getResidentHandler,
   listFeaturesHandler,
   listFacilitiesHandler,
   listOrganizationsHandler,
+  listOperationalRecordsHandler,
   listResidentsHandler,
   listUsersHandler,
   leaseBackgroundJobsHandler,
@@ -26,6 +29,7 @@ import {
   passwordResetHandler,
   registerFeatureHandler,
   updateFacilityHandler,
+  updateOperationalRecordHandler,
   updateOrganizationHandler,
   updateResidentHandler,
   updateUserHandler,
@@ -39,6 +43,7 @@ import { apiRoutes } from './routes';
 import {
   isCompleteBackgroundJobBody,
   isCreateFacilityBody,
+  isCreateOperationalRecordBody,
   isEnqueueBackgroundJobBody,
   isEnqueueAiGenerationJobBody,
   isEnqueueDigitalRxSyncJobBody,
@@ -50,6 +55,7 @@ import {
   isCreateResidentBody,
   isCreateUserBody,
   isUpdateFacilityBody,
+  isUpdateOperationalRecordBody,
   isUpdateOrganizationBody,
   isLoginBody,
   isPasswordResetBody,
@@ -196,7 +202,11 @@ const routeConfigs: RouteConfig[] = [
   { method: 'POST', path: '/jobs/print', validate: isEnqueuePrintJobBody, handler: enqueuePrintJobHandler as RouteHandler },
   { method: 'POST', path: '/jobs/digitalrx', validate: isEnqueueDigitalRxSyncJobBody, handler: enqueueDigitalRxSyncJobHandler as RouteHandler },
   { method: 'POST', path: '/jobs/ai', validate: isEnqueueAiGenerationJobBody, handler: enqueueAiGenerationJobHandler as RouteHandler },
-  { method: 'POST', path: '/jobs/workflow-actions', validate: isEnqueueWorkflowActionJobBody, handler: enqueueWorkflowActionJobHandler as RouteHandler }
+  { method: 'POST', path: '/jobs/workflow-actions', validate: isEnqueueWorkflowActionJobBody, handler: enqueueWorkflowActionJobHandler as RouteHandler },
+  { method: 'POST', path: '/operational-records', validate: isCreateOperationalRecordBody, handler: createOperationalRecordHandler as RouteHandler },
+  { method: 'GET', path: '/operational-records', handler: listOperationalRecordsHandler },
+  { method: 'GET', path: '/operational-records/get', handler: getOperationalRecordHandler },
+  { method: 'PATCH', path: '/operational-records', validate: isUpdateOperationalRecordBody, handler: updateOperationalRecordHandler as RouteHandler }
 ];
 
 export function createApiRouter(services: ApiServices, middlewares: ApiMiddleware[] = []) {

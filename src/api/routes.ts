@@ -143,5 +143,9 @@ export const apiRoutes: ApiRouteDefinition[] = [
   { method: 'POST', path: '/jobs/print', authRequired: true, description: 'Enqueue print job' },
   { method: 'POST', path: '/jobs/digitalrx', authRequired: true, description: 'Enqueue DigitalRX sync job' },
   { method: 'POST', path: '/jobs/ai', authRequired: true, description: 'Enqueue AI generation job' },
-  { method: 'POST', path: '/jobs/workflow-actions', authRequired: true, description: 'Enqueue workflow action job' }
+  { method: 'POST', path: '/jobs/workflow-actions', authRequired: true, description: 'Enqueue workflow action job' },
+  { method: 'POST', path: '/operational-records', authRequired: true, description: 'Create operational integration record' },
+  { method: 'GET', path: '/operational-records', authRequired: true, description: 'List operational records by scope' },
+  { method: 'GET', path: '/operational-records/get', authRequired: true, description: 'Get operational record' },
+  { method: 'PATCH', path: '/operational-records', authRequired: true, description: 'Update operational record' }
 ];

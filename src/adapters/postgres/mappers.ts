@@ -1,6 +1,6 @@
 import type { RegisteredFeature } from '../../domain';
 import type { AuditEvent } from '../../domain/audit';
-import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User, UserCredential } from '../../domain/types';
+import type { AuthSession, BackgroundJob, Facility, MfaChallenge, OperationalRecord, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User, UserCredential } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -63,6 +63,22 @@ export function mapBackgroundJobRow(row: PostgresRow): BackgroundJob {
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
     lastError: row.last_error ? String(row.last_error) : undefined
+  };
+}
+
+export function mapOperationalRecordRow(row: PostgresRow): OperationalRecord {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: row.facility_id ? String(row.facility_id) : undefined,
+    residentId: row.resident_id ? String(row.resident_id) : undefined,
+    module: String(row.module) as OperationalRecord['module'],
+    recordType: String(row.record_type),
+    status: String(row.status) as OperationalRecord['status'],
+    title: String(row.title),
+    payload: typeof row.payload === 'object' && row.payload !== null ? (row.payload as Record<string, unknown>) : {},
+    createdAt: String(row.created_at),
+    updatedAt: String(row.updated_at)
   };
 }
 
