@@ -28,7 +28,9 @@ import type {
   BackgroundJob,
   CarePlan,
   CareTask,
+  ComplianceIssue,
   Facility,
+  Incident,
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
@@ -41,7 +43,6 @@ import type {
   UserCredential,
   UUID
 } from '../../domain/types';
-import type { AuthSession, ComplianceIssue, Facility, Incident, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UUID } from '../../domain/types';
 import {
   assessmentStatements,
   adlEntryStatements,
@@ -55,8 +56,6 @@ import {
   medicationAdministrationStatements,
   medicationOrderStatements,
   complianceIssueStatements,
-  facilityStatements,
-  featureRegistryStatements,
   incidentStatements,
   mfaChallengeStatements,
   organizationStatements,
@@ -79,8 +78,6 @@ import {
   mapMedicationAdministrationRow,
   mapMedicationOrderRow,
   mapComplianceIssueRow,
-  mapFacilityRow,
-  mapFeatureRow,
   mapIncidentRow,
   mapMfaChallengeRow,
   mapOrganizationRow,
@@ -252,6 +249,8 @@ export class PostgresMedicationAdministrationRepository implements MedicationAdm
   constructor(private readonly client: PostgresClient) {}
   async listByResident(residentId: UUID): Promise<MedicationAdministration[]> { return (await this.client.query(medicationAdministrationStatements.listByResident(residentId))).rows.map(mapMedicationAdministrationRow); }
   async save(administration: MedicationAdministration): Promise<MedicationAdministration> { return requiredFirst(await this.client.query(medicationAdministrationStatements.insert(administration)), mapMedicationAdministrationRow); }
+}
+
 export class PostgresIncidentRepository implements IncidentRepository {
   constructor(private readonly client: PostgresClient) {}
   async getById(id: UUID): Promise<Incident | null> { return first(await this.client.query(incidentStatements.selectById(id)), mapIncidentRow); }

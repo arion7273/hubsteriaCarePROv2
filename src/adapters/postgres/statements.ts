@@ -6,7 +6,9 @@ import type {
   BackgroundJob,
   CarePlan,
   CareTask,
+  ComplianceIssue,
   Facility,
+  Incident,
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
@@ -19,7 +21,6 @@ import type {
   UserCredential,
   UUID
 } from '../../domain';
-import type { AuditEvent, AuthSession, ComplianceIssue, Facility, Incident, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -389,6 +390,9 @@ export const medicationAdministrationStatements = {
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
       RETURNING *
     `, values: [administration.id, administration.organizationId, administration.facilityId, administration.residentId, administration.medicationOrderId, administration.action, administration.reason ?? null, administration.outcome ?? null, administration.administeredAt, administration.administeredBy] };
+  }
+};
+
 export const incidentStatements = {
   selectById(id: UUID): SqlStatement { return { text: 'SELECT * FROM incidents WHERE id = $1', values: [id] }; },
   listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM incidents WHERE resident_id = $1 ORDER BY occurred_at DESC', values: [residentId] }; },

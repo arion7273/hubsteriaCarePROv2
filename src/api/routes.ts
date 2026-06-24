@@ -191,6 +191,7 @@ export const apiRoutes: ApiRouteDefinition[] = [
     path: '/medication-administrations',
     authRequired: true,
     description: 'List medication administrations by resident'
+  },
   {
     method: 'POST',
     path: '/incidents',

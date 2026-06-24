@@ -6,7 +6,9 @@ import type {
   BackgroundJob,
   CarePlan,
   CareTask,
+  ComplianceIssue,
   Facility,
+  Incident,
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
@@ -20,7 +22,6 @@ import type {
   UserCredential
 } from '../../domain/types';
 import type { AdlEntry } from '../../domain/types';
-import type { AuthSession, ComplianceIssue, Facility, Incident, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -157,7 +158,6 @@ export function mapServicePlanRow(row: PostgresRow): ServicePlanRecord {
 }
 
 export function mapMedicationOrderRow(row: PostgresRow): MedicationOrder {
-export function mapIncidentRow(row: PostgresRow): Incident {
   return {
     id: String(row.id),
     organizationId: String(row.organization_id),
@@ -173,6 +173,26 @@ export function mapIncidentRow(row: PostgresRow): Incident {
 }
 
 export function mapMedicationAdministrationRow(row: PostgresRow): MedicationAdministration {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: String(row.resident_id),
+    medicationOrderId: String(row.medication_order_id),
+    action: String(row.action) as MedicationAdministration['action'],
+    reason: row.reason ? String(row.reason) : undefined,
+    outcome: row.outcome ? String(row.outcome) : undefined,
+    administeredAt: String(row.administered_at),
+    administeredBy: String(row.administered_by)
+  };
+}
+
+export function mapIncidentRow(row: PostgresRow): Incident {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: String(row.resident_id),
     type: String(row.type) as Incident['type'],
     severity: String(row.severity) as Incident['severity'],
     status: String(row.status) as Incident['status'],
@@ -190,13 +210,6 @@ export function mapComplianceIssueRow(row: PostgresRow): ComplianceIssue {
     id: String(row.id),
     organizationId: String(row.organization_id),
     facilityId: String(row.facility_id),
-    residentId: String(row.resident_id),
-    medicationOrderId: String(row.medication_order_id),
-    action: String(row.action) as MedicationAdministration['action'],
-    reason: row.reason ? String(row.reason) : undefined,
-    outcome: row.outcome ? String(row.outcome) : undefined,
-    administeredAt: String(row.administered_at),
-    administeredBy: String(row.administered_by)
     residentId: row.resident_id ? String(row.resident_id) : undefined,
     issue: String(row.issue),
     severity: String(row.severity) as ComplianceIssue['severity'],

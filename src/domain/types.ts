@@ -107,7 +107,6 @@ export type WorkflowActionJobInput = {
 };
 
 export type Assessment = {
-export type Incident = {
   id: UUID;
   organizationId: UUID;
   facilityId: UUID;
@@ -191,6 +190,13 @@ export type MedicationAdministration = {
   outcome?: string;
   administeredAt: string;
   administeredBy: UUID;
+};
+
+export type Incident = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
   type: 'fall' | 'injury' | 'medication_error' | 'behavioral_event' | 'elopement' | 'infection_event';
   severity: 'info' | 'warning' | 'critical';
   status: 'open' | 'investigating' | 'corrective_action' | 'resolved';

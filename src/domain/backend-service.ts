@@ -12,6 +12,8 @@ import type {
   CareTask,
   DigitalRxSyncJobInput,
   Facility,
+  Incident,
+  ComplianceIssue,
   MedicationAdministration,
   MedicationOrder,
   NotificationJobInput,
@@ -23,7 +25,6 @@ import type {
   UUID,
   WorkflowActionJobInput
 } from './types';
-import type { AccessContext, ComplianceIssue, Facility, Incident, Organization, Resident, User, UUID } from './types';
 
 export type IdFactory = () => UUID;
 export type Clock = () => Date;
@@ -552,7 +553,6 @@ export class BackendFoundationService {
   }
 
   async createAssessment(context: AccessContext, input: Omit<Assessment, 'id'>): Promise<Assessment> {
-  async createIncident(context: AccessContext, input: Omit<Incident, 'id'>): Promise<Incident> {
     const resident = await this.getResident(context, input.residentId);
     const decision = requirePermission(
       context,
@@ -727,11 +727,23 @@ export class BackendFoundationService {
   async listMedicationAdministrationsByResident(context: AccessContext, residentId: UUID): Promise<MedicationAdministration[]> {
     await this.getResident(context, residentId);
     return this.repositories.medicationAdministrations.listByResident(residentId);
+  }
+
+  async createIncident(context: AccessContext, input: Omit<Incident, 'id'>): Promise<Incident> {
+    const resident = await this.getResident(context, input.residentId);
+    const decision = requirePermission(
+      context,
+      { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id },
       'resident:write'
     );
     assertAllowed(decision);
     const incident = await this.repositories.incidents.save({ id: this.createId(), ...input });
-    await this.auditScopedEntity(context, 'Incident', incident.id, incident, incident.organizationId, incident.facilityId, incident.residentId);
+    await this.auditEntity(context, 'Incident', incident.id, incident, {
+      scope: 'resident',
+      organizationId: incident.organizationId,
+      facilityId: incident.facilityId,
+      residentId: incident.residentId
+    });
     return incident;
   }
 
@@ -756,7 +768,12 @@ export class BackendFoundationService {
     );
     assertAllowed(decision);
     const saved = await this.repositories.incidents.save({ ...existing, ...updates, id: existing.id });
-    await this.auditScopedEntity(context, 'Incident', saved.id, saved, saved.organizationId, saved.facilityId, saved.residentId, existing);
+    await this.auditEntity(context, 'Incident', saved.id, saved, {
+      scope: 'resident',
+      organizationId: saved.organizationId,
+      facilityId: saved.facilityId,
+      residentId: saved.residentId
+    }, existing);
     return saved;
   }
 
@@ -764,7 +781,12 @@ export class BackendFoundationService {
     const decision = requirePermission(context, { scope: 'facility', organizationId: input.organizationId, facilityId: input.facilityId }, 'facility:manage');
     assertAllowed(decision);
     const issue = await this.repositories.complianceIssues.save({ id: this.createId(), ...input });
-    await this.auditScopedEntity(context, 'ComplianceIssue', issue.id, issue, issue.organizationId, issue.facilityId, issue.residentId);
+    await this.auditEntity(context, 'ComplianceIssue', issue.id, issue, {
+      scope: issue.residentId ? 'resident' : 'facility',
+      organizationId: issue.organizationId,
+      facilityId: issue.facilityId,
+      residentId: issue.residentId
+    });
     return issue;
   }
 
@@ -865,19 +887,13 @@ export class BackendFoundationService {
   }
 
   private async auditEntity(
-  private async auditScopedEntity(
     context: AccessContext,
     entityType: string,
     entityId: UUID,
     afterState: unknown,
-    scope: { scope: 'resident'; organizationId: UUID; facilityId: UUID; residentId: UUID },
+    scope: { scope: 'resident' | 'facility'; organizationId: UUID; facilityId: UUID; residentId?: UUID },
     beforeState: unknown = null
   ) {
-    organizationId: UUID,
-    facilityId: UUID,
-    residentId?: UUID,
-    beforeState: unknown = null
-  ): Promise<void> {
     await this.repositories.auditLogs.append(createAuditEvent({
       id: this.createId(),
       action: beforeState ? 'update' : 'create',
@@ -886,7 +902,6 @@ export class BackendFoundationService {
       entityType,
       entityId,
       scope,
-      scope: { scope: residentId ? 'resident' : 'facility', organizationId, facilityId, residentId },
       beforeState,
       afterState,
       now: this.clock()

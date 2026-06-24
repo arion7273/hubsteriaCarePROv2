@@ -9,8 +9,6 @@ import type {
   BackendRepositories,
   CarePlanRepository,
   CareTaskRepository,
-  FacilityRepository,
-  FeatureRegistryRepository,
   MedicationAdministrationRepository,
   MedicationOrderRepository,
   ComplianceIssueRepository,
@@ -32,7 +30,9 @@ import type {
   BackgroundJob,
   CarePlan,
   CareTask,
+  ComplianceIssue,
   Facility,
+  Incident,
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
@@ -44,7 +44,6 @@ import type {
   UserCredential,
   UUID
 } from './types';
-import type { AuthSession, ComplianceIssue, Facility, Incident, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -254,6 +253,9 @@ export class InMemoryMedicationAdministrationRepository implements MedicationAdm
   async save(administration: MedicationAdministration): Promise<MedicationAdministration> {
     this.administrations.set(administration.id, administration);
     return administration;
+  }
+}
+
 export class InMemoryIncidentRepository implements IncidentRepository {
   private readonly incidents = new Map<UUID, Incident>();
   async getById(id: UUID): Promise<Incident | null> { return this.incidents.get(id) ?? null; }

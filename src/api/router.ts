@@ -260,7 +260,7 @@ const routeConfigs: RouteConfig[] = [
   { method: 'POST', path: '/medication-orders', validate: isCreateMedicationOrderBody, handler: createMedicationOrderHandler as RouteHandler },
   { method: 'GET', path: '/medication-orders', handler: listMedicationOrdersHandler },
   { method: 'POST', path: '/medication-administrations', validate: isRecordMedicationAdministrationBody, handler: recordMedicationAdministrationHandler as RouteHandler },
-  { method: 'GET', path: '/medication-administrations', handler: listMedicationAdministrationsHandler }
+  { method: 'GET', path: '/medication-administrations', handler: listMedicationAdministrationsHandler },
   { method: 'POST', path: '/incidents', validate: isCreateIncidentBody, handler: createIncidentHandler as RouteHandler },
   { method: 'GET', path: '/incidents', handler: listIncidentsHandler },
   { method: 'PATCH', path: '/incidents', validate: isUpdateIncidentBody, handler: updateIncidentHandler as RouteHandler },

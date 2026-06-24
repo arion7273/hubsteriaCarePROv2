@@ -10,8 +10,10 @@ import {
   type BackendRepositories,
   type CarePlan,
   type CareTask,
+  type ComplianceIssue,
   type DigitalRxSyncJobInput,
   type Facility,
+  type Incident,
   type MedicationAdministration,
   type MedicationOrder,
   type NotificationJobInput,
@@ -23,7 +25,6 @@ import {
   type UUID,
   type WorkflowActionJobInput
 } from '../domain';
-import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type ComplianceIssue, type Facility, type Incident, type Organization, type Resident, type User, type UUID } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -467,6 +468,9 @@ export async function listMedicationAdministrationsHandler(services: ApiServices
     const residentId = request.query?.residentId;
     if (!residentId) throw new Error('residentId is required');
     return services.backend.listMedicationAdministrationsByResident(context, residentId);
+  });
+}
+
 export async function createIncidentHandler(services: ApiServices, request: ApiRequest<CreateIncidentBody>): Promise<ApiResponse> {
   return withContext(services, request, async (context) => {
     assertBody(request.body);
