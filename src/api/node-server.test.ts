@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 import { describe, expect, it } from 'vitest';
 import { AuthService, BackendFoundationService, createInMemoryBackendRepositories, type User } from '../domain';
-import { createNodeApiServer, type ApiServices } from '.';
+import { createAuthRateLimitMiddleware, createNodeApiServer, type ApiServices } from '.';
 
 const t1User: User = {
   id: 'user-master',
@@ -39,8 +39,12 @@ function createApiServices(): ApiServices {
   return { auth, backend, repositories, now: () => new Date('2026-06-24T01:00:00.000Z') };
 }
 
-async function withServer<T>(services: ApiServices, test: (baseUrl: string) => Promise<T>): Promise<T> {
-  const server = createNodeApiServer(services);
+async function withServer<T>(
+  services: ApiServices,
+  test: (baseUrl: string) => Promise<T>,
+  options?: Parameters<typeof createNodeApiServer>[1]
+): Promise<T> {
+  const server = createNodeApiServer(services, options);
 
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const address = server.address() as AddressInfo;
@@ -66,6 +70,9 @@ describe('Node API server adapter', () => {
 
     await withServer(services, async (baseUrl) => {
       await expect(fetch(`${baseUrl}/healthz`).then((response) => response.json())).resolves.toEqual({ ok: true });
+      const health = await fetch(`${baseUrl}/healthz`);
+      expect(health.headers.get('x-content-type-options')).toBe('nosniff');
+      expect(health.headers.get('x-frame-options')).toBe('DENY');
       await expect(fetch(`${baseUrl}/openapi.json`).then((response) => response.json())).resolves.toMatchObject({
         openapi: '3.1.0',
         info: { title: 'HubsteriaCarePRO API' }
@@ -146,5 +153,65 @@ describe('Node API server adapter', () => {
         error: { code: 'unsupported_media_type' }
       });
     });
+  });
+
+  it('enforces CORS allowlist and request body size limits', async () => {
+    const services = createApiServices();
+
+    await withServer(
+      services,
+      async (baseUrl) => {
+        await expect(
+          fetch(`${baseUrl}/healthz`, {
+            headers: { origin: 'https://blocked.example.com' }
+          }).then((response) => response.json())
+        ).resolves.toMatchObject({ ok: false, status: 403, error: { code: 'cors_origin_denied' } });
+
+        const allowed = await fetch(`${baseUrl}/healthz`, {
+          headers: { origin: 'https://staging.example.com' }
+        });
+        expect(allowed.headers.get('access-control-allow-origin')).toBe('https://staging.example.com');
+
+        await expect(
+          fetch(`${baseUrl}/auth/login`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ email: 'a'.repeat(200), password: 'password' })
+          }).then((response) => response.json())
+        ).resolves.toMatchObject({ ok: false, status: 413, error: { code: 'payload_too_large' } });
+      },
+      { corsAllowedOrigins: ['https://staging.example.com'], maxBodyBytes: 32 }
+    );
+  });
+
+  it('applies stricter rate limits to auth routes', async () => {
+    const services = createApiServices();
+
+    await withServer(
+      services,
+      async (baseUrl) => {
+        await fetch(`${baseUrl}/auth/login`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email: 'missing@example.com', password: 'wrong-password' })
+        });
+
+        await expect(
+          fetch(`${baseUrl}/auth/login`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ email: 'missing@example.com', password: 'wrong-password' })
+          }).then((response) => response.json())
+        ).resolves.toMatchObject({ ok: false, status: 429, error: { code: 'rate_limited' } });
+      },
+      {
+        middlewares: [
+          createAuthRateLimitMiddleware({
+            limit: 1,
+            keyForRequest: () => 'auth-test'
+          })
+        ]
+      }
+    );
   });
 });

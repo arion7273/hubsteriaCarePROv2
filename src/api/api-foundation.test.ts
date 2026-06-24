@@ -641,6 +641,11 @@ describe('API foundation handlers', () => {
         }
       })
     ]);
-    expect(redactBody({ code: '123456', safe: 'value' })).toEqual({ code: '[REDACTED]', safe: 'value' });
+    expect(redactBody({ code: '123456', firstName: 'Maria', medication: 'Lisinopril', safe: 'value' })).toEqual({
+      code: '[REDACTED]',
+      firstName: '[REDACTED]',
+      medication: '[REDACTED]',
+      safe: 'value'
+    });
   });
 });

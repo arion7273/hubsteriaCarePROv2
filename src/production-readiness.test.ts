@@ -59,6 +59,7 @@ describe('production readiness workflow', () => {
     const postgresAdapters = readFileSync('docs/postgres-adapters.md', 'utf8');
     const postgresIntegration = readFileSync('docs/postgres-integration-tests.md', 'utf8');
     const hipaa = readFileSync('docs/hipaa-security-readiness.md', 'utf8');
+    const sessionStrategy = readFileSync('docs/session-token-strategy.md', 'utf8');
     const goLive = readFileSync('docs/go-live-checklist.md', 'utf8');
     const runbook = readFileSync('docs/operational-runbook.md', 'utf8');
 
@@ -116,7 +117,12 @@ describe('production readiness workflow', () => {
     expect(api).toContain('framework-agnostic dispatcher');
     expect(api).toContain('Invalid request bodies must return `400`');
     expect(api).toContain('Rate-limited requests must return `429`');
+    expect(api).toContain('Auth routes must use stricter rate limits');
+    expect(api).toContain('API responses must include security headers');
+    expect(api).toContain('CORS allowlists');
+    expect(api).toContain('Request bodies must be size-limited');
     expect(api).toContain('Request logs must redact passwords');
+    expect(api).toContain('PHI fields');
     expect(api).toContain('Node HTTP runtime adapter');
     expect(api).toContain('/openapi.json');
     expect(api).toContain('npm run api:dev');
@@ -138,6 +144,11 @@ describe('production readiness workflow', () => {
     expect(postgresIntegration).toContain('seeds the role rows');
     expect(hipaa).toContain('Administrative safeguards');
     expect(hipaa).toContain('Technical safeguards');
+    expect(hipaa).toContain('CORS allowlists');
+    expect(hipaa).toContain('Redact PHI');
+    expect(sessionStrategy).toContain('Session cookie and token strategy');
+    expect(sessionStrategy).toContain('X-Session-Id');
+    expect(sessionStrategy).toContain('HTTP-only');
     expect(goLive).toContain('Tenant isolation tests completed');
     expect(goLive).toContain('Go-live readiness certification signed');
     expect(runbook).toContain('Standard deployment');
@@ -158,6 +169,9 @@ describe('production readiness workflow', () => {
     expect(envExample).toContain('MONITORING_ENDPOINT=');
     expect(envExample).toContain('ERROR_TRACKING_DSN=');
     expect(envExample).toContain('RELEASE_VERSION=local-dev');
+    expect(envExample).toContain('CORS_ALLOWED_ORIGINS=');
+    expect(envExample).toContain('MAX_REQUEST_BODY_BYTES=1000000');
+    expect(envExample).toContain('AUTH_RATE_LIMIT=10');
     expect(envExample).not.toContain('Ariana');
     expect(envExample).not.toContain('sk_');
     expect(codeowners).toContain('@arion7273');

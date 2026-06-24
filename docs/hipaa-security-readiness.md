@@ -22,6 +22,10 @@ HubsteriaCarePRO must complete these controls before production use with PHI.
 - Store secrets in a managed secret store.
 - Maintain immutable audit logs.
 - Add automatic logoff/session expiration.
+- Enforce API security headers and CORS allowlists.
+- Limit request body size before parsing.
+- Apply stricter rate limits to authentication routes.
+- Redact PHI from request and error logs.
 - Add integrity controls for clinical and financial records.
 
 ## Physical and operational safeguards
