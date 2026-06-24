@@ -322,6 +322,20 @@ export const featureRegistry: FeatureRegistryItem[] = [
     status: 'registered',
     dependencies: ['DigitalRX Connector', 'Resident Command Center', 'Notification Center Integration'],
     version: '0.1.0'
+  },
+  {
+    featureName: 'Incident Workflow Engine',
+    module: 'Incidents & Compliance Center',
+    status: 'registered',
+    dependencies: ['Resident Command Center', 'Notification Center Integration', 'Audit Log Contract'],
+    version: '0.1.0'
+  },
+  {
+    featureName: 'Compliance and Survey Readiness',
+    module: 'Incidents & Compliance Center',
+    status: 'registered',
+    dependencies: ['Incident Workflow Engine', 'Print Center Integration', 'Configuration Center'],
+    version: '0.1.0'
   }
 ];
 

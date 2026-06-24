@@ -192,7 +192,7 @@ describe('HubsteriaCarePRO foundation', () => {
 
     expect(screen.getAllByText('Resident Face Sheet').length).toBeGreaterThan(0);
     expect(screen.getByText('Medication Administration Record')).toBeInTheDocument();
-    expect(screen.getByText('Incident Register')).toBeInTheDocument();
+    expect(screen.getAllByText('Incident Register').length).toBeGreaterThan(0);
 
     const batchJobs = screen.getByLabelText('Batch print jobs');
     expect(within(batchJobs).getByText('Survey Readiness Packet')).toBeInTheDocument();
@@ -411,5 +411,45 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(screen.getByText(/DigitalRX remains the pharmacy source of truth/i)).toBeInTheDocument();
     expect(screen.getByText(/Connector architecture supports REST APIs, FHIR-ready mapping, webhooks/i)).toBeInTheDocument();
     expect(screen.getByText(/All connector actions, matches, imports, updates, discontinuations, refills, and errors/i)).toBeInTheDocument();
+  });
+
+  it('renders Phase 10 incident types workflow and incident register', () => {
+    render(<App />);
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Incidents & Compliance Center' })).toBeInTheDocument();
+    expect(screen.getAllByText('Open Incidents').length).toBeGreaterThan(0);
+
+    const types = screen.getByLabelText('Incident types');
+    ['Falls', 'Injuries', 'Medication Errors', 'Behavioral Events', 'Elopement', 'Infection Events'].forEach((type) => {
+      expect(within(types).getByText(type)).toBeInTheDocument();
+    });
+
+    const workflow = screen.getByLabelText('Incident workflow');
+    ['Incident Report', 'Investigation', 'Root Cause Analysis', 'Corrective Action', 'Resolution'].forEach((step) => {
+      expect(within(workflow).getByText(step)).toBeInTheDocument();
+    });
+
+    const records = screen.getByLabelText('Incident records');
+    expect(within(records).getByText('Medication Error')).toBeInTheDocument();
+    expect(within(records).getByText(/Supervisor review and medication workflow retraining/i)).toBeInTheDocument();
+  });
+
+  it('supports compliance dashboard fix links survey readiness and incident integrations', () => {
+    render(<App />);
+
+    const compliance = screen.getByLabelText('Compliance items');
+    ['Missing Assessments', 'Missing Signatures', 'Expired Orders', 'Late Medications', 'Missing Documentation'].forEach((issue) => {
+      expect(within(compliance).getByText(issue)).toBeInTheDocument();
+    });
+    expect(within(compliance).getByRole('button', { name: 'Open medication order renewal' })).toBeInTheDocument();
+    expect(within(compliance).getByRole('button', { name: 'Open eMAR compliance dashboard' })).toBeInTheDocument();
+
+    const survey = screen.getByLabelText('Survey readiness checklist');
+    expect(within(survey).getByText('Incident reports complete')).toBeInTheDocument();
+    expect(within(survey).getByText('Print packet ready')).toBeInTheDocument();
+
+    expect(screen.getByText(/Resident Command Center displays incidents, investigations, corrective actions/i)).toBeInTheDocument();
+    expect(screen.getByText(/Print Center Pro exports incident reports, investigation packets/i)).toBeInTheDocument();
+    expect(screen.getByText(/All incident creation, updates, investigations, corrective actions/i)).toBeInTheDocument();
   });
 });

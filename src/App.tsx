@@ -55,6 +55,15 @@ import {
   residentMatchingRules
 } from './data/digitalrx';
 import {
+  complianceItems,
+  incidentIntegrationRequirements,
+  incidentMetrics,
+  incidentRecords,
+  incidentTypes,
+  incidentWorkflow,
+  surveyReadinessChecklist
+} from './data/incidents';
+import {
   auditRequirements,
   facilityMetrics,
   featureRegistry,
@@ -181,6 +190,7 @@ function App() {
             'Tasks ADLs & Services',
             'eMAR & Medication',
             'DigitalRX Hub',
+            'Incidents & Compliance',
             'Hierarchy',
             'Feature Registry',
             'Roadmap'
@@ -195,7 +205,9 @@ function App() {
                       ? '#emar-medication-management'
                       : item === 'DigitalRX Hub'
                         ? '#digitalrx-integration-hub'
-                        : `#${item.toLowerCase().replaceAll(' ', '-')}`
+                        : item === 'Incidents & Compliance'
+                          ? '#incidents-compliance-center'
+                          : `#${item.toLowerCase().replaceAll(' ', '-')}`
               }
               key={item}
             >
@@ -207,8 +219,8 @@ function App() {
         <div className="sidebar-card">
           <span className="status-dot" />
           <div>
-            <strong>Phase 0-9</strong>
-            <span>Pharmacy hub active</span>
+            <strong>Phase 0-10</strong>
+            <span>Compliance center active</span>
           </div>
         </div>
       </aside>
@@ -256,6 +268,9 @@ function App() {
               </a>
               <a className="button secondary" href="#digitalrx-integration-hub">
                 Open DigitalRX
+              </a>
+              <a className="button secondary" href="#incidents-compliance-center">
+                Open Compliance
               </a>
             </div>
           </div>
@@ -1343,6 +1358,122 @@ function App() {
             </div>
             <ul className="check-list">
               {digitalRxIntegrationRequirements.map((requirement) => (
+                <li key={requirement}>{requirement}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        <section className="content-card incidents-center" id="incidents-compliance-center" aria-labelledby="incidents-title">
+          <div className="section-header">
+            <div>
+              <p className="eyebrow">Phase 10</p>
+              <h2 id="incidents-title">Incidents & Compliance Center</h2>
+              <p>
+                Incident reporting, investigation, root cause analysis, corrective action, compliance monitoring,
+                fix-this-issue resolution links, and survey readiness for facility operations.
+              </p>
+            </div>
+            <div className="incidents-status">
+              <span>Survey readiness</span>
+              <strong>Compliance operations</strong>
+            </div>
+          </div>
+
+          <div className="incident-metric-grid">
+            {incidentMetrics.map((metric) => (
+              <article className="incident-metric-card" key={metric.label}>
+                <span>{metric.label}</span>
+                <strong>{metric.value}</strong>
+                <small>{metric.detail}</small>
+              </article>
+            ))}
+          </div>
+
+          <div className="incidents-layout">
+            <div className="incident-panel">
+              <div className="card-heading">
+                <span>Incident Types</span>
+                <strong>Configured event categories</strong>
+              </div>
+              <div className="incident-type-grid" aria-label="Incident types">
+                {incidentTypes.map((type) => (
+                  <span key={type}>{type}</span>
+                ))}
+              </div>
+              <div className="incident-workflow" aria-label="Incident workflow">
+                {incidentWorkflow.map((step, index) => (
+                  <article key={step}>
+                    <span>{index + 1}</span>
+                    <strong>{step}</strong>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="incident-panel">
+              <div className="card-heading">
+                <span>Incident Register</span>
+                <strong>Reports, investigations, corrective actions</strong>
+              </div>
+              <div className="incident-record-list" aria-label="Incident records">
+                {incidentRecords.map((record) => (
+                  <article key={`${record.type}-${record.resident}`}>
+                    <div>
+                      <strong>{record.type}</strong>
+                      <span>{record.resident}</span>
+                    </div>
+                    <p>{record.nextStep}</p>
+                    <span className={`incident-status-pill ${record.status.toLowerCase().replaceAll(' ', '-')}`}>
+                      {record.status}
+                    </span>
+                    <span className={`incident-severity-pill ${record.severity.toLowerCase()}`}>{record.severity}</span>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="incidents-layout">
+            <div className="incident-panel">
+              <div className="card-heading">
+                <span>Compliance Dashboard</span>
+                <strong>Fix this issue links</strong>
+              </div>
+              <div className="compliance-list" aria-label="Compliance items">
+                {complianceItems.map((item) => (
+                  <article key={item.issue}>
+                    <div>
+                      <strong>{item.issue}</strong>
+                      <span>{item.facility}</span>
+                    </div>
+                    <span className={`incident-severity-pill ${item.severity.toLowerCase()}`}>{item.severity}</span>
+                    <button type="button">{item.resolutionLink}</button>
+                  </article>
+                ))}
+              </div>
+            </div>
+
+            <div className="incident-panel">
+              <div className="card-heading">
+                <span>Survey Readiness Center</span>
+                <strong>State survey packet preparation</strong>
+              </div>
+              <ul className="survey-checklist" aria-label="Survey readiness checklist">
+                {surveyReadinessChecklist.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="incident-panel integration-panel">
+            <div className="card-heading">
+              <span>Incident integration contract</span>
+              <strong>Resident, notification, print, configuration, and audit hooks</strong>
+            </div>
+            <ul className="check-list">
+              {incidentIntegrationRequirements.map((requirement) => (
                 <li key={requirement}>{requirement}</li>
               ))}
             </ul>

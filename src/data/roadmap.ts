@@ -164,7 +164,7 @@ export const clinicalOperationsPhases: Phase[] = [
   {
     id: '10',
     title: 'Incidents & Compliance Center',
-    status: 'future',
+    status: 'foundation',
     milestone: 'Compliance Operations',
     summary:
       'Incident workflows, investigations, root cause analysis, corrective actions, compliance dashboard, and survey readiness.',

@@ -16,6 +16,7 @@ This repository currently implements the first product foundation milestone:
 - Phase 7 Tasks, ADLs & Services with recurring tasks, ADL tracking, resident service plans, missed-task detection, shift dashboards, and one-tap mobile completion
 - Phase 8 eMAR & Medication Management with medication orders, med pass, PRNs, controlled substances, barcode verification, safety alerts, compliance monitoring, and mobile med pass mode
 - Phase 9 DigitalRX Integration Hub with connection settings, pharmacy inbox, medication sync mapping, resident matching, refill tracking, webhook events, and audit-backed connector requirements
+- Phase 10 Incidents & Compliance Center with incident workflows, investigations, root cause analysis, corrective actions, compliance dashboard, fix-this-issue links, and survey readiness
 - Roadmap registry for phases 0-20
 - Regression tests for the foundation shell
 
