@@ -5,6 +5,7 @@ import App from './App';
 
 afterEach(() => {
   vi.restoreAllMocks();
+  localStorage.clear();
 });
 
 describe('HubsteriaCarePRO foundation', () => {
@@ -96,6 +97,58 @@ describe('HubsteriaCarePRO foundation', () => {
         'x-session-id': 'session-1'
       }
     });
+  });
+
+  it('supports manual login MFA and logout session UI', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ok: true,
+            status: 200,
+            data: {
+              session: { id: 'session-1' },
+              mfaChallenge: { id: 'mfa-1' }
+            }
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, status: 200, data: { id: 'session-1', mfaVerified: true } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, status: 200, data: { id: 'session-1', revokedAt: 'now' } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      );
+
+    render(<App />);
+    await user.clear(screen.getByLabelText('Email'));
+    await user.type(screen.getByLabelText('Email'), 'admin@example.com');
+    await user.type(screen.getByLabelText('Password'), 'correct-password');
+    await user.click(screen.getByRole('button', { name: 'Login' }));
+
+    expect(await screen.findByText(/Login: ok, session session-1/)).toBeInTheDocument();
+    expect(screen.getByText('Challenge mfa-1')).toBeInTheDocument();
+    expect(localStorage.getItem('hubsteria.sessionId')).toBe('session-1');
+
+    await user.type(screen.getByLabelText('MFA code'), '123456');
+    await user.click(screen.getByRole('button', { name: 'Verify MFA' }));
+    expect(await screen.findByText(/Verify MFA: ok 200/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Logout' }));
+    expect(await screen.findByText(/Logout: ok 200/)).toBeInTheDocument();
+    expect(localStorage.getItem('hubsteria.sessionId')).toBeNull();
+
+    expect((fetchMock.mock.calls[0] as unknown as [URL, RequestInit])[0].toString()).toBe('http://localhost:3000/auth/login');
+    expect((fetchMock.mock.calls[1] as unknown as [URL, RequestInit])[0].toString()).toBe('http://localhost:3000/auth/mfa/verify');
+    expect((fetchMock.mock.calls[2] as unknown as [URL, RequestInit])[0].toString()).toBe('http://localhost:3000/auth/logout');
   });
 
   it('switches between T1, T2, and T3 role-aware dashboards', async () => {

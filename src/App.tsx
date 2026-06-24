@@ -210,7 +210,11 @@ function App() {
   const [query, setQuery] = useState('');
   const [darkMode, setDarkMode] = useState(false);
   const [apiHealthStatus, setApiHealthStatus] = useState('Not checked');
-  const [apiSessionId, setApiSessionId] = useState('');
+  const [apiSessionId, setApiSessionId] = useState(() => localStorage.getItem('hubsteria.sessionId') ?? '');
+  const [pendingMfaChallengeId, setPendingMfaChallengeId] = useState('');
+  const [loginEmail, setLoginEmail] = useState('b094650@gmail.com');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
   const [apiWorkflowLog, setApiWorkflowLog] = useState<string[]>(['No API workflow actions run yet.']);
   const globalSearchRef = useRef<HTMLInputElement>(null);
   const apiBaseUrl = getConfiguredApiBaseUrl();
@@ -288,6 +292,8 @@ function App() {
   };
 
   const runDemoLogin = async () => {
+    setLoginPassword('change-me-for-local-demo-only');
+    setMfaCode('123456');
     await runApiAction('Demo login', async (client) => {
       const login = await client.login('b094650@gmail.com', 'change-me-for-local-demo-only');
 
@@ -301,6 +307,8 @@ function App() {
 
           if (mfa.ok) {
             setApiSessionId(sessionId);
+            localStorage.setItem('hubsteria.sessionId', sessionId);
+            setPendingMfaChallengeId('');
             return { ok: true, status: 200, data: { sessionId, mfaVerified: true } };
           }
 
@@ -318,6 +326,59 @@ function App() {
     }
 
     return apiSessionId;
+  };
+
+  const handleLogin = async () => {
+    await runApiAction('Login', async (client) => {
+      const login = await client.login(loginEmail, loginPassword);
+
+      if (login.ok) {
+        const data = login.data as { session?: { id?: string }; mfaChallenge?: { id?: string } };
+        const sessionId = data.session?.id;
+
+        if (sessionId) {
+          setApiSessionId(sessionId);
+          localStorage.setItem('hubsteria.sessionId', sessionId);
+        }
+
+        if (data.mfaChallenge?.id) {
+          setPendingMfaChallengeId(data.mfaChallenge.id);
+          return { ok: true, status: 200, data: { sessionId, mfaRequired: true } };
+        }
+      }
+
+      return login;
+    });
+  };
+
+  const handleVerifyMfa = async () => {
+    await runApiAction('Verify MFA', async (client) => {
+      if (!apiSessionId || !pendingMfaChallengeId) {
+        throw new Error('Login first to create an MFA challenge.');
+      }
+
+      const result = await client.verifyMfa(apiSessionId, pendingMfaChallengeId, mfaCode);
+
+      if (result.ok) {
+        setPendingMfaChallengeId('');
+      }
+
+      return result;
+    });
+  };
+
+  const handleLogout = async () => {
+    await runApiAction('Logout', async (client) => {
+      if (!apiSessionId) {
+        throw new Error('No active session.');
+      }
+
+      const result = await client.logout(apiSessionId);
+      setApiSessionId('');
+      setPendingMfaChallengeId('');
+      localStorage.removeItem('hubsteria.sessionId');
+      return result;
+    });
   };
 
   return (
@@ -641,6 +702,64 @@ function App() {
             <a href={`${apiBaseUrl}/openapi.json`} target="_blank" rel="noreferrer">
               Open API contract
             </a>
+          </div>
+
+          <div className="api-auth-grid">
+            <div className="api-auth-card">
+              <div className="card-heading">
+                <span>Login</span>
+                <strong>Session and MFA flow</strong>
+              </div>
+              <label htmlFor="api-login-email">Email</label>
+              <input
+                id="api-login-email"
+                value={loginEmail}
+                onChange={(event) => setLoginEmail(event.target.value)}
+                type="email"
+              />
+              <label htmlFor="api-login-password">Password</label>
+              <input
+                id="api-login-password"
+                value={loginPassword}
+                onChange={(event) => setLoginPassword(event.target.value)}
+                type="password"
+                placeholder="Enter backend password"
+              />
+              <button type="button" onClick={handleLogin}>
+                Login
+              </button>
+            </div>
+
+            <div className="api-auth-card">
+              <div className="card-heading">
+                <span>MFA</span>
+                <strong>{pendingMfaChallengeId ? `Challenge ${pendingMfaChallengeId}` : 'No challenge pending'}</strong>
+              </div>
+              <label htmlFor="api-mfa-code">MFA code</label>
+              <input
+                id="api-mfa-code"
+                value={mfaCode}
+                onChange={(event) => setMfaCode(event.target.value)}
+                inputMode="numeric"
+                placeholder="123456"
+              />
+              <button type="button" onClick={handleVerifyMfa}>
+                Verify MFA
+              </button>
+            </div>
+
+            <div className="api-auth-card">
+              <div className="card-heading">
+                <span>Session state</span>
+                <strong>{apiSessionId || 'No active session'}</strong>
+              </div>
+              <p>
+                Protected actions use the active session and send it as <strong>x-session-id</strong>.
+              </p>
+              <button type="button" onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
           </div>
 
           <div className="api-endpoint-grid" aria-label="Connected API endpoints">
