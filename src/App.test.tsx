@@ -30,6 +30,9 @@ describe('HubsteriaCarePRO foundation', () => {
     expect(within(endpoints).getByText('POST /facilities')).toBeInTheDocument();
     expect(within(endpoints).getByText('POST /residents')).toBeInTheDocument();
     expect(within(endpoints).getByText('GET /users')).toBeInTheDocument();
+    expect(within(endpoints).getByText('GET /assessments')).toBeInTheDocument();
+    expect(within(endpoints).getByText('GET /medication-orders')).toBeInTheDocument();
+    expect(within(endpoints).getByText('GET /billing/charges')).toBeInTheDocument();
   });
 
   it('checks backend API health from the UI', async () => {
@@ -96,6 +99,63 @@ describe('HubsteriaCarePRO foundation', () => {
         'x-session-id': 'session-1'
       }
     });
+  });
+
+  it('loads live clinical API records into clinical screens', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ok: true,
+            status: 200,
+            data: {
+              session: { id: 'session-1' },
+              mfaChallenge: { id: 'mfa-1' }
+            }
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, status: 200, data: { id: 'session-1', mfaVerified: true } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ok: true,
+            status: 200,
+            data: [
+              {
+                id: 'assessment-api-1',
+                residentId: 'resident-1',
+                type: 'API Fall Risk Assessment',
+                status: 'review',
+                score: 9
+              }
+            ]
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
+      );
+
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Demo login + MFA' }));
+    await user.click(await screen.findByRole('button', { name: 'Load assessments' }));
+
+    expect(await screen.findByText(/Load assessments loaded 1 API record/)).toBeInTheDocument();
+    expect(screen.getAllByText('API Fall Risk Assessment').length).toBeGreaterThan(0);
+    expect(screen.queryByText('assessment-api-1')).not.toBeInTheDocument();
+    expect(globalThis.fetch).toHaveBeenLastCalledWith(
+      new URL('http://localhost:3000/assessments?residentId=resident-1'),
+      expect.objectContaining({
+        method: 'GET',
+        headers: expect.objectContaining({ 'x-session-id': 'session-1' })
+      })
+    );
   });
 
   it('switches between T1, T2, and T3 role-aware dashboards', async () => {

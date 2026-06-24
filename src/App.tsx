@@ -202,8 +202,15 @@ const connectedApiEndpoints = [
   'GET /residents',
   'PATCH /residents',
   'POST /users',
-  'GET /users'
+  'GET /users',
+  'GET /assessments',
+  'GET /tasks',
+  'GET /medication-orders',
+  'GET /incidents',
+  'GET /billing/charges'
 ];
+
+type ClinicalApiRecord = Record<string, unknown>;
 
 function App() {
   const [scope, setScope] = useState<DashboardScope>('T1 Master');
@@ -211,6 +218,19 @@ function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [apiHealthStatus, setApiHealthStatus] = useState('Not checked');
   const [apiSessionId, setApiSessionId] = useState('');
+  const [clinicalOrganizationId, setClinicalOrganizationId] = useState('org-1');
+  const [clinicalFacilityId, setClinicalFacilityId] = useState('facility-1');
+  const [clinicalResidentId, setClinicalResidentId] = useState('resident-1');
+  const [liveAssessments, setLiveAssessments] = useState<ClinicalApiRecord[]>([]);
+  const [liveTasks, setLiveTasks] = useState<ClinicalApiRecord[]>([]);
+  const [liveAdls, setLiveAdls] = useState<ClinicalApiRecord[]>([]);
+  const [liveMedicationOrders, setLiveMedicationOrders] = useState<ClinicalApiRecord[]>([]);
+  const [liveMedicationAdministrations, setLiveMedicationAdministrations] = useState<ClinicalApiRecord[]>([]);
+  const [liveIncidents, setLiveIncidents] = useState<ClinicalApiRecord[]>([]);
+  const [liveBillingCharges, setLiveBillingCharges] = useState<ClinicalApiRecord[]>([]);
+  const [liveInvoices, setLiveInvoices] = useState<ClinicalApiRecord[]>([]);
+  const [clinicalApiStatus, setClinicalApiStatus] = useState('Clinical API screens are showing static blueprint data until records are loaded.');
+  const [clinicalApiError, setClinicalApiError] = useState('');
   const [apiWorkflowLog, setApiWorkflowLog] = useState<string[]>(['No API workflow actions run yet.']);
   const globalSearchRef = useRef<HTMLInputElement>(null);
   const apiBaseUrl = getConfiguredApiBaseUrl();
@@ -281,9 +301,49 @@ function App() {
     try {
       const result = await action(createConfiguredApiClient());
       addApiLog(`${label}: ${summarizeApiResult(result)}`);
+      return result;
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       addApiLog(`${label}: failed (${message})`);
+      return undefined;
+    }
+  };
+
+  const loadClinicalList = async (
+    label: string,
+    setter: (records: ClinicalApiRecord[]) => void,
+    action: (client: ReturnType<typeof createConfiguredApiClient>, sessionId: string) => Promise<unknown>
+  ) => {
+    setClinicalApiStatus(`${label} loading...`);
+    setClinicalApiError('');
+
+    const result = await runApiAction(label, (client) => action(client, requireDemoSession()));
+    const records = extractApiRecords(result);
+
+    if (records) {
+      setter(records);
+      setClinicalApiStatus(`${label} loaded ${records.length} API record${records.length === 1 ? '' : 's'}.`);
+    } else {
+      const error = summarizeApiResult(result);
+      setClinicalApiError(error);
+      setClinicalApiStatus(`${label} did not return a record list.`);
+    }
+  };
+
+  const createClinicalRecord = async (
+    label: string,
+    action: (client: ReturnType<typeof createConfiguredApiClient>, sessionId: string) => Promise<unknown>
+  ) => {
+    setClinicalApiStatus(`${label} loading...`);
+    setClinicalApiError('');
+    const result = await runApiAction(label, (client) => action(client, requireDemoSession()));
+    const response = result as { ok?: boolean; error?: { message?: string } } | undefined;
+
+    if (response?.ok) {
+      setClinicalApiStatus(`${label} saved. Refresh the matching clinical screen to replace static blueprint data.`);
+    } else {
+      setClinicalApiError(response?.error?.message ?? summarizeApiResult(result));
+      setClinicalApiStatus(`${label} failed.`);
     }
   };
 
@@ -641,6 +701,68 @@ function App() {
             <a href={`${apiBaseUrl}/openapi.json`} target="_blank" rel="noreferrer">
               Open API contract
             </a>
+          </div>
+
+          <div className="clinical-api-panel" aria-label="Clinical API live controls">
+            <div className="card-heading">
+              <span>Clinical API scope</span>
+              <strong>{clinicalApiStatus}</strong>
+              {clinicalApiError ? <small className="api-error">Error: {clinicalApiError}</small> : <small>Static clinical data is replaced below after API loads.</small>}
+            </div>
+            <div className="clinical-api-scope-grid">
+              <label>
+                Organization ID
+                <input value={clinicalOrganizationId} onChange={(event) => setClinicalOrganizationId(event.target.value)} />
+              </label>
+              <label>
+                Facility ID
+                <input value={clinicalFacilityId} onChange={(event) => setClinicalFacilityId(event.target.value)} />
+              </label>
+              <label>
+                Resident ID
+                <input value={clinicalResidentId} onChange={(event) => setClinicalResidentId(event.target.value)} />
+              </label>
+            </div>
+            <div className="api-action-row">
+              <button type="button" onClick={() => loadClinicalList('Load assessments', setLiveAssessments, (client, sessionId) => client.listAssessments(sessionId, clinicalResidentId))}>
+                Load assessments
+              </button>
+              <button type="button" onClick={() => loadClinicalList('Load tasks', setLiveTasks, (client, sessionId) => client.listCareTasks(sessionId, clinicalResidentId))}>
+                Load tasks
+              </button>
+              <button type="button" onClick={() => loadClinicalList('Load ADLs', setLiveAdls, (client, sessionId) => client.listAdls(sessionId, clinicalResidentId))}>
+                Load ADLs
+              </button>
+              <button type="button" onClick={() => loadClinicalList('Load eMAR orders', setLiveMedicationOrders, (client, sessionId) => client.listMedicationOrders(sessionId, clinicalResidentId))}>
+                Load eMAR orders
+              </button>
+              <button type="button" onClick={() => loadClinicalList('Load incidents', setLiveIncidents, (client, sessionId) => client.listIncidents(sessionId, { residentId: clinicalResidentId }))}>
+                Load incidents
+              </button>
+              <button type="button" onClick={() => loadClinicalList('Load billing', setLiveBillingCharges, (client, sessionId) => client.listBillingCharges(sessionId, clinicalResidentId))}>
+                Load billing
+              </button>
+              <button type="button" onClick={() => loadClinicalList('Load invoices', setLiveInvoices, (client, sessionId) => client.listInvoices(sessionId, clinicalResidentId))}>
+                Load invoices
+              </button>
+            </div>
+            <div className="api-action-row">
+              <button type="button" onClick={() => createClinicalRecord('Create assessment', (client, sessionId) => client.createAssessment(sessionId, { organizationId: clinicalOrganizationId, facilityId: clinicalFacilityId, residentId: clinicalResidentId, type: 'Fall Risk Assessment', status: 'review', score: 8, answers: { mobility: 'walker' } }))}>
+                Create assessment
+              </button>
+              <button type="button" onClick={() => createClinicalRecord('Create task', (client, sessionId) => client.createCareTask(sessionId, { organizationId: clinicalOrganizationId, facilityId: clinicalFacilityId, residentId: clinicalResidentId, title: 'Breakfast ADL documentation', taskType: 'daily', dueAt: '2026-06-24T09:30:00.000Z', assignedStaff: 'Caregiver Lead', status: 'due' }))}>
+                Create task
+              </button>
+              <button type="button" onClick={() => createClinicalRecord('Create eMAR order', (client, sessionId) => client.createMedicationOrder(sessionId, { organizationId: clinicalOrganizationId, facilityId: clinicalFacilityId, residentId: clinicalResidentId, medication: 'Lisinopril', dosage: '10mg', route: 'PO', schedule: 'Daily 8 AM', status: 'active' }))}>
+                Create eMAR order
+              </button>
+              <button type="button" onClick={() => createClinicalRecord('Create incident', (client, sessionId) => client.createIncident(sessionId, { organizationId: clinicalOrganizationId, facilityId: clinicalFacilityId, residentId: clinicalResidentId, type: 'fall', severity: 'warning', status: 'open', summary: 'Resident slipped near dining room', occurredAt: '2026-06-24T10:00:00.000Z' }))}>
+                Create incident
+              </button>
+              <button type="button" onClick={() => createClinicalRecord('Create billing charge', (client, sessionId) => client.createBillingCharge(sessionId, { organizationId: clinicalOrganizationId, facilityId: clinicalFacilityId, residentId: clinicalResidentId, type: 'recurring', description: 'Monthly rent', amountCents: 540000, status: 'posted' }))}>
+                Create billing charge
+              </button>
+            </div>
           </div>
 
           <div className="api-endpoint-grid" aria-label="Connected API endpoints">
@@ -1088,6 +1210,13 @@ function App() {
             </div>
           </div>
 
+          <LiveClinicalRecords
+            title="Live assessment API records"
+            records={liveAssessments}
+            emptyText="No assessments loaded yet. Use Load assessments in the API Connection Center."
+            fields={['type', 'status', 'score', 'residentId']}
+          />
+
           <div className="assessment-metric-grid">
             {assessmentMetrics.map((metric) => (
               <article className="assessment-metric-card" key={metric.label}>
@@ -1245,6 +1374,21 @@ function App() {
             </div>
           </div>
 
+          <div className="clinical-live-grid">
+            <LiveClinicalRecords
+              title="Live task API records"
+              records={liveTasks}
+              emptyText="No tasks loaded yet. Use Load tasks in the API Connection Center."
+              fields={['title', 'status', 'dueAt', 'assignedStaff']}
+            />
+            <LiveClinicalRecords
+              title="Live ADL API records"
+              records={liveAdls}
+              emptyText="No ADLs loaded yet. Use Load ADLs in the API Connection Center."
+              fields={['category', 'outcome', 'recordedAt', 'recordedBy']}
+            />
+          </div>
+
           <div className="task-metric-grid">
             {taskMetrics.map((metric) => (
               <article className="task-metric-card" key={metric.label}>
@@ -1374,6 +1518,21 @@ function App() {
               <span>Mobile med pass</span>
               <strong>Safety-first workflow</strong>
             </div>
+          </div>
+
+          <div className="clinical-live-grid">
+            <LiveClinicalRecords
+              title="Live eMAR order API records"
+              records={liveMedicationOrders}
+              emptyText="No medication orders loaded yet. Use Load eMAR orders in the API Connection Center."
+              fields={['medication', 'dosage', 'route', 'schedule', 'status']}
+            />
+            <LiveClinicalRecords
+              title="Live med administration API records"
+              records={liveMedicationAdministrations}
+              emptyText="No medication administrations loaded yet."
+              fields={['action', 'medicationOrderId', 'administeredAt', 'administeredBy']}
+            />
           </div>
 
           <div className="medication-metric-grid">
@@ -1692,6 +1851,13 @@ function App() {
               <strong>Compliance operations</strong>
             </div>
           </div>
+
+          <LiveClinicalRecords
+            title="Live incident API records"
+            records={liveIncidents}
+            emptyText="No incidents loaded yet. Use Load incidents in the API Connection Center."
+            fields={['type', 'severity', 'status', 'summary', 'occurredAt']}
+          />
 
           <div className="incident-metric-grid">
             {incidentMetrics.map((metric) => (
@@ -2028,6 +2194,21 @@ function App() {
               <span>Revenue operations</span>
               <strong>Aging tracked</strong>
             </div>
+          </div>
+
+          <div className="clinical-live-grid">
+            <LiveClinicalRecords
+              title="Live billing charge API records"
+              records={liveBillingCharges}
+              emptyText="No billing charges loaded yet. Use Load billing in the API Connection Center."
+              fields={['type', 'description', 'amountCents', 'status']}
+            />
+            <LiveClinicalRecords
+              title="Live invoice API records"
+              records={liveInvoices}
+              emptyText="No invoices loaded yet. Use Load invoices in the API Connection Center."
+              fields={['invoiceNumber', 'balanceCents', 'dueDate', 'status']}
+            />
           </div>
 
           <div className="billing-metric-grid">
@@ -2962,6 +3143,27 @@ function App() {
             </div>
           </div>
 
+          <div className="clinical-live-grid">
+            <LiveClinicalRecords
+              title="Resident live assessments"
+              records={liveAssessments}
+              emptyText="Load assessments for this resident to replace static assessment timeline data."
+              fields={['type', 'status', 'score']}
+            />
+            <LiveClinicalRecords
+              title="Resident live tasks and eMAR"
+              records={[...liveTasks, ...liveMedicationOrders]}
+              emptyText="Load tasks or eMAR orders for this resident to replace static task/medication timeline data."
+              fields={['title', 'medication', 'status', 'dueAt', 'schedule']}
+            />
+            <LiveClinicalRecords
+              title="Resident live incidents and billing"
+              records={[...liveIncidents, ...liveBillingCharges]}
+              emptyText="Load incidents or billing records for this resident to replace static incident/billing timeline data."
+              fields={['type', 'summary', 'description', 'amountCents', 'status']}
+            />
+          </div>
+
           <div className="resident-hero">
             <div className="resident-photo" aria-hidden="true">
               {residentCommandCenter.photoInitials}
@@ -3199,6 +3401,54 @@ function summarizeApiResult(result: unknown): string {
   }
 
   return `ok ${response.status ?? 200}`;
+}
+
+function extractApiRecords(result: unknown): ClinicalApiRecord[] | null {
+  if (!result || typeof result !== 'object') {
+    return null;
+  }
+
+  const response = result as { ok?: boolean; data?: unknown };
+  return response.ok && Array.isArray(response.data) ? (response.data as ClinicalApiRecord[]) : null;
+}
+
+function LiveClinicalRecords({
+  title,
+  records,
+  emptyText,
+  fields
+}: {
+  title: string;
+  records: ClinicalApiRecord[];
+  emptyText: string;
+  fields: string[];
+}) {
+  return (
+    <div className={`live-clinical-panel ${records.length ? 'has-records' : ''}`}>
+      <div className="card-heading">
+        <span>Real API data</span>
+        <strong>{title}</strong>
+      </div>
+      {records.length ? (
+        <div className="live-clinical-list">
+          {records.slice(0, 4).map((record, index) => (
+            <article key={String(record.id ?? `${title}-${index}`)}>
+              {fields.map((field) =>
+                record[field] === undefined ? null : (
+                  <span key={field}>
+                    <strong>{field}</strong>
+                    {String(record[field])}
+                  </span>
+                )
+              )}
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p>{emptyText}</p>
+      )}
+    </div>
+  );
 }
 
 export default App;

@@ -153,6 +153,78 @@ export class HubsteriaApiClient {
       body
     });
   }
+
+  createAssessment(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/assessments', sessionId, body });
+  }
+
+  listAssessments(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/assessments', sessionId, query: { residentId } });
+  }
+
+  createCarePlan(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/care-plans', sessionId, body });
+  }
+
+  listCarePlans(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/care-plans', sessionId, query: { residentId } });
+  }
+
+  createCareTask(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/tasks', sessionId, body });
+  }
+
+  listCareTasks(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/tasks', sessionId, query: { residentId } });
+  }
+
+  logAdl(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/adls', sessionId, body });
+  }
+
+  listAdls(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/adls', sessionId, query: { residentId } });
+  }
+
+  createMedicationOrder(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/medication-orders', sessionId, body });
+  }
+
+  listMedicationOrders(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/medication-orders', sessionId, query: { residentId } });
+  }
+
+  recordMedicationAdministration(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/medication-administrations', sessionId, body });
+  }
+
+  listMedicationAdministrations(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/medication-administrations', sessionId, query: { residentId } });
+  }
+
+  createIncident(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/incidents', sessionId, body });
+  }
+
+  listIncidents(sessionId: string, query: { residentId?: string; organizationId?: string; facilityId?: string }) {
+    return this.request({ method: 'GET', path: '/incidents', sessionId, query });
+  }
+
+  createBillingCharge(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/billing/charges', sessionId, body });
+  }
+
+  listBillingCharges(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/billing/charges', sessionId, query: { residentId } });
+  }
+
+  createInvoice(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/billing/invoices', sessionId, body });
+  }
+
+  listInvoices(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/billing/invoices', sessionId, query: { residentId } });
+  }
 }
 
 export function getConfiguredApiBaseUrl(): string {
