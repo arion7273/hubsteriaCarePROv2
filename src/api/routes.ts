@@ -133,5 +133,29 @@ export const apiRoutes: ApiRouteDefinition[] = [
     path: '/users',
     authRequired: true,
     description: 'Update user'
+  },
+  {
+    method: 'POST',
+    path: '/assessments',
+    authRequired: true,
+    description: 'Create assessment'
+  },
+  {
+    method: 'GET',
+    path: '/assessments',
+    authRequired: true,
+    description: 'List assessments by resident'
+  },
+  {
+    method: 'POST',
+    path: '/care-plans',
+    authRequired: true,
+    description: 'Create care plan'
+  },
+  {
+    method: 'GET',
+    path: '/care-plans',
+    authRequired: true,
+    description: 'List care plans by resident'
   }
 ];

@@ -2,8 +2,10 @@ import type { AuditEvent } from './audit';
 import { assertFeatureRegistration, type RegisteredFeature } from './feature-registry';
 import type {
   AuditLogRepository,
+  AssessmentRepository,
   AuthSessionRepository,
   BackendRepositories,
+  CarePlanRepository,
   FacilityRepository,
   FeatureRegistryRepository,
   MfaChallengeRepository,
@@ -12,7 +14,7 @@ import type {
   ResidentRepository,
   UserRepository
 } from './repositories';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
+import type { Assessment, AuthSession, CarePlan, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, User, UUID } from './types';
 
 export class InMemoryOrganizationRepository implements OrganizationRepository {
   private readonly organizations = new Map<UUID, Organization>();
@@ -85,6 +87,40 @@ export class InMemoryResidentRepository implements ResidentRepository {
   async save(resident: Resident): Promise<Resident> {
     this.residents.set(resident.id, resident);
     return resident;
+  }
+}
+
+export class InMemoryAssessmentRepository implements AssessmentRepository {
+  private readonly assessments = new Map<UUID, Assessment>();
+
+  async getById(id: UUID): Promise<Assessment | null> {
+    return this.assessments.get(id) ?? null;
+  }
+
+  async listByResident(residentId: UUID): Promise<Assessment[]> {
+    return [...this.assessments.values()].filter((assessment) => assessment.residentId === residentId);
+  }
+
+  async save(assessment: Assessment): Promise<Assessment> {
+    this.assessments.set(assessment.id, assessment);
+    return assessment;
+  }
+}
+
+export class InMemoryCarePlanRepository implements CarePlanRepository {
+  private readonly carePlans = new Map<UUID, CarePlan>();
+
+  async getById(id: UUID): Promise<CarePlan | null> {
+    return this.carePlans.get(id) ?? null;
+  }
+
+  async listByResident(residentId: UUID): Promise<CarePlan[]> {
+    return [...this.carePlans.values()].filter((carePlan) => carePlan.residentId === residentId);
+  }
+
+  async save(carePlan: CarePlan): Promise<CarePlan> {
+    this.carePlans.set(carePlan.id, carePlan);
+    return carePlan;
   }
 }
 
@@ -177,6 +213,8 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     facilities: new InMemoryFacilityRepository(),
     users: new InMemoryUserRepository(),
     residents: new InMemoryResidentRepository(),
+    assessments: new InMemoryAssessmentRepository(),
+    carePlans: new InMemoryCarePlanRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
     featureRegistry: new InMemoryFeatureRegistryRepository(),
     authSessions: new InMemoryAuthSessionRepository(),

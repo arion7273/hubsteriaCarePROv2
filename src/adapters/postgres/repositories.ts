@@ -1,7 +1,9 @@
 import { assertFeatureRegistration, type AuditEvent, type RegisteredFeature } from '../../domain';
 import type {
   AuditLogRepository,
+  AssessmentRepository,
   AuthSessionRepository,
+  CarePlanRepository,
   FacilityRepository,
   FeatureRegistryRepository,
   MfaChallengeRepository,
@@ -10,10 +12,12 @@ import type {
   ResidentRepository,
   UserRepository
 } from '../../domain/repositories';
-import type { AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UUID } from '../../domain/types';
+import type { Assessment, AuthSession, CarePlan, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UUID } from '../../domain/types';
 import {
+  assessmentStatements,
   auditLogStatements,
   authSessionStatements,
+  carePlanStatements,
   facilityStatements,
   featureRegistryStatements,
   mfaChallengeStatements,
@@ -23,8 +27,10 @@ import {
   userStatements
 } from './statements';
 import {
+  mapAssessmentRow,
   mapAuditRow,
   mapAuthSessionRow,
+  mapCarePlanRow,
   mapFacilityRow,
   mapFeatureRow,
   mapMfaChallengeRow,
@@ -120,6 +126,40 @@ export class PostgresResidentRepository implements ResidentRepository {
 
   async save(resident: Resident): Promise<Resident> {
     return requiredFirst(await this.client.query(residentStatements.upsert(resident)), mapResidentRow);
+  }
+}
+
+export class PostgresAssessmentRepository implements AssessmentRepository {
+  constructor(private readonly client: PostgresClient) {}
+
+  async getById(id: UUID): Promise<Assessment | null> {
+    return first(await this.client.query(assessmentStatements.selectById(id)), mapAssessmentRow);
+  }
+
+  async listByResident(residentId: UUID): Promise<Assessment[]> {
+    const result = await this.client.query(assessmentStatements.listByResident(residentId));
+    return result.rows.map(mapAssessmentRow);
+  }
+
+  async save(assessment: Assessment): Promise<Assessment> {
+    return requiredFirst(await this.client.query(assessmentStatements.upsert(assessment)), mapAssessmentRow);
+  }
+}
+
+export class PostgresCarePlanRepository implements CarePlanRepository {
+  constructor(private readonly client: PostgresClient) {}
+
+  async getById(id: UUID): Promise<CarePlan | null> {
+    return first(await this.client.query(carePlanStatements.selectById(id)), mapCarePlanRow);
+  }
+
+  async listByResident(residentId: UUID): Promise<CarePlan[]> {
+    const result = await this.client.query(carePlanStatements.listByResident(residentId));
+    return result.rows.map(mapCarePlanRow);
+  }
+
+  async save(carePlan: CarePlan): Promise<CarePlan> {
+    return requiredFirst(await this.client.query(carePlanStatements.upsert(carePlan)), mapCarePlanRow);
   }
 }
 

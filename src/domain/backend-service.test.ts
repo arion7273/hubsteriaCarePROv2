@@ -185,6 +185,52 @@ describe('BackendFoundationService', () => {
     await expect(repositories.auditLogs.listByEntity('Resident', 'resident-1')).resolves.toHaveLength(2);
   });
 
+  it('creates and lists assessments and care plans with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+    await service.createResident(
+      { user: { ...t3User, permissions: ['resident:write', 'assessment:manage'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
+    );
+
+    const assessment = await service.createAssessment(
+      { user: { ...t3User, permissions: ['assessment:manage'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        type: 'Fall Risk Assessment',
+        status: 'review',
+        score: 8,
+        answers: { mobility: 'walker' }
+      }
+    );
+
+    expect(assessment).toMatchObject({ type: 'Fall Risk Assessment', score: 8 });
+    await expect(service.listAssessmentsByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+
+    const carePlan = await service.createCarePlan(
+      { user: { ...t3User, permissions: ['assessment:manage'] } },
+      {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        goal: 'Reduce fall risk',
+        interventions: ['Escort to dining room'],
+        outcome: 'No falls',
+        reviewDate: '2026-07-24',
+        assignedStaff: 'Wellness Director',
+        status: 'active'
+      }
+    );
+
+    expect(carePlan).toMatchObject({ goal: 'Reduce fall risk' });
+    await expect(service.listCarePlansByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
+    await expect(repositories.auditLogs.listByEntity('Assessment', assessment.id)).resolves.toHaveLength(1);
+    await expect(repositories.auditLogs.listByEntity('CarePlan', carePlan.id)).resolves.toHaveLength(1);
+  });
+
   it('denies resident creation across facility boundaries', async () => {
     const { service } = createTestService();
 

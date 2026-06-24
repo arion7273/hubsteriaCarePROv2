@@ -1,5 +1,7 @@
 import {
   createFacilityHandler,
+  createAssessmentHandler,
+  createCarePlanHandler,
   createOrganizationHandler,
   createResidentHandler,
   createUserHandler,
@@ -7,6 +9,8 @@ import {
   getOrganizationHandler,
   getResidentHandler,
   listFeaturesHandler,
+  listAssessmentsHandler,
+  listCarePlansHandler,
   listFacilitiesHandler,
   listOrganizationsHandler,
   listResidentsHandler,
@@ -28,6 +32,8 @@ import { composeMiddleware, type ApiMiddleware } from './middleware';
 import { apiRoutes } from './routes';
 import {
   isCreateFacilityBody,
+  isCreateAssessmentBody,
+  isCreateCarePlanBody,
   isCreateOrganizationBody,
   isCreateResidentBody,
   isCreateUserBody,
@@ -168,6 +174,28 @@ const routeConfigs: RouteConfig[] = [
     path: '/users',
     validate: isUpdateUserBody,
     handler: updateUserHandler as RouteHandler
+  },
+  {
+    method: 'POST',
+    path: '/assessments',
+    validate: isCreateAssessmentBody,
+    handler: createAssessmentHandler as RouteHandler
+  },
+  {
+    method: 'GET',
+    path: '/assessments',
+    handler: listAssessmentsHandler
+  },
+  {
+    method: 'POST',
+    path: '/care-plans',
+    validate: isCreateCarePlanBody,
+    handler: createCarePlanHandler as RouteHandler
+  },
+  {
+    method: 'GET',
+    path: '/care-plans',
+    handler: listCarePlansHandler
   }
 ];
 

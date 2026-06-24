@@ -42,6 +42,30 @@ export type Resident = {
   status: 'active' | 'discharged' | 'inactive';
 };
 
+export type Assessment = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  type: string;
+  status: 'due' | 'in_progress' | 'review' | 'complete';
+  score?: number;
+  answers: Record<string, unknown>;
+};
+
+export type CarePlan = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  goal: string;
+  interventions: string[];
+  outcome: string;
+  reviewDate: string;
+  assignedStaff: string;
+  status: 'active' | 'resolved' | 'inactive';
+};
+
 export type User = {
   id: UUID;
   email: string;

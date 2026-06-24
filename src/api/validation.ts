@@ -1,7 +1,7 @@
 import type { RegisteredFeature } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
-import type { CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
+import type { CreateAssessmentBody, CreateCarePlanBody, CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -141,6 +141,35 @@ export function isUpdateUserBody(body: unknown): body is UpdateUserBody {
     (body.updates.permissions === undefined ||
       (Array.isArray(body.updates.permissions) && body.updates.permissions.every((permission) => typeof permission === 'string'))) &&
     (body.updates.status === undefined || ['active', 'inactive'].includes(String(body.updates.status)))
+  );
+}
+
+export function isCreateAssessmentBody(body: unknown): body is CreateAssessmentBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.organizationId) &&
+    isNonEmptyString(body.facilityId) &&
+    isNonEmptyString(body.residentId) &&
+    isNonEmptyString(body.type) &&
+    ['due', 'in_progress', 'review', 'complete'].includes(String(body.status)) &&
+    (body.score === undefined || typeof body.score === 'number') &&
+    isRecord(body.answers)
+  );
+}
+
+export function isCreateCarePlanBody(body: unknown): body is CreateCarePlanBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.organizationId) &&
+    isNonEmptyString(body.facilityId) &&
+    isNonEmptyString(body.residentId) &&
+    isNonEmptyString(body.goal) &&
+    Array.isArray(body.interventions) &&
+    body.interventions.every((intervention) => typeof intervention === 'string') &&
+    isNonEmptyString(body.outcome) &&
+    isNonEmptyString(body.reviewDate) &&
+    isNonEmptyString(body.assignedStaff) &&
+    ['active', 'resolved', 'inactive'].includes(String(body.status))
   );
 }
 

@@ -1,4 +1,4 @@
-import type { AuditEvent, AuthSession, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
+import type { Assessment, AuditEvent, AuthSession, CarePlan, Facility, MfaChallenge, Organization, PasswordResetRequest, RegisteredFeature, Resident, User, UUID } from '../../domain';
 import type { SqlStatement } from './types';
 
 export const organizationStatements = {
@@ -179,6 +179,112 @@ export const residentStatements = {
         resident.room ?? null,
         resident.levelOfCare ?? null,
         resident.status
+      ]
+    };
+  }
+};
+
+export const assessmentStatements = {
+  selectById(id: UUID): SqlStatement {
+    return {
+      text: `
+        SELECT id, organization_id, facility_id, resident_id, type, status, score, answers
+        FROM assessments
+        WHERE id = $1
+      `,
+      values: [id]
+    };
+  },
+
+  listByResident(residentId: UUID): SqlStatement {
+    return {
+      text: `
+        SELECT id, organization_id, facility_id, resident_id, type, status, score, answers
+        FROM assessments
+        WHERE resident_id = $1
+        ORDER BY created_at DESC
+      `,
+      values: [residentId]
+    };
+  },
+
+  upsert(assessment: Assessment): SqlStatement {
+    return {
+      text: `
+        INSERT INTO assessments (id, organization_id, facility_id, resident_id, type, status, score, answers)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)
+        ON CONFLICT (id) DO UPDATE
+        SET type = EXCLUDED.type,
+            status = EXCLUDED.status,
+            score = EXCLUDED.score,
+            answers = EXCLUDED.answers,
+            updated_at = now()
+        RETURNING id, organization_id, facility_id, resident_id, type, status, score, answers
+      `,
+      values: [
+        assessment.id,
+        assessment.organizationId,
+        assessment.facilityId,
+        assessment.residentId,
+        assessment.type,
+        assessment.status,
+        assessment.score ?? null,
+        JSON.stringify(assessment.answers)
+      ]
+    };
+  }
+};
+
+export const carePlanStatements = {
+  selectById(id: UUID): SqlStatement {
+    return {
+      text: `
+        SELECT id, organization_id, facility_id, resident_id, goal, interventions, outcome, review_date, assigned_staff, status
+        FROM care_plans
+        WHERE id = $1
+      `,
+      values: [id]
+    };
+  },
+
+  listByResident(residentId: UUID): SqlStatement {
+    return {
+      text: `
+        SELECT id, organization_id, facility_id, resident_id, goal, interventions, outcome, review_date, assigned_staff, status
+        FROM care_plans
+        WHERE resident_id = $1
+        ORDER BY review_date ASC
+      `,
+      values: [residentId]
+    };
+  },
+
+  upsert(carePlan: CarePlan): SqlStatement {
+    return {
+      text: `
+        INSERT INTO care_plans (id, organization_id, facility_id, resident_id, goal, interventions, outcome, review_date, assigned_staff, status)
+        VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9, $10)
+        ON CONFLICT (id) DO UPDATE
+        SET goal = EXCLUDED.goal,
+            interventions = EXCLUDED.interventions,
+            outcome = EXCLUDED.outcome,
+            review_date = EXCLUDED.review_date,
+            assigned_staff = EXCLUDED.assigned_staff,
+            status = EXCLUDED.status,
+            updated_at = now()
+        RETURNING id, organization_id, facility_id, resident_id, goal, interventions, outcome, review_date, assigned_staff, status
+      `,
+      values: [
+        carePlan.id,
+        carePlan.organizationId,
+        carePlan.facilityId,
+        carePlan.residentId,
+        carePlan.goal,
+        JSON.stringify(carePlan.interventions),
+        carePlan.outcome,
+        carePlan.reviewDate,
+        carePlan.assignedStaff,
+        carePlan.status
       ]
     };
   }
