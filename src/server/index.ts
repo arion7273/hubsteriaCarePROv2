@@ -1,8 +1,10 @@
 import { createNodeApiServer } from '../api';
 import { readServerConfig } from './config';
+import { initializeObservability } from './observability';
 import { createRuntimeServices, seedDemoMasterAdmin } from './services';
 
 const config = readServerConfig();
+initializeObservability(config);
 const services = createRuntimeServices(config);
 const server = createNodeApiServer(services);
 

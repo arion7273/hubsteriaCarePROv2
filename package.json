@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "api:dev": "tsx src/server/index.ts",
+    "api:start": "tsx src/server/index.ts",
     "db:migrate": "tsx src/server/migrate.ts",
     "test": "vitest run",
     "test:watch": "vitest",

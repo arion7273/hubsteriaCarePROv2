@@ -1,0 +1,81 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: hubsteria_staging
+      POSTGRES_USER: hubsteria
+      POSTGRES_PASSWORD: hubsteria-staging-password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hubsteria -d hubsteria_staging"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build:
+      context: .
+      target: api-runtime
+    command: ["npm", "run", "db:migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      BACKEND_REPOSITORY_MODE: postgres
+      DATABASE_URL: postgres://hubsteria:hubsteria-staging-password@postgres:5432/hubsteria_staging
+      DATABASE_SSL: "false"
+
+  api:
+    build:
+      context: .
+      target: api-runtime
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      PORT: 3000
+      BACKEND_REPOSITORY_MODE: postgres
+      DATABASE_URL: postgres://hubsteria:hubsteria-staging-password@postgres:5432/hubsteria_staging
+      DATABASE_SSL: "false"
+      DEMO_AUTH_PASSWORD: change-me-for-staging-only
+      DEMO_MFA_CODE: "123456"
+      ROLE_ID_T1: 00000000-0000-0000-0000-000000000101
+      ROLE_ID_T2: 00000000-0000-0000-0000-000000000102
+      ROLE_ID_T2_5: 00000000-0000-0000-0000-000000000125
+      ROLE_ID_T3: 00000000-0000-0000-0000-000000000103
+      ROLE_ID_EMPLOYEE: 00000000-0000-0000-0000-000000000104
+      ROLE_ID_FAMILY: 00000000-0000-0000-0000-000000000105
+      ROLE_ID_RESIDENT: 00000000-0000-0000-0000-000000000106
+      MONITORING_ENDPOINT: https://monitoring.example.invalid/hubsteria
+      ERROR_TRACKING_DSN: https://errors.example.invalid/hubsteria
+      RELEASE_VERSION: local-staging
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/healthz | grep -q true"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: .
+      target: runtime
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/healthz | grep -q ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
