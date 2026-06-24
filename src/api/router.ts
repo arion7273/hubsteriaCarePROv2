@@ -8,6 +8,8 @@ import {
   enqueuePrintJobHandler,
   enqueueWorkflowActionJobHandler,
   failBackgroundJobHandler,
+  createAssessmentHandler,
+  createCarePlanHandler,
   createOrganizationHandler,
   createResidentHandler,
   createUserHandler,
@@ -15,6 +17,8 @@ import {
   getOrganizationHandler,
   getResidentHandler,
   listFeaturesHandler,
+  listAssessmentsHandler,
+  listCarePlansHandler,
   listFacilitiesHandler,
   listOrganizationsHandler,
   listResidentsHandler,
@@ -46,6 +50,8 @@ import {
   isEnqueuePrintJobBody,
   isEnqueueWorkflowActionJobBody,
   isFailBackgroundJobBody,
+  isCreateAssessmentBody,
+  isCreateCarePlanBody,
   isCreateOrganizationBody,
   isCreateResidentBody,
   isCreateUserBody,
@@ -197,6 +203,28 @@ const routeConfigs: RouteConfig[] = [
   { method: 'POST', path: '/jobs/digitalrx', validate: isEnqueueDigitalRxSyncJobBody, handler: enqueueDigitalRxSyncJobHandler as RouteHandler },
   { method: 'POST', path: '/jobs/ai', validate: isEnqueueAiGenerationJobBody, handler: enqueueAiGenerationJobHandler as RouteHandler },
   { method: 'POST', path: '/jobs/workflow-actions', validate: isEnqueueWorkflowActionJobBody, handler: enqueueWorkflowActionJobHandler as RouteHandler }
+  {
+    method: 'POST',
+    path: '/assessments',
+    validate: isCreateAssessmentBody,
+    handler: createAssessmentHandler as RouteHandler
+  },
+  {
+    method: 'GET',
+    path: '/assessments',
+    handler: listAssessmentsHandler
+  },
+  {
+    method: 'POST',
+    path: '/care-plans',
+    validate: isCreateCarePlanBody,
+    handler: createCarePlanHandler as RouteHandler
+  },
+  {
+    method: 'GET',
+    path: '/care-plans',
+    handler: listCarePlansHandler
+  }
 ];
 
 export function createApiRouter(services: ApiServices, middlewares: ApiMiddleware[] = []) {

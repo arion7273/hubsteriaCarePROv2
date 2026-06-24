@@ -16,6 +16,7 @@ import type {
   UUID,
   WorkflowActionJobInput
 } from './types';
+import type { AccessContext, Assessment, CarePlan, Facility, Organization, Resident, User, UUID } from './types';
 
 export type IdFactory = () => UUID;
 export type Clock = () => Date;
@@ -541,6 +542,74 @@ export class BackendFoundationService {
         ...input.payload
       }
     });
+  async createAssessment(context: AccessContext, input: Omit<Assessment, 'id'>): Promise<Assessment> {
+    const resident = await this.getResident(context, input.residentId);
+    const decision = requirePermission(
+      context,
+      { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id },
+      'assessment:manage'
+    );
+    assertAllowed(decision);
+
+    const assessment: Assessment = { id: this.createId(), ...input };
+    const saved = await this.repositories.assessments.save(assessment);
+
+    await this.repositories.auditLogs.append(
+      createAuditEvent({
+        id: this.createId(),
+        action: 'create',
+        actorUserId: context.user.id,
+        actorRole: context.user.roleTier,
+        entityType: 'Assessment',
+        entityId: saved.id,
+        scope: { scope: 'resident', organizationId: saved.organizationId, facilityId: saved.facilityId, residentId: saved.residentId },
+        beforeState: null,
+        afterState: saved,
+        now: this.clock()
+      })
+    );
+
+    return saved;
+  }
+
+  async listAssessmentsByResident(context: AccessContext, residentId: UUID): Promise<Assessment[]> {
+    await this.getResident(context, residentId);
+    return this.repositories.assessments.listByResident(residentId);
+  }
+
+  async createCarePlan(context: AccessContext, input: Omit<CarePlan, 'id'>): Promise<CarePlan> {
+    const resident = await this.getResident(context, input.residentId);
+    const decision = requirePermission(
+      context,
+      { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id },
+      'assessment:manage'
+    );
+    assertAllowed(decision);
+
+    const carePlan: CarePlan = { id: this.createId(), ...input };
+    const saved = await this.repositories.carePlans.save(carePlan);
+
+    await this.repositories.auditLogs.append(
+      createAuditEvent({
+        id: this.createId(),
+        action: 'create',
+        actorUserId: context.user.id,
+        actorRole: context.user.roleTier,
+        entityType: 'CarePlan',
+        entityId: saved.id,
+        scope: { scope: 'resident', organizationId: saved.organizationId, facilityId: saved.facilityId, residentId: saved.residentId },
+        beforeState: null,
+        afterState: saved,
+        now: this.clock()
+      })
+    );
+
+    return saved;
+  }
+
+  async listCarePlansByResident(context: AccessContext, residentId: UUID): Promise<CarePlan[]> {
+    await this.getResident(context, residentId);
+    return this.repositories.carePlans.listByResident(residentId);
   }
 
   async createUser(

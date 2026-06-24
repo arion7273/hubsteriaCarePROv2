@@ -2,7 +2,9 @@ import { assertFeatureRegistration, type AuditEvent, type RegisteredFeature } fr
 import type {
   AuditLogRepository,
   BackgroundJobRepository,
+  AssessmentRepository,
   AuthSessionRepository,
+  CarePlanRepository,
   FacilityRepository,
   FeatureRegistryRepository,
   MfaChallengeRepository,
@@ -13,10 +15,13 @@ import type {
   UserRepository
 } from '../../domain/repositories';
 import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UserCredential, UUID } from '../../domain/types';
+import type { Assessment, AuthSession, CarePlan, Facility, MfaChallenge, Organization, PasswordResetRequest, Resident, RoleTier, User, UUID } from '../../domain/types';
 import {
+  assessmentStatements,
   auditLogStatements,
   backgroundJobStatements,
   authSessionStatements,
+  carePlanStatements,
   facilityStatements,
   featureRegistryStatements,
   mfaChallengeStatements,
@@ -27,9 +32,11 @@ import {
   userStatements
 } from './statements';
 import {
+  mapAssessmentRow,
   mapAuditRow,
   mapBackgroundJobRow,
   mapAuthSessionRow,
+  mapCarePlanRow,
   mapFacilityRow,
   mapFeatureRow,
   mapMfaChallengeRow,
@@ -135,6 +142,38 @@ export class PostgresBackgroundJobRepository implements BackgroundJobRepository 
   async listQueued(limit: number): Promise<BackgroundJob[]> { return (await this.client.query(backgroundJobStatements.listQueued(limit))).rows.map(mapBackgroundJobRow); }
   async listByScope(scope: { organizationId?: UUID; facilityId?: UUID; residentId?: UUID }): Promise<BackgroundJob[]> { return (await this.client.query(backgroundJobStatements.listByScope(scope))).rows.map(mapBackgroundJobRow); }
   async save(job: BackgroundJob): Promise<BackgroundJob> { return requiredFirst(await this.client.query(backgroundJobStatements.upsert(job)), mapBackgroundJobRow); }
+export class PostgresAssessmentRepository implements AssessmentRepository {
+  constructor(private readonly client: PostgresClient) {}
+
+  async getById(id: UUID): Promise<Assessment | null> {
+    return first(await this.client.query(assessmentStatements.selectById(id)), mapAssessmentRow);
+  }
+
+  async listByResident(residentId: UUID): Promise<Assessment[]> {
+    const result = await this.client.query(assessmentStatements.listByResident(residentId));
+    return result.rows.map(mapAssessmentRow);
+  }
+
+  async save(assessment: Assessment): Promise<Assessment> {
+    return requiredFirst(await this.client.query(assessmentStatements.upsert(assessment)), mapAssessmentRow);
+  }
+}
+
+export class PostgresCarePlanRepository implements CarePlanRepository {
+  constructor(private readonly client: PostgresClient) {}
+
+  async getById(id: UUID): Promise<CarePlan | null> {
+    return first(await this.client.query(carePlanStatements.selectById(id)), mapCarePlanRow);
+  }
+
+  async listByResident(residentId: UUID): Promise<CarePlan[]> {
+    const result = await this.client.query(carePlanStatements.listByResident(residentId));
+    return result.rows.map(mapCarePlanRow);
+  }
+
+  async save(carePlan: CarePlan): Promise<CarePlan> {
+    return requiredFirst(await this.client.query(carePlanStatements.upsert(carePlan)), mapCarePlanRow);
+  }
 }
 
 export class PostgresAuditLogRepository implements AuditLogRepository {

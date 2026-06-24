@@ -1,6 +1,7 @@
 import type { RegisteredFeature } from '../../domain';
 import type { AuditEvent } from '../../domain/audit';
 import type { AuthSession, BackgroundJob, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User, UserCredential } from '../../domain/types';
+import type { Assessment, AuthSession, CarePlan, Facility, MfaChallenge, Organization, PasswordResetRequest, Permission, Resident, RoleTier, User } from '../../domain/types';
 import type { PostgresRow } from './types';
 
 export function mapOrganizationRow(row: PostgresRow): Organization {
@@ -63,6 +64,31 @@ export function mapBackgroundJobRow(row: PostgresRow): BackgroundJob {
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
     lastError: row.last_error ? String(row.last_error) : undefined
+export function mapAssessmentRow(row: PostgresRow): Assessment {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: String(row.resident_id),
+    type: String(row.type),
+    status: String(row.status) as Assessment['status'],
+    score: row.score === null || row.score === undefined ? undefined : Number(row.score),
+    answers: isRecord(row.answers) ? row.answers : {}
+  };
+}
+
+export function mapCarePlanRow(row: PostgresRow): CarePlan {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: String(row.facility_id),
+    residentId: String(row.resident_id),
+    goal: String(row.goal),
+    interventions: toStringArray(row.interventions),
+    outcome: String(row.outcome),
+    reviewDate: String(row.review_date),
+    assignedStaff: String(row.assigned_staff),
+    status: String(row.status) as CarePlan['status']
   };
 }
 
@@ -150,4 +176,8 @@ function toIsoString(value: unknown): string {
   }
 
   return String(value);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

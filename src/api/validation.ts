@@ -2,6 +2,7 @@ import type { RegisteredFeature } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
 import type { CompleteBackgroundJobBody, CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, EnqueueAiGenerationJobBody, EnqueueBackgroundJobBody, EnqueueDigitalRxSyncJobBody, EnqueueNotificationJobBody, EnqueuePrintJobBody, EnqueueWorkflowActionJobBody, FailBackgroundJobBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
+import type { CreateAssessmentBody, CreateCarePlanBody, CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -174,6 +175,33 @@ export function isEnqueueAiGenerationJobBody(body: unknown): body is EnqueueAiGe
 
 export function isEnqueueWorkflowActionJobBody(body: unknown): body is EnqueueWorkflowActionJobBody {
   return isRecord(body) && isNonEmptyString(body.trigger) && isNonEmptyString(body.action) && isRecord(body.payload);
+export function isCreateAssessmentBody(body: unknown): body is CreateAssessmentBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.organizationId) &&
+    isNonEmptyString(body.facilityId) &&
+    isNonEmptyString(body.residentId) &&
+    isNonEmptyString(body.type) &&
+    ['due', 'in_progress', 'review', 'complete'].includes(String(body.status)) &&
+    (body.score === undefined || typeof body.score === 'number') &&
+    isRecord(body.answers)
+  );
+}
+
+export function isCreateCarePlanBody(body: unknown): body is CreateCarePlanBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.organizationId) &&
+    isNonEmptyString(body.facilityId) &&
+    isNonEmptyString(body.residentId) &&
+    isNonEmptyString(body.goal) &&
+    Array.isArray(body.interventions) &&
+    body.interventions.every((intervention) => typeof intervention === 'string') &&
+    isNonEmptyString(body.outcome) &&
+    isNonEmptyString(body.reviewDate) &&
+    isNonEmptyString(body.assignedStaff) &&
+    ['active', 'resolved', 'inactive'].includes(String(body.status))
+  );
 }
 
 function isRecord(body: unknown): body is Record<string, unknown> {

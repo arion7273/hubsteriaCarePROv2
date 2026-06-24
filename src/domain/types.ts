@@ -104,6 +104,28 @@ export type WorkflowActionJobInput = {
   action: string;
   payload: Record<string, unknown>;
   priority?: BackgroundJob['priority'];
+export type Assessment = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  type: string;
+  status: 'due' | 'in_progress' | 'review' | 'complete';
+  score?: number;
+  answers: Record<string, unknown>;
+};
+
+export type CarePlan = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId: UUID;
+  residentId: UUID;
+  goal: string;
+  interventions: string[];
+  outcome: string;
+  reviewDate: string;
+  assignedStaff: string;
+  status: 'active' | 'resolved' | 'inactive';
 };
 
 export type User = {
