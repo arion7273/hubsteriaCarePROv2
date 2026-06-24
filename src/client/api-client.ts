@@ -69,6 +69,14 @@ export class HubsteriaApiClient {
     });
   }
 
+  logout(sessionId: string) {
+    return this.request({
+      method: 'POST',
+      path: '/auth/logout',
+      sessionId
+    });
+  }
+
   createOrganization(sessionId: string, name: string) {
     return this.request({
       method: 'POST',

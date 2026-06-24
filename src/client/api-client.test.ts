@@ -99,4 +99,21 @@ describe('HubsteriaApiClient', () => {
       })
     );
   });
+
+  it('posts logout requests with the active session header', async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, status: 200, data: {} }));
+    const client = new HubsteriaApiClient({ baseUrl: 'http://api.example.com', fetchImpl: fetchMock as unknown as typeof fetch });
+
+    await client.logout('session-1');
+
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [URL, RequestInit];
+    expect(url.toString()).toBe('http://api.example.com/auth/logout');
+    expect(init).toMatchObject({
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-session-id': 'session-1'
+      }
+    });
+  });
 });

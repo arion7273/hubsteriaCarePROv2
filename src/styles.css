@@ -483,6 +483,68 @@ p {
   gap: 0.6rem;
 }
 
+.api-auth-grid,
+.api-crud-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.api-crud-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.api-auth-card,
+.api-crud-card {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+}
+
+.api-auth-card label,
+.api-crud-card label {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.api-auth-card input,
+.api-crud-card input,
+.api-crud-card select {
+  width: 100%;
+  min-height: 2.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0 0.8rem;
+}
+
+.api-auth-card button,
+.api-mini-actions button {
+  min-height: 2.65rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  font-weight: 900;
+  padding: 0.7rem 1rem;
+}
+
+.api-auth-card p {
+  margin: 0;
+}
+
+.api-mini-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .api-action-row button,
 .api-action-row a {
   display: inline-flex;
@@ -4371,6 +4433,8 @@ summary {
   }
 
   .metric-grid,
+  .api-auth-grid,
+  .api-crud-grid,
   .assessment-metric-grid,
   .task-metric-grid,
   .shift-dashboard-grid,
@@ -4467,6 +4531,8 @@ summary {
   }
 
   .metric-grid,
+  .api-auth-grid,
+  .api-crud-grid,
   .assessment-metric-grid,
   .task-metric-grid,
   .shift-dashboard-grid,

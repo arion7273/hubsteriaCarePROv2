@@ -210,7 +210,21 @@ function App() {
   const [query, setQuery] = useState('');
   const [darkMode, setDarkMode] = useState(false);
   const [apiHealthStatus, setApiHealthStatus] = useState('Not checked');
-  const [apiSessionId, setApiSessionId] = useState('');
+  const [apiSessionId, setApiSessionId] = useState(() => localStorage.getItem('hubsteria.sessionId') ?? '');
+  const [pendingMfaChallengeId, setPendingMfaChallengeId] = useState('');
+  const [loginEmail, setLoginEmail] = useState('b094650@gmail.com');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
+  const [organizationName, setOrganizationName] = useState('Northstar Senior Living');
+  const [facilityOrganizationId, setFacilityOrganizationId] = useState('org-1');
+  const [facilityName, setFacilityName] = useState('Cedar Grove');
+  const [residentOrganizationId, setResidentOrganizationId] = useState('org-1');
+  const [residentFacilityId, setResidentFacilityId] = useState('facility-1');
+  const [residentFirstName, setResidentFirstName] = useState('Maria');
+  const [residentLastName, setResidentLastName] = useState('Alvarez');
+  const [userOrganizationId, setUserOrganizationId] = useState('org-1');
+  const [userEmail, setUserEmail] = useState('caregiver@example.com');
+  const [userRoleTier, setUserRoleTier] = useState('EMPLOYEE');
   const [apiWorkflowLog, setApiWorkflowLog] = useState<string[]>(['No API workflow actions run yet.']);
   const globalSearchRef = useRef<HTMLInputElement>(null);
   const apiBaseUrl = getConfiguredApiBaseUrl();
@@ -288,6 +302,8 @@ function App() {
   };
 
   const runDemoLogin = async () => {
+    setLoginPassword('change-me-for-local-demo-only');
+    setMfaCode('123456');
     await runApiAction('Demo login', async (client) => {
       const login = await client.login('b094650@gmail.com', 'change-me-for-local-demo-only');
 
@@ -301,6 +317,8 @@ function App() {
 
           if (mfa.ok) {
             setApiSessionId(sessionId);
+            localStorage.setItem('hubsteria.sessionId', sessionId);
+            setPendingMfaChallengeId('');
             return { ok: true, status: 200, data: { sessionId, mfaVerified: true } };
           }
 
@@ -318,6 +336,59 @@ function App() {
     }
 
     return apiSessionId;
+  };
+
+  const handleLogin = async () => {
+    await runApiAction('Login', async (client) => {
+      const login = await client.login(loginEmail, loginPassword);
+
+      if (login.ok) {
+        const data = login.data as { session?: { id?: string }; mfaChallenge?: { id?: string } };
+        const sessionId = data.session?.id;
+
+        if (sessionId) {
+          setApiSessionId(sessionId);
+          localStorage.setItem('hubsteria.sessionId', sessionId);
+        }
+
+        if (data.mfaChallenge?.id) {
+          setPendingMfaChallengeId(data.mfaChallenge.id);
+          return { ok: true, status: 200, data: { sessionId, mfaRequired: true } };
+        }
+      }
+
+      return login;
+    });
+  };
+
+  const handleVerifyMfa = async () => {
+    await runApiAction('Verify MFA', async (client) => {
+      if (!apiSessionId || !pendingMfaChallengeId) {
+        throw new Error('Login first to create an MFA challenge.');
+      }
+
+      const result = await client.verifyMfa(apiSessionId, pendingMfaChallengeId, mfaCode);
+
+      if (result.ok) {
+        setPendingMfaChallengeId('');
+      }
+
+      return result;
+    });
+  };
+
+  const handleLogout = async () => {
+    await runApiAction('Logout', async (client) => {
+      if (!apiSessionId) {
+        throw new Error('No active session.');
+      }
+
+      const result = await client.logout(apiSessionId);
+      setApiSessionId('');
+      setPendingMfaChallengeId('');
+      localStorage.removeItem('hubsteria.sessionId');
+      return result;
+    });
   };
 
   return (
@@ -584,63 +655,200 @@ function App() {
             <button type="button" onClick={runDemoLogin}>
               Demo login + MFA
             </button>
-            <button
-              type="button"
-              onClick={() =>
-                runApiAction('Create organization', (client) =>
-                  client.createOrganization(requireDemoSession(), 'Northstar Senior Living')
-                )
-              }
-            >
-              Create organization
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                runApiAction('Create facility', (client) =>
-                  client.createFacility(requireDemoSession(), { organizationId: 'org-1', name: 'Cedar Grove' })
-                )
-              }
-            >
-              Create facility
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                runApiAction('Create resident', (client) =>
-                  client.createResident(requireDemoSession(), {
-                    organizationId: 'org-1',
-                    facilityId: 'facility-1',
-                    firstName: 'Maria',
-                    lastName: 'Alvarez',
-                    preferredName: 'Maria',
-                    room: '214B',
-                    levelOfCare: 'Memory Care'
-                  })
-                )
-              }
-            >
-              Create resident
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                runApiAction('List residents', (client) => client.listResidents(requireDemoSession(), 'org-1', 'facility-1'))
-              }
-            >
-              List residents
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                runApiAction('List users', (client) => client.listUsers(requireDemoSession(), 'org-1'))
-              }
-            >
-              List users
-            </button>
             <a href={`${apiBaseUrl}/openapi.json`} target="_blank" rel="noreferrer">
               Open API contract
             </a>
+          </div>
+
+          <div className="api-auth-grid">
+            <div className="api-auth-card">
+              <div className="card-heading">
+                <span>Login</span>
+                <strong>Session and MFA flow</strong>
+              </div>
+              <label htmlFor="api-login-email">Email</label>
+              <input
+                id="api-login-email"
+                value={loginEmail}
+                onChange={(event) => setLoginEmail(event.target.value)}
+                type="email"
+              />
+              <label htmlFor="api-login-password">Password</label>
+              <input
+                id="api-login-password"
+                value={loginPassword}
+                onChange={(event) => setLoginPassword(event.target.value)}
+                type="password"
+                placeholder="Enter backend password"
+              />
+              <button type="button" onClick={handleLogin}>
+                Login
+              </button>
+            </div>
+
+            <div className="api-auth-card">
+              <div className="card-heading">
+                <span>MFA</span>
+                <strong>{pendingMfaChallengeId ? `Challenge ${pendingMfaChallengeId}` : 'No challenge pending'}</strong>
+              </div>
+              <label htmlFor="api-mfa-code">MFA code</label>
+              <input
+                id="api-mfa-code"
+                value={mfaCode}
+                onChange={(event) => setMfaCode(event.target.value)}
+                inputMode="numeric"
+                placeholder="123456"
+              />
+              <button type="button" onClick={handleVerifyMfa}>
+                Verify MFA
+              </button>
+            </div>
+
+            <div className="api-auth-card">
+              <div className="card-heading">
+                <span>Session state</span>
+                <strong>{apiSessionId || 'No active session'}</strong>
+              </div>
+              <p>
+                Protected actions use the active session and send it as <strong>x-session-id</strong>.
+              </p>
+              <button type="button" onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
+          </div>
+
+          <div className="api-crud-grid">
+            <div className="api-crud-card">
+              <div className="card-heading">
+                <span>Organizations</span>
+                <strong>Create and list</strong>
+              </div>
+              <label htmlFor="api-organization-name">Organization name</label>
+              <input id="api-organization-name" value={organizationName} onChange={(event) => setOrganizationName(event.target.value)} />
+              <div className="api-mini-actions">
+                <button
+                  type="button"
+                  onClick={() => runApiAction('Create organization', (client) => client.createOrganization(requireDemoSession(), organizationName))}
+                >
+                  Create organization
+                </button>
+                <button type="button" onClick={() => runApiAction('List organizations', (client) => client.listOrganizations(requireDemoSession()))}>
+                  List organizations
+                </button>
+              </div>
+            </div>
+
+            <div className="api-crud-card">
+              <div className="card-heading">
+                <span>Facilities</span>
+                <strong>Create and list</strong>
+              </div>
+              <label htmlFor="api-facility-org">Organization ID</label>
+              <input id="api-facility-org" value={facilityOrganizationId} onChange={(event) => setFacilityOrganizationId(event.target.value)} />
+              <label htmlFor="api-facility-name">Facility name</label>
+              <input id="api-facility-name" value={facilityName} onChange={(event) => setFacilityName(event.target.value)} />
+              <div className="api-mini-actions">
+                <button
+                  type="button"
+                  onClick={() =>
+                    runApiAction('Create facility', (client) =>
+                      client.createFacility(requireDemoSession(), { organizationId: facilityOrganizationId, name: facilityName })
+                    )
+                  }
+                >
+                  Create facility
+                </button>
+                <button
+                  type="button"
+                  onClick={() => runApiAction('List facilities', (client) => client.listFacilities(requireDemoSession(), facilityOrganizationId))}
+                >
+                  List facilities
+                </button>
+              </div>
+            </div>
+
+            <div className="api-crud-card">
+              <div className="card-heading">
+                <span>Residents</span>
+                <strong>Create and list</strong>
+              </div>
+              <label htmlFor="api-resident-org">Organization ID</label>
+              <input id="api-resident-org" value={residentOrganizationId} onChange={(event) => setResidentOrganizationId(event.target.value)} />
+              <label htmlFor="api-resident-facility">Facility ID</label>
+              <input id="api-resident-facility" value={residentFacilityId} onChange={(event) => setResidentFacilityId(event.target.value)} />
+              <label htmlFor="api-resident-first">First name</label>
+              <input id="api-resident-first" value={residentFirstName} onChange={(event) => setResidentFirstName(event.target.value)} />
+              <label htmlFor="api-resident-last">Last name</label>
+              <input id="api-resident-last" value={residentLastName} onChange={(event) => setResidentLastName(event.target.value)} />
+              <div className="api-mini-actions">
+                <button
+                  type="button"
+                  onClick={() =>
+                    runApiAction('Create resident', (client) =>
+                      client.createResident(requireDemoSession(), {
+                        organizationId: residentOrganizationId,
+                        facilityId: residentFacilityId,
+                        firstName: residentFirstName,
+                        lastName: residentLastName
+                      })
+                    )
+                  }
+                >
+                  Create resident
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    runApiAction('List residents', (client) =>
+                      client.listResidents(requireDemoSession(), residentOrganizationId, residentFacilityId)
+                    )
+                  }
+                >
+                  List residents
+                </button>
+              </div>
+            </div>
+
+            <div className="api-crud-card">
+              <div className="card-heading">
+                <span>Users</span>
+                <strong>Create and list</strong>
+              </div>
+              <label htmlFor="api-user-org">Organization ID</label>
+              <input id="api-user-org" value={userOrganizationId} onChange={(event) => setUserOrganizationId(event.target.value)} />
+              <label htmlFor="api-user-email">User email</label>
+              <input id="api-user-email" value={userEmail} onChange={(event) => setUserEmail(event.target.value)} />
+              <label htmlFor="api-user-role">Role tier</label>
+              <select id="api-user-role" value={userRoleTier} onChange={(event) => setUserRoleTier(event.target.value)}>
+                {['T2', 'T3', 'EMPLOYEE', 'FAMILY', 'RESIDENT'].map((tier) => (
+                  <option key={tier} value={tier}>
+                    {tier}
+                  </option>
+                ))}
+              </select>
+              <div className="api-mini-actions">
+                <button
+                  type="button"
+                  onClick={() =>
+                    runApiAction('Create user', (client) =>
+                      client.createUser(requireDemoSession(), {
+                        email: userEmail,
+                        roleTier: userRoleTier,
+                        organizationId: userOrganizationId,
+                        facilityIds: [],
+                        permissions: ['resident:read']
+                      })
+                    )
+                  }
+                >
+                  Create user
+                </button>
+                <button type="button" onClick={() => runApiAction('List users', (client) => client.listUsers(requireDemoSession(), userOrganizationId))}>
+                  List users
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="api-endpoint-grid" aria-label="Connected API endpoints">
