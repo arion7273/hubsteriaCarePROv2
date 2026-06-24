@@ -49,6 +49,64 @@ export class BackendFoundationService {
     return saved;
   }
 
+  async listOrganizations(context: AccessContext): Promise<Organization[]> {
+    const decision = requirePermission(context, { scope: 'platform' }, 'platform:manage');
+    assertAllowed(decision);
+
+    return this.repositories.organizations.list();
+  }
+
+  async getOrganization(context: AccessContext, organizationId: UUID): Promise<Organization> {
+    const decision = requirePermission(context, { scope: 'organization', organizationId }, 'organization:manage');
+    assertAllowed(decision);
+
+    const organization = await this.repositories.organizations.getById(organizationId);
+
+    if (!organization) {
+      throw new Error('Organization not found');
+    }
+
+    return organization;
+  }
+
+  async updateOrganization(
+    context: AccessContext,
+    organizationId: UUID,
+    updates: Partial<Omit<Organization, 'id'>>
+  ): Promise<Organization> {
+    const decision = requirePermission(context, { scope: 'platform' }, 'platform:manage');
+    assertAllowed(decision);
+
+    const existing = await this.repositories.organizations.getById(organizationId);
+
+    if (!existing) {
+      throw new Error('Organization not found');
+    }
+
+    const saved = await this.repositories.organizations.save({
+      ...existing,
+      ...updates,
+      id: existing.id
+    });
+
+    await this.repositories.auditLogs.append(
+      createAuditEvent({
+        id: this.createId(),
+        action: 'update',
+        actorUserId: context.user.id,
+        actorRole: context.user.roleTier,
+        entityType: 'Organization',
+        entityId: saved.id,
+        scope: { scope: 'organization', organizationId: saved.id },
+        beforeState: existing,
+        afterState: saved,
+        now: this.clock()
+      })
+    );
+
+    return saved;
+  }
+
   async createFacility(
     context: AccessContext,
     input: {
@@ -86,6 +144,72 @@ export class BackendFoundationService {
           facilityId: saved.id
         },
         beforeState: null,
+        afterState: saved,
+        now: this.clock()
+      })
+    );
+
+    return saved;
+  }
+
+  async getFacility(context: AccessContext, facilityId: UUID): Promise<Facility> {
+    const facility = await this.repositories.facilities.getById(facilityId);
+
+    if (!facility) {
+      throw new Error('Facility not found');
+    }
+
+    const decision = requirePermission(
+      context,
+      { scope: 'facility', organizationId: facility.organizationId, facilityId: facility.id },
+      'facility:manage'
+    );
+    assertAllowed(decision);
+
+    return facility;
+  }
+
+  async listFacilitiesByOrganization(context: AccessContext, organizationId: UUID): Promise<Facility[]> {
+    const decision = requirePermission(context, { scope: 'organization', organizationId }, 'facility:manage');
+    assertAllowed(decision);
+
+    return this.repositories.facilities.listByOrganization(organizationId);
+  }
+
+  async updateFacility(
+    context: AccessContext,
+    facilityId: UUID,
+    updates: Partial<Omit<Facility, 'id' | 'organizationId'>>
+  ): Promise<Facility> {
+    const existing = await this.getFacility(context, facilityId);
+    const decision = requirePermission(
+      context,
+      { scope: 'facility', organizationId: existing.organizationId, facilityId: existing.id },
+      'facility:manage'
+    );
+    assertAllowed(decision);
+
+    const saved = await this.repositories.facilities.save({
+      ...existing,
+      ...updates,
+      id: existing.id,
+      organizationId: existing.organizationId
+    });
+
+    await this.repositories.auditLogs.append(
+      createAuditEvent({
+        id: this.createId(),
+        action: 'update',
+        actorUserId: context.user.id,
+        actorRole: context.user.roleTier,
+        entityType: 'Facility',
+        entityId: saved.id,
+        scope: {
+          scope: 'facility',
+          organizationId: saved.organizationId,
+          facilityId: saved.id
+        },
+        beforeState: existing,
         afterState: saved,
         now: this.clock()
       })

@@ -3,14 +3,20 @@ import {
   createOrganizationHandler,
   createResidentHandler,
   createUserHandler,
+  getFacilityHandler,
+  getOrganizationHandler,
   getResidentHandler,
   listFeaturesHandler,
+  listFacilitiesHandler,
+  listOrganizationsHandler,
   listResidentsHandler,
   listUsersHandler,
   loginHandler,
   logoutHandler,
   passwordResetHandler,
   registerFeatureHandler,
+  updateFacilityHandler,
+  updateOrganizationHandler,
   updateResidentHandler,
   updateUserHandler,
   verifyMfaHandler,
@@ -25,6 +31,8 @@ import {
   isCreateOrganizationBody,
   isCreateResidentBody,
   isCreateUserBody,
+  isUpdateFacilityBody,
+  isUpdateOrganizationBody,
   isLoginBody,
   isPasswordResetBody,
   isRegisteredFeatureBody,
@@ -74,10 +82,42 @@ const routeConfigs: RouteConfig[] = [
     handler: createOrganizationHandler as RouteHandler
   },
   {
+    method: 'GET',
+    path: '/organizations',
+    handler: listOrganizationsHandler
+  },
+  {
+    method: 'GET',
+    path: '/organizations/get',
+    handler: getOrganizationHandler
+  },
+  {
+    method: 'PATCH',
+    path: '/organizations',
+    validate: isUpdateOrganizationBody,
+    handler: updateOrganizationHandler as RouteHandler
+  },
+  {
     method: 'POST',
     path: '/facilities',
     validate: isCreateFacilityBody,
     handler: createFacilityHandler as RouteHandler
+  },
+  {
+    method: 'GET',
+    path: '/facilities',
+    handler: listFacilitiesHandler
+  },
+  {
+    method: 'GET',
+    path: '/facilities/get',
+    handler: getFacilityHandler
+  },
+  {
+    method: 'PATCH',
+    path: '/facilities',
+    validate: isUpdateFacilityBody,
+    handler: updateFacilityHandler as RouteHandler
   },
   {
     method: 'POST',

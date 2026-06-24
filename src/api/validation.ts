@@ -1,7 +1,7 @@
 import type { RegisteredFeature } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
-import type { CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
+import type { CreateFacilityBody, CreateOrganizationBody, CreateResidentBody, CreateUserBody, LoginBody, UpdateFacilityBody, UpdateOrganizationBody, UpdateResidentBody, UpdateUserBody, VerifyMfaBody } from './handlers';
 
 export type ValidationResult =
   | {
@@ -51,8 +51,28 @@ export function isCreateOrganizationBody(body: unknown): body is CreateOrganizat
   return isRecord(body) && isNonEmptyString(body.name);
 }
 
+export function isUpdateOrganizationBody(body: unknown): body is UpdateOrganizationBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.organizationId) &&
+    isRecord(body.updates) &&
+    (body.updates.name === undefined || isNonEmptyString(body.updates.name)) &&
+    (body.updates.status === undefined || ['active', 'suspended'].includes(String(body.updates.status)))
+  );
+}
+
 export function isCreateFacilityBody(body: unknown): body is CreateFacilityBody {
   return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.name);
+}
+
+export function isUpdateFacilityBody(body: unknown): body is UpdateFacilityBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.facilityId) &&
+    isRecord(body.updates) &&
+    (body.updates.name === undefined || isNonEmptyString(body.updates.name)) &&
+    (body.updates.status === undefined || ['active', 'suspended'].includes(String(body.updates.status)))
+  );
 }
 
 export function isRegisteredFeatureBody(body: unknown): body is RegisteredFeature {

@@ -116,6 +116,8 @@ describe('API foundation handlers', () => {
       expect.arrayContaining([
         expect.objectContaining({ method: 'POST', path: '/auth/login', authRequired: false }),
         expect.objectContaining({ method: 'POST', path: '/organizations', authRequired: true }),
+        expect.objectContaining({ method: 'PATCH', path: '/organizations', authRequired: true }),
+        expect.objectContaining({ method: 'GET', path: '/facilities', authRequired: true }),
         expect.objectContaining({ method: 'GET', path: '/feature-registry', authRequired: true }),
         expect.objectContaining({ method: 'POST', path: '/residents', authRequired: true }),
         expect.objectContaining({ method: 'PATCH', path: '/residents', authRequired: true }),
@@ -177,6 +179,65 @@ describe('API foundation handlers', () => {
 
     expect(facility).toMatchObject({ ok: true, status: 201 });
     await expect(services.repositories.auditLogs.listByEntity('Facility', 'facility-1')).resolves.toHaveLength(1);
+  });
+
+  it('lists, reads, and updates organizations and facilities through the API router', async () => {
+    const services = createApiServices();
+    const router = createApiRouter(services);
+    const sessionId = await createVerifiedSession(services);
+    await router.handle({
+      method: 'POST',
+      path: '/organizations',
+      sessionId,
+      body: { name: 'Northstar Senior Living' }
+    });
+    await router.handle({
+      method: 'POST',
+      path: '/facilities',
+      sessionId,
+      body: { organizationId: 'org-1', name: 'Cedar Grove' }
+    });
+
+    await expect(router.handle({ method: 'GET', path: '/organizations', sessionId })).resolves.toMatchObject({
+      ok: true,
+      data: [expect.objectContaining({ id: 'org-1' })]
+    });
+
+    await expect(
+      router.handle({
+        method: 'GET',
+        path: '/organizations/get',
+        sessionId,
+        query: { organizationId: 'org-1' }
+      })
+    ).resolves.toMatchObject({ ok: true, data: expect.objectContaining({ name: 'Northstar Senior Living' }) });
+
+    await expect(
+      router.handle({
+        method: 'PATCH',
+        path: '/organizations',
+        sessionId,
+        body: { organizationId: 'org-1', updates: { status: 'suspended' } }
+      })
+    ).resolves.toMatchObject({ ok: true, data: expect.objectContaining({ status: 'suspended' }) });
+
+    await expect(
+      router.handle({
+        method: 'GET',
+        path: '/facilities',
+        sessionId,
+        query: { organizationId: 'org-1' }
+      })
+    ).resolves.toMatchObject({ ok: true, data: [expect.objectContaining({ id: 'facility-1' })] });
+
+    await expect(
+      router.handle({
+        method: 'PATCH',
+        path: '/facilities',
+        sessionId,
+        body: { facilityId: 'facility-1', updates: { name: 'Cedar Grove East' } }
+      })
+    ).resolves.toMatchObject({ ok: true, data: expect.objectContaining({ name: 'Cedar Grove East' }) });
   });
 
   it('blocks protected handlers when MFA is not verified', async () => {

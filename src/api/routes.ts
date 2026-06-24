@@ -39,10 +39,46 @@ export const apiRoutes: ApiRouteDefinition[] = [
     description: 'Create organization'
   },
   {
+    method: 'GET',
+    path: '/organizations',
+    authRequired: true,
+    description: 'List organizations'
+  },
+  {
+    method: 'GET',
+    path: '/organizations/get',
+    authRequired: true,
+    description: 'Get organization by ID'
+  },
+  {
+    method: 'PATCH',
+    path: '/organizations',
+    authRequired: true,
+    description: 'Update organization'
+  },
+  {
     method: 'POST',
     path: '/facilities',
     authRequired: true,
     description: 'Create facility'
+  },
+  {
+    method: 'GET',
+    path: '/facilities',
+    authRequired: true,
+    description: 'List facilities by organization'
+  },
+  {
+    method: 'GET',
+    path: '/facilities/get',
+    authRequired: true,
+    description: 'Get facility by ID'
+  },
+  {
+    method: 'PATCH',
+    path: '/facilities',
+    authRequired: true,
+    description: 'Update facility'
   },
   {
     method: 'POST',

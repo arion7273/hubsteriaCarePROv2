@@ -66,6 +66,20 @@ describe('BackendFoundationService', () => {
     );
   });
 
+  it('lists, reads, and updates organizations with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+
+    await expect(service.listOrganizations({ user: t1User })).resolves.toHaveLength(1);
+    await expect(service.getOrganization({ user: t2User }, 'org-1')).resolves.toMatchObject({
+      name: 'Northstar Senior Living'
+    });
+    await expect(service.updateOrganization({ user: t1User }, 'org-1', { status: 'suspended' })).resolves.toMatchObject({
+      status: 'suspended'
+    });
+    await expect(repositories.auditLogs.listByEntity('Organization', 'org-1')).resolves.toHaveLength(2);
+  });
+
   it('creates facilities for organization administrators in their organization', async () => {
     const { repositories, service } = createTestService();
     await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
@@ -87,6 +101,19 @@ describe('BackendFoundationService', () => {
     await expect(service.createFacility({ user: t2User }, { organizationId: 'org-2', name: 'Blocked Facility' })).rejects.toThrow(
       'Cross-organization access denied'
     );
+  });
+
+  it('lists, reads, and updates facilities with audit logs', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+
+    await expect(service.listFacilitiesByOrganization({ user: t2User }, 'org-1')).resolves.toHaveLength(1);
+    await expect(service.getFacility({ user: t3User }, 'facility-1')).resolves.toMatchObject({ name: 'Cedar Grove' });
+    await expect(service.updateFacility({ user: t3User }, 'facility-1', { name: 'Cedar Grove East' })).resolves.toMatchObject({
+      name: 'Cedar Grove East'
+    });
+    await expect(repositories.auditLogs.listByEntity('Facility', 'facility-1')).resolves.toHaveLength(2);
   });
 
   it('registers features only through platform administrators and writes audit events', async () => {

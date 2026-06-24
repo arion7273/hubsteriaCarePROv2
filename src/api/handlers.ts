@@ -1,5 +1,5 @@
 import type { RegisteredFeature } from '../domain';
-import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type Resident, type User, type UUID } from '../domain';
+import { AuthService, BackendFoundationService, type AccessContext, type BackendRepositories, type Facility, type Organization, type Resident, type User, type UUID } from '../domain';
 import type { ApiRequest, ApiResponse } from './http';
 import { fail, ok, toApiResponse } from './http';
 
@@ -24,9 +24,19 @@ export type CreateOrganizationBody = {
   name: string;
 };
 
+export type UpdateOrganizationBody = {
+  organizationId: UUID;
+  updates: Partial<Omit<Organization, 'id'>>;
+};
+
 export type CreateFacilityBody = {
   organizationId: UUID;
   name: string;
+};
+
+export type UpdateFacilityBody = {
+  facilityId: UUID;
+  updates: Partial<Omit<Facility, 'id' | 'organizationId'>>;
 };
 
 export type CreateResidentBody = Omit<Resident, 'id' | 'status'>;
@@ -82,11 +92,65 @@ export async function createOrganizationHandler(
   }, 201);
 }
 
+export async function listOrganizationsHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => services.backend.listOrganizations(context));
+}
+
+export async function getOrganizationHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const organizationId = request.query?.organizationId;
+
+    if (!organizationId) {
+      throw new Error('organizationId is required');
+    }
+
+    return services.backend.getOrganization(context, organizationId);
+  });
+}
+
+export async function updateOrganizationHandler(services: ApiServices, request: ApiRequest<UpdateOrganizationBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.updateOrganization(context, request.body.organizationId, request.body.updates);
+  });
+}
+
 export async function createFacilityHandler(services: ApiServices, request: ApiRequest<CreateFacilityBody>): Promise<ApiResponse> {
   return withContext(services, request, async (context) => {
     assertBody(request.body);
     return services.backend.createFacility(context, request.body);
   }, 201);
+}
+
+export async function listFacilitiesHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const organizationId = request.query?.organizationId;
+
+    if (!organizationId) {
+      throw new Error('organizationId is required');
+    }
+
+    return services.backend.listFacilitiesByOrganization(context, organizationId);
+  });
+}
+
+export async function getFacilityHandler(services: ApiServices, request: ApiRequest): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    const facilityId = request.query?.facilityId;
+
+    if (!facilityId) {
+      throw new Error('facilityId is required');
+    }
+
+    return services.backend.getFacility(context, facilityId);
+  });
+}
+
+export async function updateFacilityHandler(services: ApiServices, request: ApiRequest<UpdateFacilityBody>): Promise<ApiResponse> {
+  return withContext(services, request, async (context) => {
+    assertBody(request.body);
+    return services.backend.updateFacility(context, request.body.facilityId, request.body.updates);
+  });
 }
 
 export async function registerFeatureHandler(services: ApiServices, request: ApiRequest<RegisteredFeature>): Promise<ApiResponse> {

@@ -53,6 +53,14 @@ export const openApiDocument = {
       }
     },
     '/organizations': {
+      get: {
+        summary: 'List organizations',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'Organization list' },
+          '403': { description: 'Insufficient permissions' }
+        }
+      },
       post: {
         summary: 'Create organization',
         security: [{ session: [] }],
@@ -60,15 +68,59 @@ export const openApiDocument = {
           '201': { description: 'Organization created' },
           '403': { description: 'Insufficient permissions' }
         }
+      },
+      patch: {
+        summary: 'Update organization',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'Organization updated' },
+          '404': { description: 'Organization not found' }
+        }
+      }
+    },
+    '/organizations/get': {
+      get: {
+        summary: 'Get organization by ID',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'Organization record' },
+          '404': { description: 'Organization not found' }
+        }
       }
     },
     '/facilities': {
+      get: {
+        summary: 'List facilities by organization',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'Facility list' },
+          '403': { description: 'Insufficient permissions or tenant mismatch' }
+        }
+      },
       post: {
         summary: 'Create facility',
         security: [{ session: [] }],
         responses: {
           '201': { description: 'Facility created' },
           '403': { description: 'Insufficient permissions or tenant mismatch' }
+        }
+      },
+      patch: {
+        summary: 'Update facility',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'Facility updated' },
+          '404': { description: 'Facility not found' }
+        }
+      }
+    },
+    '/facilities/get': {
+      get: {
+        summary: 'Get facility by ID',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'Facility record' },
+          '404': { description: 'Facility not found' }
         }
       }
     },
