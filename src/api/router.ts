@@ -11,6 +11,7 @@ import {
 } from './handlers';
 import type { ApiRequest, ApiResponse, HttpMethod } from './http';
 import { fail } from './http';
+import { composeMiddleware, type ApiMiddleware } from './middleware';
 import { apiRoutes } from './routes';
 import {
   isCreateFacilityBody,
@@ -80,32 +81,37 @@ const routeConfigs: RouteConfig[] = [
   }
 ];
 
-export function createApiRouter(services: ApiServices) {
+export function createApiRouter(services: ApiServices, middlewares: ApiMiddleware[] = []) {
+  const dispatch = async (request: ApiRequest): Promise<ApiResponse> => {
+    const route = routeConfigs.find((candidate) => candidate.path === request.path && candidate.method === request.method);
+
+    if (!route) {
+      const pathExists = apiRoutes.some((candidate) => candidate.path === request.path);
+      return pathExists
+        ? fail('method_not_allowed', `Method ${request.method} is not allowed for ${request.path}`, 405)
+        : fail('not_found', `Route not found: ${request.method} ${request.path}`, 404);
+    }
+
+    if (route.validate) {
+      const validation = validateRequestBody(request, route.validate);
+
+      if (!validation.valid) {
+        return validation.response;
+      }
+
+      return route.handler(services, {
+        ...request,
+        body: validation.body
+      });
+    }
+
+    return route.handler(services, request);
+  };
+  const handle = composeMiddleware(middlewares, dispatch);
+
   return {
     async handle(request: ApiRequest): Promise<ApiResponse> {
-      const route = routeConfigs.find((candidate) => candidate.path === request.path && candidate.method === request.method);
-
-      if (!route) {
-        const pathExists = apiRoutes.some((candidate) => candidate.path === request.path);
-        return pathExists
-          ? fail('method_not_allowed', `Method ${request.method} is not allowed for ${request.path}`, 405)
-          : fail('not_found', `Route not found: ${request.method} ${request.path}`, 404);
-      }
-
-      if (route.validate) {
-        const validation = validateRequestBody(request, route.validate);
-
-        if (!validation.valid) {
-          return validation.response;
-        }
-
-        return route.handler(services, {
-          ...request,
-          body: validation.body
-        });
-      }
-
-      return route.handler(services, request);
+      return handle(request);
     }
   };
 }

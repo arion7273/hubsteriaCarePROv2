@@ -9,12 +9,18 @@ import {
 import {
   apiRoutes,
   createApiRouter,
+  createCsrfMiddleware,
   createFacilityHandler,
   createOrganizationHandler,
+  createRateLimitMiddleware,
+  createRequestIdMiddleware,
+  createRequestLoggingMiddleware,
   listFeaturesHandler,
   loginHandler,
   openApiDocument,
+  type ApiRequestLog,
   registerFeatureHandler,
+  redactBody,
   verifyMfaHandler,
   type ApiServices
 } from '.';
@@ -267,5 +273,82 @@ describe('API foundation handlers', () => {
       ok: false,
       status: 405
     });
+  });
+
+  it('applies rate limits before dispatching handlers', async () => {
+    const services = createApiServices();
+    const router = createApiRouter(services, [
+      createRateLimitMiddleware({
+        limit: 1,
+        keyForRequest: (request) => request.ip ?? 'anonymous'
+      })
+    ]);
+
+    await router.handle({
+      method: 'POST',
+      path: '/auth/login',
+      ip: '127.0.0.1',
+      body: { email: t1User.email, password: 'wrong-password' }
+    });
+
+    await expect(
+      router.handle({
+        method: 'POST',
+        path: '/auth/login',
+        ip: '127.0.0.1',
+        body: { email: t1User.email, password: 'wrong-password' }
+      })
+    ).resolves.toMatchObject({
+      ok: false,
+      status: 429,
+      error: { code: 'rate_limited' }
+    });
+  });
+
+  it('requires CSRF token for cookie-backed unsafe requests', async () => {
+    const services = createApiServices();
+    const router = createApiRouter(services, [createCsrfMiddleware()]);
+
+    await expect(
+      router.handle({
+        method: 'POST',
+        path: '/auth/login',
+        headers: { cookie: 'session=abc' },
+        body: { email: t1User.email, password: 'correct-password' }
+      })
+    ).resolves.toMatchObject({
+      ok: false,
+      status: 403,
+      error: { code: 'csrf_token_required' }
+    });
+  });
+
+  it('adds request IDs and logs redacted request bodies', async () => {
+    const services = createApiServices();
+    const logs: ApiRequestLog[] = [];
+    const router = createApiRouter(services, [
+      createRequestIdMiddleware(() => 'request-1'),
+      createRequestLoggingMiddleware(logs)
+    ]);
+
+    await router.handle({
+      method: 'POST',
+      path: '/auth/login',
+      body: { email: t1User.email, password: 'wrong-password' }
+    });
+
+    expect(logs).toEqual([
+      expect.objectContaining({
+        requestId: 'request-1',
+        method: 'POST',
+        path: '/auth/login',
+        status: 401,
+        body: {
+          email: t1User.email,
+          password: '[REDACTED]'
+        }
+      })
+    ]);
+    expect(redactBody({ code: '123456', safe: 'value' })).toEqual({ code: '[REDACTED]', safe: 'value' });
   });
 });

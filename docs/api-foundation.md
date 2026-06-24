@@ -23,6 +23,11 @@ The current API layer is framework-agnostic. It defines handler contracts that c
   - request body validation for current routes
 - `src/api/openapi.ts`
   - initial OpenAPI 3.1 API contract
+- `src/api/middleware.ts`
+  - request ID middleware
+  - rate limiting middleware
+  - CSRF middleware for cookie-backed unsafe requests
+  - redacted request logging
 
 ## Initial routes
 
@@ -46,13 +51,14 @@ The current API layer is framework-agnostic. It defines handler contracts that c
 - Invalid request bodies must return `400`.
 - Wrong methods must return `405`.
 - Unknown routes must return `404`.
+- Rate-limited requests must return `429`.
+- Cookie-backed unsafe requests must include a CSRF token.
+- Request logs must redact passwords, MFA codes, tokens, API keys, and secrets.
 
 ## Next implementation step
 
 Mount these handlers into a real HTTP runtime and add:
 
-- rate limiting
-- CSRF protection if cookie sessions are used
 - production logging
 - generated OpenAPI documentation publishing
 - integration tests against a test database

@@ -7,6 +7,9 @@ export type ApiRequest<TBody = unknown> = {
   path: string;
   body?: TBody;
   sessionId?: UUID;
+  headers?: Record<string, string | undefined>;
+  ip?: string;
+  requestId?: string;
 };
 
 export type ApiResponse<TData = unknown> =
@@ -26,6 +29,16 @@ export type ApiResponse<TData = unknown> =
 
 export type AuthenticatedApiRequest<TBody = unknown> = ApiRequest<TBody> & {
   context: AccessContext;
+};
+
+export type ApiRequestLog = {
+  requestId: string;
+  method: HttpMethod;
+  path: string;
+  status: number;
+  ip?: string;
+  sessionPresent: boolean;
+  body: unknown;
 };
 
 export function ok<TData>(data: TData, status = 200): ApiResponse<TData> {
