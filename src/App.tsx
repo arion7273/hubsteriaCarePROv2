@@ -202,8 +202,17 @@ const connectedApiEndpoints = [
   'GET /residents',
   'PATCH /residents',
   'POST /users',
-  'GET /users'
+  'GET /users',
+  'GET /assessments',
+  'GET /tasks',
+  'GET /medication-orders',
+  'GET /incidents',
+  'GET /billing/charges',
+  'GET /background-jobs',
+  'GET /operational-records'
 ];
+
+type LiveApiRecord = Record<string, unknown>;
 
 function App() {
   const [scope, setScope] = useState<DashboardScope>('T1 Master');
@@ -228,6 +237,18 @@ function App() {
   const [userOrganizationId, setUserOrganizationId] = useState('org-1');
   const [userEmail, setUserEmail] = useState('caregiver@example.com');
   const [userRoleTier, setUserRoleTier] = useState('EMPLOYEE');
+  const [clinicalOrganizationId, setClinicalOrganizationId] = useState('org-1');
+  const [clinicalFacilityId, setClinicalFacilityId] = useState('facility-1');
+  const [clinicalResidentId, setClinicalResidentId] = useState('resident-1');
+  const [clinicalStatus, setClinicalStatus] = useState('Static clinical blueprint data is shown until live API records are loaded.');
+  const [clinicalError, setClinicalError] = useState('');
+  const [liveAssessments, setLiveAssessments] = useState<LiveApiRecord[]>([]);
+  const [liveTasks, setLiveTasks] = useState<LiveApiRecord[]>([]);
+  const [liveMedications, setLiveMedications] = useState<LiveApiRecord[]>([]);
+  const [liveIncidents, setLiveIncidents] = useState<LiveApiRecord[]>([]);
+  const [liveBilling, setLiveBilling] = useState<LiveApiRecord[]>([]);
+  const [liveJobs, setLiveJobs] = useState<LiveApiRecord[]>([]);
+  const [liveOperationalRecords, setLiveOperationalRecords] = useState<LiveApiRecord[]>([]);
   const [apiWorkflowLog, setApiWorkflowLog] = useState<string[]>(['No API workflow actions run yet.']);
   const globalSearchRef = useRef<HTMLInputElement>(null);
   const apiBaseUrl = getConfiguredApiBaseUrl();
@@ -300,6 +321,13 @@ function App() {
 
     try {
       const result = await action(createConfiguredApiClient());
+      const response = result as { ok?: boolean; error?: { message?: string } } | undefined;
+      if (response?.ok === false && response.error?.message?.toLowerCase().includes('session')) {
+        setApiSessionId('');
+        setPendingMfaChallengeId('');
+        localStorage.removeItem('hubsteria-api-session-id');
+        setApiError('Session expired. Please login again.');
+      }
       addApiLog(`${label}: ${summarizeApiResult(result)}`);
       setApiActionStatus(`${label} complete`);
       return result;
@@ -369,6 +397,43 @@ function App() {
     }
 
     return apiSessionId;
+  };
+
+  const loadLiveRecords = async (
+    label: string,
+    setter: (records: LiveApiRecord[]) => void,
+    action: (client: ReturnType<typeof createConfiguredApiClient>, sessionId: string) => Promise<unknown>
+  ) => {
+    setClinicalStatus(`${label} loading...`);
+    setClinicalError('');
+    const result = await runApiAction(label, (client) => action(client, requireDemoSession()));
+    const records = extractApiRecords(result);
+
+    if (records) {
+      setter(records);
+      setClinicalStatus(`${label} loaded ${records.length} record${records.length === 1 ? '' : 's'}.`);
+      return;
+    }
+
+    setClinicalError(summarizeApiResult(result));
+    setClinicalStatus(`${label} failed.`);
+  };
+
+  const createLiveClinicalRecord = async (
+    label: string,
+    action: (client: ReturnType<typeof createConfiguredApiClient>, sessionId: string) => Promise<unknown>
+  ) => {
+    setClinicalStatus(`${label} saving...`);
+    setClinicalError('');
+    const result = await runApiAction(label, (client) => action(client, requireDemoSession()));
+    const response = result as { ok?: boolean; error?: { message?: string } } | undefined;
+
+    if (response?.ok) {
+      setClinicalStatus(`${label} saved. Reload the related live panel to refresh API data.`);
+    } else {
+      setClinicalError(response?.error?.message ?? summarizeApiResult(result));
+      setClinicalStatus(`${label} failed.`);
+    }
   };
 
   return (
@@ -780,6 +845,44 @@ function App() {
                   </button>
                 </div>
               </article>
+            </div>
+          </div>
+
+          <div className="clinical-api-panel" aria-label="High-value API workflow panel">
+            <div className="card-heading">
+              <span>Live workflow API</span>
+              <strong>{clinicalStatus}</strong>
+              {clinicalError ? <small className="api-error">Error: {clinicalError}</small> : <small>Use these controls to replace static panels with live API records.</small>}
+            </div>
+            <div className="clinical-api-scope-grid">
+              <label>
+                Organization ID
+                <input value={clinicalOrganizationId} onChange={(event) => setClinicalOrganizationId(event.target.value)} />
+              </label>
+              <label>
+                Facility ID
+                <input value={clinicalFacilityId} onChange={(event) => setClinicalFacilityId(event.target.value)} />
+              </label>
+              <label>
+                Resident ID
+                <input value={clinicalResidentId} onChange={(event) => setClinicalResidentId(event.target.value)} />
+              </label>
+            </div>
+            <div className="api-mini-actions">
+              <button type="button" disabled={!apiSessionId} onClick={() => loadLiveRecords('Load assessments', setLiveAssessments, (client, sessionId) => client.listAssessments(sessionId, clinicalResidentId))}>Load assessments</button>
+              <button type="button" disabled={!apiSessionId} onClick={() => loadLiveRecords('Load tasks', setLiveTasks, (client, sessionId) => client.listCareTasks(sessionId, clinicalResidentId))}>Load tasks</button>
+              <button type="button" disabled={!apiSessionId} onClick={() => loadLiveRecords('Load eMAR orders', setLiveMedications, (client, sessionId) => client.listMedicationOrders(sessionId, clinicalResidentId))}>Load eMAR orders</button>
+              <button type="button" disabled={!apiSessionId} onClick={() => loadLiveRecords('Load incidents', setLiveIncidents, (client, sessionId) => client.listIncidents(sessionId, clinicalResidentId))}>Load incidents</button>
+              <button type="button" disabled={!apiSessionId} onClick={() => loadLiveRecords('Load billing', setLiveBilling, (client, sessionId) => client.listBillingCharges(sessionId, clinicalResidentId))}>Load billing</button>
+              <button type="button" disabled={!apiSessionId} onClick={() => loadLiveRecords('Load background jobs', setLiveJobs, (client, sessionId) => client.listBackgroundJobs(sessionId, { organizationId: clinicalOrganizationId, facilityId: clinicalFacilityId, residentId: clinicalResidentId }))}>Load background jobs</button>
+              <button type="button" disabled={!apiSessionId} onClick={() => loadLiveRecords('Load operational history', setLiveOperationalRecords, (client, sessionId) => client.listOperationalRecords(sessionId, { organizationId: clinicalOrganizationId, facilityId: clinicalFacilityId, residentId: clinicalResidentId }))}>Load operational history</button>
+            </div>
+            <div className="api-mini-actions">
+              <button type="button" disabled={!apiSessionId} onClick={() => createLiveClinicalRecord('Create assessment', (client, sessionId) => client.createAssessment(sessionId, { organizationId: clinicalOrganizationId, facilityId: clinicalFacilityId, residentId: clinicalResidentId, type: 'Fall Risk Assessment', status: 'review', score: 8, answers: { source: 'ui' } }))}>Create assessment</button>
+              <button type="button" disabled={!apiSessionId} onClick={() => createLiveClinicalRecord('Create task', (client, sessionId) => client.createCareTask(sessionId, { organizationId: clinicalOrganizationId, facilityId: clinicalFacilityId, residentId: clinicalResidentId, title: 'UI follow-up task', taskType: 'one_time', dueAt: '2026-06-24T09:30:00.000Z', assignedStaff: 'Caregiver Lead', status: 'due' }))}>Create task</button>
+              <button type="button" disabled={!apiSessionId} onClick={() => createLiveClinicalRecord('Create eMAR order', (client, sessionId) => client.createMedicationOrder(sessionId, { organizationId: clinicalOrganizationId, facilityId: clinicalFacilityId, residentId: clinicalResidentId, medication: 'Lisinopril', dosage: '10mg', route: 'PO', schedule: 'Daily 8 AM', status: 'active' }))}>Create eMAR order</button>
+              <button type="button" disabled={!apiSessionId} onClick={() => createLiveClinicalRecord('Create incident', (client, sessionId) => client.createIncident(sessionId, { organizationId: clinicalOrganizationId, facilityId: clinicalFacilityId, residentId: clinicalResidentId, type: 'fall', severity: 'warning', status: 'open', summary: 'Resident slipped near dining room', occurredAt: '2026-06-24T10:00:00.000Z' }))}>Create incident</button>
+              <button type="button" disabled={!apiSessionId} onClick={() => createLiveClinicalRecord('Create billing charge', (client, sessionId) => client.createBillingCharge(sessionId, { organizationId: clinicalOrganizationId, facilityId: clinicalFacilityId, residentId: clinicalResidentId, type: 'ancillary', description: 'UI service charge', amountCents: 1000, status: 'posted' }))}>Create billing charge</button>
             </div>
           </div>
 
@@ -1228,6 +1331,8 @@ function App() {
             </div>
           </div>
 
+          <LiveWorkflowRecords title="Live assessment API records" records={liveAssessments} fields={['type', 'status', 'score', 'residentId']} emptyText="No assessments loaded yet." />
+
           <div className="assessment-metric-grid">
             {assessmentMetrics.map((metric) => (
               <article className="assessment-metric-card" key={metric.label}>
@@ -1385,6 +1490,8 @@ function App() {
             </div>
           </div>
 
+          <LiveWorkflowRecords title="Live task API records" records={liveTasks} fields={['title', 'status', 'dueAt', 'assignedStaff']} emptyText="No tasks loaded yet." />
+
           <div className="task-metric-grid">
             {taskMetrics.map((metric) => (
               <article className="task-metric-card" key={metric.label}>
@@ -1515,6 +1622,8 @@ function App() {
               <strong>Safety-first workflow</strong>
             </div>
           </div>
+
+          <LiveWorkflowRecords title="Live eMAR API records" records={liveMedications} fields={['medication', 'dosage', 'route', 'schedule', 'status']} emptyText="No medication orders loaded yet." />
 
           <div className="medication-metric-grid">
             {medicationMetrics.map((metric) => (
@@ -1832,6 +1941,8 @@ function App() {
               <strong>Compliance operations</strong>
             </div>
           </div>
+
+          <LiveWorkflowRecords title="Live incident API records" records={liveIncidents} fields={['type', 'severity', 'status', 'summary', 'occurredAt']} emptyText="No incidents loaded yet." />
 
           <div className="incident-metric-grid">
             {incidentMetrics.map((metric) => (
@@ -2170,6 +2281,8 @@ function App() {
             </div>
           </div>
 
+          <LiveWorkflowRecords title="Live billing API records" records={liveBilling} fields={['type', 'description', 'amountCents', 'status']} emptyText="No billing charges loaded yet." />
+
           <div className="billing-metric-grid">
             {billingMetrics.map((metric) => (
               <article className="billing-metric-card" key={metric.label}>
@@ -2302,6 +2415,11 @@ function App() {
               <span>No-code builder</span>
               <strong>Audit every action</strong>
             </div>
+          </div>
+
+          <div className="live-workflow-grid">
+            <LiveWorkflowRecords title="Live background job status" records={liveJobs} fields={['type', 'status', 'priority', 'attempts', 'lastError']} emptyText="No background jobs loaded yet." />
+            <LiveWorkflowRecords title="Live operational record history" records={liveOperationalRecords} fields={['module', 'recordType', 'status', 'title']} emptyText="No operational records loaded yet." />
           </div>
 
           <div className="workflow-metric-grid">
@@ -3102,6 +3220,12 @@ function App() {
             </div>
           </div>
 
+          <div className="live-workflow-grid">
+            <LiveWorkflowRecords title="Live resident assessments" records={liveAssessments} fields={['type', 'status', 'score']} emptyText="Load assessments to replace static assessment timeline data." />
+            <LiveWorkflowRecords title="Live resident tasks/eMAR" records={[...liveTasks, ...liveMedications]} fields={['title', 'medication', 'status', 'dueAt', 'schedule']} emptyText="Load tasks or eMAR orders to replace static task/medication timeline data." />
+            <LiveWorkflowRecords title="Live incidents/billing" records={[...liveIncidents, ...liveBilling]} fields={['type', 'summary', 'description', 'amountCents', 'status']} emptyText="Load incidents or billing records to replace static incident/billing timeline data." />
+          </div>
+
           <div className="resident-hero">
             <div className="resident-photo" aria-hidden="true">
               {residentCommandCenter.photoInitials}
@@ -3339,6 +3463,54 @@ function summarizeApiResult(result: unknown): string {
   }
 
   return `ok ${response.status ?? 200}`;
+}
+
+function extractApiRecords(result: unknown): LiveApiRecord[] | null {
+  if (!result || typeof result !== 'object') {
+    return null;
+  }
+
+  const response = result as { ok?: boolean; data?: unknown };
+  return response.ok && Array.isArray(response.data) ? (response.data as LiveApiRecord[]) : null;
+}
+
+function LiveWorkflowRecords({
+  title,
+  records,
+  fields,
+  emptyText
+}: {
+  title: string;
+  records: LiveApiRecord[];
+  fields: string[];
+  emptyText: string;
+}) {
+  return (
+    <div className={`live-workflow-panel ${records.length ? 'has-records' : ''}`}>
+      <div className="card-heading">
+        <span>Real API data</span>
+        <strong>{title}</strong>
+      </div>
+      {records.length ? (
+        <div className="live-workflow-list">
+          {records.slice(0, 4).map((record, index) => (
+            <article key={String(record.id ?? `${title}-${index}`)}>
+              {fields.map((field) =>
+                record[field] === undefined ? null : (
+                  <span key={field}>
+                    <strong>{field}</strong>
+                    {String(record[field])}
+                  </span>
+                )
+              )}
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p>{emptyText}</p>
+      )}
+    </div>
+  );
 }
 
 export default App;
