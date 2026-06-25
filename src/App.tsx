@@ -258,7 +258,6 @@ function App() {
   const [barcodeScanned, setBarcodeScanned] = useState('NDC-0000-0000');
   const [controlledSubstanceWitness, setControlledSubstanceWitness] = useState('witness-user-1');
   const [controlledSubstanceCount, setControlledSubstanceCount] = useState('28');
-  const [medicationOrderId, setMedicationOrderId] = useState('med-order-1');
   const [apiWorkflowLog, setApiWorkflowLog] = useState<string[]>(['No API workflow actions run yet.']);
   const globalSearchRef = useRef<HTMLInputElement>(null);
   const apiBaseUrl = getConfiguredApiBaseUrl();
@@ -338,7 +337,6 @@ function App() {
       if (response?.ok === false && response.error?.message?.toLowerCase().includes('session')) {
         setApiSessionId('');
         setPendingMfaChallengeId('');
-        localStorage.removeItem('hubsteria-api-session-id');
         setApiError('Session expired. Please login again.');
       }
       addApiLog(`${label}: ${summarizeApiResult(result)}`);
@@ -465,20 +463,6 @@ function App() {
       setClinicalError(response?.error?.message ?? summarizeApiResult(result));
       setClinicalStatus(`${label} failed.`);
     }
-  const recordMedPassAction = async (action: string) => {
-    await runApiAction(`Med pass ${action}`, (client) =>
-      client.recordMedicationAdministration(requireDemoSession(), {
-        organizationId: residentOrganizationId,
-        facilityId: residentFacilityId,
-        residentId: 'resident-1',
-        medicationOrderId,
-        action: normalizeMedPassAction(action),
-        reason: action === 'Given' ? undefined : `${action} selected during med pass`,
-        outcome: action === 'Given' ? 'No adverse reaction observed' : undefined,
-        barcodeScanned: 'NDC-0000-0000',
-        barcodeVerified: true
-      })
-    );
   };
 
   return (
