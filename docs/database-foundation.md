@@ -28,6 +28,9 @@ The initial database target is PostgreSQL.
   - tenant-scoped operational records for notifications, print, DigitalRX, workflow automation, AI, and integration activity
 - `database/migrations/0012_auth_hardening.sql`
   - account security state for failed-login counters and lockout windows
+- `database/migrations/0013_hipaa_readiness.sql`
+  - audit log immutability triggers
+  - audit retention policy table
 - `database/migrations/0004_user_credentials.sql`
   - user credential hashes
   - no plain-text password storage

@@ -4,6 +4,7 @@ export * from './background-job-processor';
 export * from './auth-service';
 export * from './backend-service';
 export * from './credential-service';
+export * from './encryption';
 export * from './feature-registry';
 export * from './in-memory-repositories';
 export * from './mfa-provider';
