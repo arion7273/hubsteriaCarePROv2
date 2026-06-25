@@ -228,6 +228,13 @@ function App() {
   const [userOrganizationId, setUserOrganizationId] = useState('org-1');
   const [userEmail, setUserEmail] = useState('caregiver@example.com');
   const [userRoleTier, setUserRoleTier] = useState('EMPLOYEE');
+  const [medicationOrderId, setMedicationOrderId] = useState('med-order-1');
+  const [medPassResidentId, setMedPassResidentId] = useState('resident-1');
+  const [medPassOrganizationId, setMedPassOrganizationId] = useState('org-1');
+  const [medPassFacilityId, setMedPassFacilityId] = useState('facility-1');
+  const [barcodeScanned, setBarcodeScanned] = useState('NDC-0000-0000');
+  const [controlledSubstanceWitness, setControlledSubstanceWitness] = useState('witness-user-1');
+  const [controlledSubstanceCount, setControlledSubstanceCount] = useState('28');
   const [apiWorkflowLog, setApiWorkflowLog] = useState<string[]>(['No API workflow actions run yet.']);
   const globalSearchRef = useRef<HTMLInputElement>(null);
   const apiBaseUrl = getConfiguredApiBaseUrl();
@@ -361,6 +368,26 @@ function App() {
       localStorage.removeItem('hubsteria-api-session-id');
       return result;
     });
+  };
+
+  const recordMedPassAction = async (action: string) => {
+    const normalizedAction = normalizeMedPassAction(action);
+    await runApiAction(`Med pass ${action}`, (client) =>
+      client.recordMedicationAdministration(requireDemoSession(), {
+        organizationId: medPassOrganizationId,
+        facilityId: medPassFacilityId,
+        residentId: medPassResidentId,
+        medicationOrderId,
+        action: normalizedAction,
+        reason: normalizedAction === 'given' ? undefined : `${action} selected during med pass`,
+        outcome: normalizedAction === 'given' ? 'No adverse reaction observed' : undefined,
+        prnEffectiveness: normalizedAction === 'given' ? 'Resident reports symptom relief within expected window' : undefined,
+        barcodeScanned,
+        barcodeVerified: true,
+        controlledSubstanceWitness,
+        controlledSubstanceCount: Number(controlledSubstanceCount)
+      })
+    );
   };
 
   const requireDemoSession = () => {
@@ -1526,6 +1553,35 @@ function App() {
             ))}
           </div>
 
+          <div className="medication-panel emar-action-config" aria-label="Connected eMAR action configuration">
+            <div className="card-heading">
+              <span>Connected eMAR actions</span>
+              <strong>Real medication administration endpoint</strong>
+            </div>
+            <div className="clinical-api-scope-grid">
+              <label>
+                Medication order ID
+                <input value={medicationOrderId} onChange={(event) => setMedicationOrderId(event.target.value)} />
+              </label>
+              <label>
+                Resident ID
+                <input value={medPassResidentId} onChange={(event) => setMedPassResidentId(event.target.value)} />
+              </label>
+              <label>
+                Barcode scanned
+                <input value={barcodeScanned} onChange={(event) => setBarcodeScanned(event.target.value)} />
+              </label>
+              <label>
+                Witness user ID
+                <input value={controlledSubstanceWitness} onChange={(event) => setControlledSubstanceWitness(event.target.value)} />
+              </label>
+              <label>
+                Controlled substance count
+                <input value={controlledSubstanceCount} onChange={(event) => setControlledSubstanceCount(event.target.value)} />
+              </label>
+            </div>
+          </div>
+
           <div className="medication-layout">
             <div className="medication-panel">
               <div className="card-heading">
@@ -1569,7 +1625,7 @@ function App() {
                     <small>{resident.instructions}</small>
                     <div className="med-action-row">
                       {resident.actions.map((action) => (
-                        <button type="button" key={action}>
+                        <button type="button" key={action} onClick={() => recordMedPassAction(action)} disabled={!apiSessionId}>
                           {action}
                         </button>
                       ))}
@@ -3339,6 +3395,15 @@ function summarizeApiResult(result: unknown): string {
   }
 
   return `ok ${response.status ?? 200}`;
+}
+
+function normalizeMedPassAction(action: string) {
+  const normalized = action.toLowerCase();
+  if (normalized.includes('refuse')) return 'refused';
+  if (normalized.includes('hold')) return 'held';
+  if (normalized.includes('absent')) return 'resident_absent';
+  if (normalized.includes('available')) return 'not_available';
+  return 'given';
 }
 
 export default App;

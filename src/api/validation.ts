@@ -261,7 +261,21 @@ export function isCreateMedicationOrderBody(body: unknown): body is CreateMedica
 }
 
 export function isRecordMedicationAdministrationBody(body: unknown): body is RecordMedicationAdministrationBody {
-  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.medicationOrderId) && ['given', 'refused', 'held', 'resident_absent', 'not_available'].includes(String(body.action)) && optionalString(body.reason) && optionalString(body.outcome);
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.organizationId) &&
+    isNonEmptyString(body.facilityId) &&
+    isNonEmptyString(body.residentId) &&
+    isNonEmptyString(body.medicationOrderId) &&
+    ['given', 'refused', 'held', 'resident_absent', 'not_available'].includes(String(body.action)) &&
+    optionalString(body.reason) &&
+    optionalString(body.outcome) &&
+    optionalString(body.prnEffectiveness) &&
+    optionalString(body.barcodeScanned) &&
+    (body.barcodeVerified === undefined || typeof body.barcodeVerified === 'boolean') &&
+    optionalString(body.controlledSubstanceWitness) &&
+    (body.controlledSubstanceCount === undefined || typeof body.controlledSubstanceCount === 'number')
+  );
 }
 
 export function isCreateIncidentBody(body: unknown): body is CreateIncidentBody {

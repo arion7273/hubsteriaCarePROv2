@@ -342,7 +342,9 @@ describe('BackendFoundationService', () => {
         residentId: 'resident-1',
         medicationOrderId: order.id,
         action: 'given',
-        outcome: 'No adverse reaction'
+        outcome: 'No adverse reaction',
+        barcodeScanned: 'NDC-0000-0000',
+        barcodeVerified: true
       }
     );
 
@@ -350,6 +352,45 @@ describe('BackendFoundationService', () => {
     await expect(service.listMedicationAdministrationsByResident({ user: t3User }, 'resident-1')).resolves.toHaveLength(1);
     await expect(repositories.auditLogs.listByEntity('MedicationOrder', order.id)).resolves.toHaveLength(1);
     await expect(repositories.auditLogs.listByEntity('MedicationAdministration', administration.id)).resolves.toHaveLength(1);
+  });
+
+  it('requires reason, PRN effectiveness, barcode verification, and controlled substance witness/count where applicable', async () => {
+    const { service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+    await service.createResident(
+      { user: { ...t3User, permissions: ['resident:write', 'medication:manage'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
+    );
+    const order = await service.createMedicationOrder(
+      { user: { ...t3User, permissions: ['medication:manage'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1', medication: 'Acetaminophen', dosage: '325mg', route: 'PO', schedule: 'PRN pain', status: 'prn' }
+    );
+
+    await expect(
+      service.recordMedicationAdministration(
+        { user: { ...t3User, permissions: ['medication:manage'] } },
+        { organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1', medicationOrderId: order.id, action: 'given' }
+      )
+    ).rejects.toThrow('PRN effectiveness is required');
+    await expect(
+      service.recordMedicationAdministration(
+        { user: { ...t3User, permissions: ['medication:manage'] } },
+        { organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1', medicationOrderId: order.id, action: 'held' }
+      )
+    ).rejects.toThrow('Medication administration reason is required');
+    await expect(
+      service.recordMedicationAdministration(
+        { user: { ...t3User, permissions: ['medication:manage'] } },
+        { organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1', medicationOrderId: order.id, action: 'given', prnEffectiveness: 'Effective', barcodeScanned: 'NDC-1', barcodeVerified: false }
+      )
+    ).rejects.toThrow('Barcode verification is required');
+    await expect(
+      service.recordMedicationAdministration(
+        { user: { ...t3User, permissions: ['medication:manage'] } },
+        { organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1', medicationOrderId: order.id, action: 'given', prnEffectiveness: 'Effective', controlledSubstanceCount: 12 }
+      )
+    ).rejects.toThrow('Controlled substance witness and count are required');
   });
 
   it('creates tasks, completes tasks, logs ADLs, and creates service plans with audit logs', async () => {

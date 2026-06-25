@@ -186,6 +186,11 @@ export function mapMedicationAdministrationRow(row: PostgresRow): MedicationAdmi
     action: String(row.action) as MedicationAdministration['action'],
     reason: row.reason ? String(row.reason) : undefined,
     outcome: row.outcome ? String(row.outcome) : undefined,
+    prnEffectiveness: row.prn_effectiveness ? String(row.prn_effectiveness) : undefined,
+    barcodeScanned: row.barcode_scanned ? String(row.barcode_scanned) : undefined,
+    barcodeVerified: Boolean(row.barcode_verified),
+    controlledSubstanceWitness: row.controlled_substance_witness ? String(row.controlled_substance_witness) : undefined,
+    controlledSubstanceCount: row.controlled_substance_count === null || row.controlled_substance_count === undefined ? undefined : Number(row.controlled_substance_count),
     administeredAt: String(row.administered_at),
     administeredBy: String(row.administered_by)
   };
