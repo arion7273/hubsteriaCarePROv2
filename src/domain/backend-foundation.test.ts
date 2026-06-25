@@ -95,6 +95,35 @@ describe('backend foundation access control', () => {
       )
     ).toMatchObject({ allowed: true });
   });
+
+  it('restricts family and resident users to assigned residents only', () => {
+    const familyUser: User = {
+      id: 'family-1',
+      email: 'family@example.com',
+      roleTier: 'FAMILY',
+      organizationId: 'org-1',
+      facilityIds: ['facility-1'],
+      residentIds: ['resident-1'],
+      permissions: [],
+      status: 'active'
+    };
+
+    expect(
+      canAccessScope(
+        { user: familyUser },
+        { scope: 'resident', organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1' }
+      )
+    ).toMatchObject({ allowed: true });
+    expect(
+      canAccessScope(
+        { user: familyUser },
+        { scope: 'resident', organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-2' }
+      )
+    ).toMatchObject({ allowed: false, reason: 'Cross-resident access denied' });
+    expect(
+      canAccessScope({ user: familyUser }, { scope: 'facility', organizationId: 'org-1', facilityId: 'facility-1' })
+    ).toMatchObject({ allowed: false, reason: 'Resident-specific access required' });
+  });
 });
 
 describe('backend foundation audit and registry', () => {

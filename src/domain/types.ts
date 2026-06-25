@@ -274,6 +274,7 @@ export type User = {
   roleTier: RoleTier;
   organizationId?: UUID;
   facilityIds: UUID[];
+  residentIds?: UUID[];
   permissions: Permission[];
   status: 'active' | 'inactive';
 };

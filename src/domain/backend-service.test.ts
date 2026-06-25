@@ -213,7 +213,27 @@ describe('BackendFoundationService', () => {
       )
     ).resolves.toMatchObject({ room: '215A' });
 
-    await expect(repositories.auditLogs.listByEntity('Resident', 'resident-1')).resolves.toHaveLength(2);
+    await expect(repositories.auditLogs.listByEntity('Resident', 'resident-1')).resolves.toHaveLength(3);
+  });
+
+  it('audits PHI export and print access', async () => {
+    const { repositories, service } = createTestService();
+    await service.createOrganization({ user: t1User }, { name: 'Northstar Senior Living' });
+    await service.createFacility({ user: t2User }, { organizationId: 'org-1', name: 'Cedar Grove' });
+    await service.createResident(
+      { user: { ...t3User, permissions: ['resident:write'] } },
+      { organizationId: 'org-1', facilityId: 'facility-1', firstName: 'Maria', lastName: 'Alvarez' }
+    );
+
+    await service.auditPhiExport({ user: t3User }, { residentId: 'resident-1', entityType: 'Resident', entityId: 'resident-1' });
+    await service.auditPhiPrint({ user: t3User }, { residentId: 'resident-1', entityType: 'Resident', entityId: 'resident-1' });
+
+    await expect(repositories.auditLogs.listByEntity('Resident', 'resident-1')).resolves.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ action: 'export', afterState: { accessType: 'export', phi: true } }),
+        expect.objectContaining({ action: 'read', afterState: { accessType: 'print', phi: true } })
+      ])
+    );
   });
 
   it('enqueues leases completes and fails background jobs with audit logs', async () => {
