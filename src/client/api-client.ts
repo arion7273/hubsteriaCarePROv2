@@ -43,6 +43,7 @@ export class HubsteriaApiClient {
 
     const response = await this.fetchImpl(url, {
       method: request.method,
+      credentials: 'include',
       headers: {
         'content-type': 'application/json',
         ...(request.sessionId ? { 'x-session-id': request.sessionId } : {})
@@ -74,6 +75,14 @@ export class HubsteriaApiClient {
       method: 'POST',
       path: '/auth/logout',
       sessionId
+    });
+  }
+
+  completePasswordReset(requestId: string, newPassword: string) {
+    return this.request({
+      method: 'POST',
+      path: '/auth/password-reset/complete',
+      body: { requestId, newPassword }
     });
   }
 

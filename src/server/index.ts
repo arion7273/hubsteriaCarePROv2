@@ -1,4 +1,5 @@
 import { createNodeApiServer } from '../api';
+import { createAuthRateLimitMiddleware } from '../api/middleware';
 import { readServerConfig } from './config';
 import { createRuntimeObservability } from './observability';
 import { createRuntimeServices, seedDemoMasterAdmin } from './services';
@@ -10,6 +11,12 @@ const server = createNodeApiServer(services, {
   metrics: observability.metrics,
   structuredLogger: observability.structuredLogger,
   errorTracker: observability.errorTracker,
+  corsAllowedOrigins: config.corsAllowedOrigins,
+  maxBodyBytes: config.maxRequestBodyBytes,
+  secureCookies: config.secureCookies,
+  middlewares: [
+    createAuthRateLimitMiddleware({ limit: config.authRateLimit })
+  ],
   readiness: async () => ({
     ok: true,
     checks: {

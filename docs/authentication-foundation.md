@@ -9,9 +9,12 @@ HubsteriaCarePRO authentication must be server-side before real production use.
 - MFA verification
 - Logout/session revocation
 - Password reset request
+- Password reset completion
+- Account lockout after repeated failed logins
 - Audit events for auth actions
 - PBKDF2-SHA512 password hashing
 - Repository-backed credential verification
+- TOTP-ready MFA provider abstraction
 
 ## Required production implementation
 
@@ -20,8 +23,11 @@ HubsteriaCarePRO authentication must be server-side before real production use.
 - MFA is required for platform, organization, facility, and employee users.
 - Sessions must expire and be revocable.
 - Password reset requests must expire and be single-use.
+- Account lockout state must be persisted and audited.
 - Authentication failures must not reveal whether the email exists.
 - Auth events must write immutable audit logs.
+- Deployable runtimes must reject demo password/MFA unless explicitly enabled for local development.
+- Browser sessions should use HttpOnly Secure SameSite cookies; header sessions are reserved for API clients.
 
 ## Next implementation step
 
@@ -32,6 +38,6 @@ Next, integrate an identity provider or complete production credential operation
 - Argon2id or equivalent password hashing
 - Managed secret storage
 - Email-based password reset delivery
-- TOTP/SMS/email MFA provider
-- Rate limiting
+- Production TOTP secret enrollment and rotation
+- External identity provider integration
 - Suspicious-login monitoring

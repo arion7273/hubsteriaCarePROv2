@@ -50,6 +50,11 @@ export type VerifyMfaBody = {
   code: string;
 };
 
+export type CompletePasswordResetBody = {
+  requestId: UUID;
+  newPassword: string;
+};
+
 export type CreateOrganizationBody = {
   name: string;
 };
@@ -140,6 +145,17 @@ export async function passwordResetHandler(services: ApiServices, request: ApiRe
   return toApiResponse(async () => {
     assertBody(request.body);
     return services.auth.requestPasswordReset(request.body.email);
+  });
+}
+
+export async function completePasswordResetHandler(
+  services: ApiServices,
+  request: ApiRequest<CompletePasswordResetBody>
+): Promise<ApiResponse> {
+  return toApiResponse(async () => {
+    assertBody(request.body);
+    await services.auth.completePasswordReset(request.body);
+    return { completed: true };
   });
 }
 

@@ -12,7 +12,24 @@ const activeT3User: User = {
 };
 
 function createAuthService() {
-  const ids = ['session-1', 'mfa-1', 'audit-login', 'audit-mfa', 'audit-logout', 'reset-1', 'audit-reset'];
+  const ids = [
+    'session-1',
+    'mfa-1',
+    'audit-login',
+    'audit-mfa',
+    'audit-logout',
+    'reset-1',
+    'audit-reset',
+    'audit-failed-1',
+    'audit-failed-2',
+    'audit-failed-3',
+    'audit-failed-4',
+    'audit-locked',
+    'audit-blocked',
+    'audit-reset-security',
+    'audit-reset-complete',
+    'audit-credential-reset'
+  ];
   const repositories = createInMemoryBackendRepositories();
   const service = new AuthService(
     repositories,
@@ -101,5 +118,66 @@ describe('AuthService', () => {
       userId: activeT3User.id
     });
     await expect(repositories.auditLogs.listByEntity('PasswordResetRequest', 'reset-1')).resolves.toHaveLength(1);
+  });
+
+  it('does not enumerate accounts during password reset requests', async () => {
+    const { repositories, service } = createAuthService();
+
+    const reset = await service.requestPasswordReset('missing@example.com');
+
+    expect(reset).toMatchObject({
+      id: 'session-1',
+      userId: '00000000-0000-0000-0000-000000000000'
+    });
+    await expect(repositories.passwordResets.getById(reset.id)).resolves.toBeNull();
+  });
+
+  it('locks accounts after repeated failed login attempts and audits lockout state', async () => {
+    const { repositories, service } = createAuthService();
+    await repositories.users.save(activeT3User);
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      await expect(service.login({ email: activeT3User.email, password: 'wrong-password' })).rejects.toThrow('Invalid credentials');
+    }
+
+    await expect(repositories.accountSecurity.getByUserId(activeT3User.id)).resolves.toMatchObject({
+      failedLoginAttempts: 5,
+      lockedUntil: '2026-06-24T01:15:00.000Z'
+    });
+    await expect(service.login({ email: activeT3User.email, password: 'correct-password' })).rejects.toThrow(
+      'Account locked. Try again later.'
+    );
+    await expect(repositories.auditLogs.listByEntity('AccountSecurityState', activeT3User.id)).resolves.toHaveLength(6);
+  });
+
+  it('resets failed login counters after a successful login', async () => {
+    const { repositories, service } = createAuthService();
+    await repositories.users.save(activeT3User);
+    await expect(service.login({ email: activeT3User.email, password: 'wrong-password' })).rejects.toThrow('Invalid credentials');
+
+    await expect(service.login({ email: activeT3User.email, password: 'correct-password' })).resolves.toMatchObject({
+      session: expect.objectContaining({ userId: activeT3User.id })
+    });
+    await expect(repositories.accountSecurity.getByUserId(activeT3User.id)).resolves.toMatchObject({
+      failedLoginAttempts: 0,
+      lockedUntil: undefined
+    });
+  });
+
+  it('completes password reset by updating credentials marking reset used and auditing', async () => {
+    const { repositories, service } = createAuthService();
+    await repositories.users.save(activeT3User);
+    const reset = await service.requestPasswordReset(activeT3User.email);
+
+    await service.completePasswordReset({ requestId: reset.id, newPassword: 'new-secure-password' });
+
+    await expect(repositories.passwordResets.getById(reset.id)).resolves.toMatchObject({
+      usedAt: '2026-06-24T01:00:00.000Z'
+    });
+    await expect(repositories.userCredentials.getByUserId(activeT3User.id)).resolves.toMatchObject({
+      userId: activeT3User.id
+    });
+    await expect(repositories.auditLogs.listByEntity('PasswordResetRequest', reset.id)).resolves.toHaveLength(2);
+    await expect(repositories.auditLogs.listByEntity('UserCredential', activeT3User.id)).resolves.toHaveLength(1);
   });
 });

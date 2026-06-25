@@ -327,6 +327,14 @@ export type PasswordResetRequest = {
   usedAt?: string;
 };
 
+export type AccountSecurityState = {
+  userId: UUID;
+  failedLoginAttempts: number;
+  lockedUntil?: string;
+  lastFailedAt?: string;
+  updatedAt: string;
+};
+
 export const masterAdminBootstrap = {
   email: 'b094650@gmail.com',
   credentialStorage: 'managed-secret',

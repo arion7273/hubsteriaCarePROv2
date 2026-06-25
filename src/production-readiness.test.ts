@@ -60,6 +60,7 @@ describe('production readiness workflow', () => {
     const postgresIntegration = readFileSync('docs/postgres-integration-tests.md', 'utf8');
     const observability = readFileSync('docs/observability-operations.md', 'utf8');
     const hipaa = readFileSync('docs/hipaa-security-readiness.md', 'utf8');
+    const sessionStrategy = readFileSync('docs/session-token-strategy.md', 'utf8');
     const goLive = readFileSync('docs/go-live-checklist.md', 'utf8');
     const runbook = readFileSync('docs/operational-runbook.md', 'utf8');
 
@@ -127,14 +128,21 @@ describe('production readiness workflow', () => {
     expect(observability).toContain('background jobs queued');
     expect(observability).toContain('staging dashboard');
     expect(auth).toContain('MFA verification');
+    expect(auth).toContain('Password reset completion');
+    expect(auth).toContain('Account lockout');
+    expect(auth).toContain('TOTP-ready MFA provider abstraction');
     expect(auth).toContain('PBKDF2-SHA512 password hashing');
     expect(auth).toContain('Plain-text passwords must never be stored');
     expect(auth).toContain('Sessions must expire and be revocable');
+    expect(auth).toContain('Deployable runtimes must reject demo password/MFA');
+    expect(sessionStrategy).toContain('HttpOnly SameSite session cookie');
+    expect(sessionStrategy).toContain('must not persist session IDs in localStorage');
     expect(database).toContain('PostgreSQL');
     expect(database).toContain('Tenant isolation rules');
     expect(database).toContain('`audit_logs` is append-only');
     expect(database).toContain('user credential hashes');
     expect(database).toContain('operational records');
+    expect(database).toContain('account security state');
     expect(database).toContain('npm run db:migrate');
     expect(database).toContain('schema_migrations');
     expect(postgresAdapters).toContain('parameterized SQL builders');
@@ -160,7 +168,13 @@ describe('production readiness workflow', () => {
     expect(envExample).toContain('VITE_APP_ENV=production');
     expect(envExample).toContain('VITE_APP_SUPPORT_EMAIL=');
     expect(envExample).toContain('VITE_ERROR_TRACKING_DSN=');
-    expect(envExample).toContain('DEMO_AUTH_PASSWORD=change-me-for-local-demo-only');
+    expect(envExample).toContain('ALLOW_DEMO_AUTH=false');
+    expect(envExample).toContain('DEMO_AUTH_PASSWORD=');
+    expect(envExample).toContain('MFA_TOTP_SECRETS_JSON={}');
+    expect(envExample).toContain('SECURE_COOKIES=true');
+    expect(envExample).toContain('CORS_ALLOWED_ORIGINS=');
+    expect(envExample).toContain('MAX_REQUEST_BODY_BYTES=1000000');
+    expect(envExample).toContain('AUTH_RATE_LIMIT=10');
     expect(envExample).toContain('TEST_DATABASE_URL=');
     expect(envExample).toContain('RUN_POSTGRES_INTEGRATION=false');
     expect(envExample).toContain('MONITORING_ENDPOINT=');
