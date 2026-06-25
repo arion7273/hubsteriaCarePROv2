@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 import { describe, expect, it } from 'vitest';
 import { AuthService, BackendFoundationService, createInMemoryBackendRepositories, type User } from '../domain';
-import { createNodeApiServer, type ApiServices } from '.';
+import { createAuthRateLimitMiddleware, createNodeApiServer, type ApiServices } from '.';
 
 const t1User: User = {
   id: 'user-master',
@@ -104,16 +104,21 @@ describe('Node API server adapter', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ email: t1User.email, password: 'correct-password' })
-      }).then((response) => response.json());
+      });
+      const cookie = login.headers.get('set-cookie');
+      const loginBody = await login.json();
 
-      expect(login).toMatchObject({ ok: true });
+      expect(loginBody).toMatchObject({ ok: true });
+      expect(cookie).toContain('hubsteria_session=session-1');
+      expect(cookie).toContain('HttpOnly');
+      expect(cookie).toContain('SameSite=Strict');
 
       const mfa = await fetch(`${baseUrl}/auth/mfa/verify`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: login.data.session.id,
-          challengeId: login.data.mfaChallenge.id,
+          sessionId: loginBody.data.session.id,
+          challengeId: loginBody.data.mfaChallenge.id,
           code: '123456'
         })
       }).then((response) => response.json());
@@ -124,7 +129,7 @@ describe('Node API server adapter', () => {
         method: 'POST',
         headers: {
           'content-type': 'application/json',
-          'x-session-id': login.data.session.id
+          cookie: cookie ?? ''
         },
         body: JSON.stringify({ name: 'Northstar Senior Living' })
       }).then((response) => response.json());
@@ -168,5 +173,49 @@ describe('Node API server adapter', () => {
         error: { code: 'unsupported_media_type' }
       });
     });
+  });
+
+  it('enforces CORS allowlists body size limits and auth rate limits', async () => {
+    const services = createApiServices();
+
+    await withServer(
+      services,
+      async (baseUrl) => {
+        await expect(
+          fetch(`${baseUrl}/healthz`, { headers: { origin: 'https://blocked.example.com' } }).then((response) => response.json())
+        ).resolves.toMatchObject({ ok: false, status: 403, error: { code: 'cors_origin_denied' } });
+
+        const allowed = await fetch(`${baseUrl}/healthz`, { headers: { origin: 'https://allowed.example.com' } });
+        expect(allowed.headers.get('access-control-allow-origin')).toBe('https://allowed.example.com');
+
+        await expect(
+          fetch(`${baseUrl}/auth/login`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ email: 'a'.repeat(100), password: 'password' })
+          }).then((response) => response.json())
+        ).resolves.toMatchObject({ ok: false, status: 413, error: { code: 'payload_too_large' } });
+      },
+      { corsAllowedOrigins: ['https://allowed.example.com'], maxBodyBytes: 32 }
+    );
+
+    await withServer(
+      services,
+      async (baseUrl) => {
+        await fetch(`${baseUrl}/auth/login`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email: 'missing@example.com', password: 'bad-password' })
+        });
+        await expect(
+          fetch(`${baseUrl}/auth/login`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ email: 'missing@example.com', password: 'bad-password' })
+          }).then((response) => response.json())
+        ).resolves.toMatchObject({ ok: false, status: 429, error: { code: 'rate_limited' } });
+      },
+      { middlewares: [createAuthRateLimitMiddleware({ limit: 1, keyForRequest: () => 'auth-test' })] }
+    );
   });
 });

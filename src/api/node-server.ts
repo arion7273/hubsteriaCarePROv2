@@ -21,7 +21,13 @@ export type NodeApiServerOptions = {
   errorTracker?: ErrorTracker;
   structuredLogger?: (entry: StructuredApiLog) => void;
   readiness?: () => Promise<{ ok: boolean; checks: Record<string, boolean | string> }>;
+  corsAllowedOrigins?: string[];
+  maxBodyBytes?: number;
+  secureCookies?: boolean;
 };
+
+const DEFAULT_MAX_BODY_BYTES = 1_000_000;
+const SESSION_COOKIE_NAME = 'hubsteria_session';
 
 export function createNodeApiServer(services: ApiServices, options: NodeApiServerOptions = {}): Server {
   const router = createApiRouter(services, [createRequestIdMiddleware(randomUUID), ...(options.middlewares ?? [])]);
@@ -33,6 +39,20 @@ export function createNodeApiServer(services: ApiServices, options: NodeApiServe
     const startedAt = Date.now();
     const requestId = String(request.headers['x-request-id'] ?? randomUUID());
     response.setHeader('x-request-id', requestId);
+    applySecurityHeaders(response);
+
+    if (!applyCors(request, response, options.corsAllowedOrigins)) {
+      writeJson(response, 403, fail('cors_origin_denied', 'Origin is not allowed', 403));
+      recordTelemetry({ request, response, requestId, startedAt, metrics, structuredLogger });
+      return;
+    }
+
+    if (request.method === 'OPTIONS') {
+      response.statusCode = 204;
+      response.end();
+      recordTelemetry({ request, response, requestId, startedAt, metrics, structuredLogger });
+      return;
+    }
 
     if (request.url === '/healthz') {
       writeJson(response, 200, { ok: true, requestId });
@@ -61,7 +81,13 @@ export function createNodeApiServer(services: ApiServices, options: NodeApiServe
       return;
     }
 
-    const apiRequest = await toApiRequest(request, requestId).catch((error) => {
+    const apiRequest = await toApiRequest(request, requestId, options.maxBodyBytes ?? DEFAULT_MAX_BODY_BYTES).catch((error) => {
+      if (error instanceof RequestBodyTooLargeError) {
+        return {
+          ok: false as const,
+          response: fail('payload_too_large', 'Request body is too large', 413)
+        };
+      }
       errorTracker.captureException(error, { requestId, path: request.url ?? '/', method: request.method ?? 'UNKNOWN' });
       return {
         ok: false as const,
@@ -76,12 +102,13 @@ export function createNodeApiServer(services: ApiServices, options: NodeApiServe
     }
 
     const apiResponse = await router.handle(apiRequest.request);
+    applySessionCookies(request, response, apiResponse, Boolean(options.secureCookies));
     writeApiResponse(response, apiResponse);
     recordTelemetry({ request, response, requestId, startedAt, metrics, structuredLogger });
   });
 }
 
-async function toApiRequest(request: IncomingMessage, requestId: string): Promise<
+async function toApiRequest(request: IncomingMessage, requestId: string, maxBodyBytes: number): Promise<
   | {
       ok: true;
       request: ApiRequest;
@@ -101,7 +128,7 @@ async function toApiRequest(request: IncomingMessage, requestId: string): Promis
   }
 
   const url = new URL(request.url ?? '/', 'http://localhost');
-  const rawBody = await readBody(request);
+  const rawBody = await readBody(request, maxBodyBytes);
   const headers = normalizeHeaders(request);
 
   if (rawBody.length > 0 && !headers['content-type']?.includes('application/json')) {
@@ -127,7 +154,7 @@ async function toApiRequest(request: IncomingMessage, requestId: string): Promis
       path: url.pathname,
       query: Object.fromEntries(url.searchParams.entries()),
       body: parsedBody,
-      sessionId: headers['x-session-id'],
+      sessionId: headers['x-session-id'] ?? readSessionCookie(headers.cookie),
       headers,
       ip: request.socket.remoteAddress,
       requestId
@@ -141,14 +168,25 @@ function normalizeHeaders(request: IncomingMessage): Record<string, string | und
   );
 }
 
-function readBody(request: IncomingMessage): Promise<string> {
+function readBody(request: IncomingMessage, maxBodyBytes: number): Promise<string> {
   return new Promise((resolve, reject) => {
     let body = '';
+    let tooLarge = false;
     request.setEncoding('utf8');
     request.on('data', (chunk) => {
+      if (tooLarge) return;
       body += chunk;
+      if (Buffer.byteLength(body, 'utf8') > maxBodyBytes) {
+        tooLarge = true;
+      }
     });
-    request.on('end', () => resolve(body));
+    request.on('end', () => {
+      if (tooLarge) {
+        reject(new RequestBodyTooLargeError());
+        return;
+      }
+      resolve(body);
+    });
     request.on('error', reject);
   });
 }
@@ -170,6 +208,56 @@ function writeJson(response: ServerResponse, status: number, payload: unknown): 
   response.setHeader('content-type', 'application/json; charset=utf-8');
   response.end(JSON.stringify(payload));
 }
+
+function applySecurityHeaders(response: ServerResponse): void {
+  response.setHeader('x-content-type-options', 'nosniff');
+  response.setHeader('x-frame-options', 'DENY');
+  response.setHeader('referrer-policy', 'strict-origin-when-cross-origin');
+  response.setHeader('permissions-policy', 'camera=(), microphone=(), geolocation=()');
+  response.setHeader('cross-origin-resource-policy', 'same-site');
+  response.setHeader('content-security-policy', "default-src 'none'; frame-ancestors 'none'");
+}
+
+function applyCors(request: IncomingMessage, response: ServerResponse, allowedOrigins: string[] | undefined): boolean {
+  const origin = request.headers.origin;
+  if (!origin) return true;
+  if (!allowedOrigins?.length || !allowedOrigins.includes(origin)) return false;
+
+  response.setHeader('access-control-allow-origin', origin);
+  response.setHeader('access-control-allow-credentials', 'true');
+  response.setHeader('vary', 'Origin');
+  response.setHeader('access-control-allow-methods', 'GET,POST,PATCH,DELETE,OPTIONS');
+  response.setHeader('access-control-allow-headers', 'content-type,x-session-id,x-csrf-token,x-request-id');
+  return true;
+}
+
+function applySessionCookies(request: IncomingMessage, response: ServerResponse, apiResponse: ApiResponse, secure: boolean): void {
+  const path = new URL(request.url ?? '/', 'http://localhost').pathname;
+  if (path === '/auth/login' && apiResponse.ok) {
+    const sessionId = (apiResponse.data as { session?: { id?: string } }).session?.id;
+    if (sessionId) {
+      response.setHeader('set-cookie', serializeSessionCookie(sessionId, secure));
+    }
+  }
+  if (path === '/auth/logout') {
+    response.setHeader('set-cookie', `${SESSION_COOKIE_NAME}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0${secure ? '; Secure' : ''}`);
+  }
+}
+
+function serializeSessionCookie(sessionId: string, secure: boolean): string {
+  return `${SESSION_COOKIE_NAME}=${encodeURIComponent(sessionId)}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800${secure ? '; Secure' : ''}`;
+}
+
+function readSessionCookie(cookieHeader: string | undefined): string | undefined {
+  if (!cookieHeader) return undefined;
+  const cookies = Object.fromEntries(cookieHeader.split(';').map((cookie) => {
+    const [key, ...value] = cookie.trim().split('=');
+    return [key, value.join('=')];
+  }));
+  return cookies[SESSION_COOKIE_NAME] ? decodeURIComponent(cookies[SESSION_COOKIE_NAME]) : undefined;
+}
+
+class RequestBodyTooLargeError extends Error {}
 
 function recordTelemetry(input: {
   request: IncomingMessage;

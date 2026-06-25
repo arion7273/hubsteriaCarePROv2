@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { createAuditEvent } from '../../domain';
 import {
   auditLogStatements,
+  accountSecurityStatements,
   facilityStatements,
   featureRegistryStatements,
   mapAuditRow,
+  mapAccountSecurityStateRow,
   mapFacilityRow,
   mapFeatureRow,
   mapOperationalRecordRow,
@@ -128,6 +130,25 @@ describe('Postgres statement builders', () => {
     expect(list.text).toContain('facility_id = $2');
     expect(list.text).toContain('module = $3');
     expect(list.values).toEqual(['org-1', 'facility-1', 'digitalrx']);
+  });
+
+  it('builds account security lockout statements', () => {
+    const statement = accountSecurityStatements.upsert({
+      userId: 'user-1',
+      failedLoginAttempts: 5,
+      lockedUntil: '2026-06-24T01:15:00.000Z',
+      lastFailedAt: '2026-06-24T01:00:00.000Z',
+      updatedAt: '2026-06-24T01:00:00.000Z'
+    });
+
+    expect(statement.text).toContain('INSERT INTO account_security_states');
+    expect(statement.values).toEqual([
+      'user-1',
+      5,
+      '2026-06-24T01:15:00.000Z',
+      '2026-06-24T01:00:00.000Z',
+      '2026-06-24T01:00:00.000Z'
+    ]);
   });
 });
 
@@ -268,6 +289,24 @@ describe('Postgres row mappers', () => {
       title: 'Workflow automation completed',
       payload: { workflowId: 'workflow-1' },
       createdAt: '2026-06-24T01:00:00.000Z',
+      updatedAt: '2026-06-24T01:00:00.000Z'
+    });
+  });
+
+  it('maps account security rows', () => {
+    expect(
+      mapAccountSecurityStateRow({
+        user_id: 'user-1',
+        failed_login_attempts: 5,
+        locked_until: '2026-06-24T01:15:00.000Z',
+        last_failed_at: '2026-06-24T01:00:00.000Z',
+        updated_at: '2026-06-24T01:00:00.000Z'
+      })
+    ).toEqual({
+      userId: 'user-1',
+      failedLoginAttempts: 5,
+      lockedUntil: '2026-06-24T01:15:00.000Z',
+      lastFailedAt: '2026-06-24T01:00:00.000Z',
       updatedAt: '2026-06-24T01:00:00.000Z'
     });
   });

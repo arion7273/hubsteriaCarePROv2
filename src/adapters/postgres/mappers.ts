@@ -1,6 +1,7 @@
 import type { RegisteredFeature } from '../../domain';
 import type { AuditEvent } from '../../domain/audit';
 import type {
+  AccountSecurityState,
   Assessment,
   AuthSession,
   BackgroundJob,
@@ -324,6 +325,16 @@ export function mapUserCredentialRow(row: PostgresRow): UserCredential {
   return {
     userId: String(row.user_id),
     passwordHash: String(row.password_hash),
+    updatedAt: toIsoString(row.updated_at)
+  };
+}
+
+export function mapAccountSecurityStateRow(row: PostgresRow): AccountSecurityState {
+  return {
+    userId: String(row.user_id),
+    failedLoginAttempts: Number(row.failed_login_attempts),
+    lockedUntil: row.locked_until ? toIsoString(row.locked_until) : undefined,
+    lastFailedAt: row.last_failed_at ? toIsoString(row.last_failed_at) : undefined,
     updatedAt: toIsoString(row.updated_at)
   };
 }

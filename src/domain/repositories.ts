@@ -1,6 +1,7 @@
 import type { AuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
 import type {
+  AccountSecurityState,
   AdlEntry,
   Assessment,
   AuthSession,
@@ -162,6 +163,11 @@ export interface PasswordResetRepository {
   save(request: PasswordResetRequest): Promise<PasswordResetRequest>;
 }
 
+export interface AccountSecurityRepository {
+  getByUserId(userId: UUID): Promise<AccountSecurityState | null>;
+  save(state: AccountSecurityState): Promise<AccountSecurityState>;
+}
+
 export type BackendRepositories = {
   organizations: OrganizationRepository;
   facilities: FacilityRepository;
@@ -187,4 +193,5 @@ export type BackendRepositories = {
   authSessions: AuthSessionRepository;
   mfaChallenges: MfaChallengeRepository;
   passwordResets: PasswordResetRepository;
+  accountSecurity: AccountSecurityRepository;
 };

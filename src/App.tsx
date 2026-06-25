@@ -219,7 +219,7 @@ function App() {
   const [query, setQuery] = useState('');
   const [darkMode, setDarkMode] = useState(false);
   const [apiHealthStatus, setApiHealthStatus] = useState('Not checked');
-  const [apiSessionId, setApiSessionId] = useState(() => localStorage.getItem('hubsteria-api-session-id') ?? '');
+  const [apiSessionId, setApiSessionId] = useState('');
   const [pendingMfaChallengeId, setPendingMfaChallengeId] = useState('');
   const [loginEmail, setLoginEmail] = useState('b094650@gmail.com');
   const [loginPassword, setLoginPassword] = useState('change-me-for-local-demo-only');
@@ -351,7 +351,6 @@ function App() {
 
         if (sessionId) {
           setApiSessionId(sessionId);
-          localStorage.setItem('hubsteria-api-session-id', sessionId);
         }
 
         if (challengeId) {
@@ -386,7 +385,6 @@ function App() {
       const result = await client.logout(sessionId);
       setApiSessionId('');
       setPendingMfaChallengeId('');
-      localStorage.removeItem('hubsteria-api-session-id');
       return result;
     });
   };
@@ -690,7 +688,7 @@ function App() {
               <span>API base URL</span>
               <strong>{apiBaseUrl}</strong>
               <small>{apiHealthStatus}</small>
-              <small>{apiSessionId ? `Protected session active: ${apiSessionId}` : 'Protected admin UI locked'}</small>
+              <small>{apiSessionId ? 'Protected session active' : 'Protected admin UI locked'}</small>
             </div>
           </div>
 

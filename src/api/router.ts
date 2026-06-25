@@ -1,5 +1,6 @@
 import {
   completeBackgroundJobHandler,
+  completePasswordResetHandler,
   createOperationalRecordHandler,
   createFacilityHandler,
   enqueueBackgroundJobHandler,
@@ -68,6 +69,7 @@ import { composeMiddleware, type ApiMiddleware } from './middleware';
 import { apiRoutes } from './routes';
 import {
   isCompleteBackgroundJobBody,
+  isCompletePasswordResetBody,
   isCreateFacilityBody,
   isCreateOperationalRecordBody,
   isEnqueueBackgroundJobBody,
@@ -138,6 +140,12 @@ const routeConfigs: RouteConfig[] = [
     path: '/auth/password-reset',
     validate: isPasswordResetBody,
     handler: passwordResetHandler as RouteHandler
+  },
+  {
+    method: 'POST',
+    path: '/auth/password-reset/complete',
+    validate: isCompletePasswordResetBody,
+    handler: completePasswordResetHandler as RouteHandler
   },
   {
     method: 'POST',
@@ -302,6 +310,11 @@ export function createApiRouter(services: ApiServices, middlewares: ApiMiddlewar
       return pathExists
         ? fail('method_not_allowed', `Method ${request.method} is not allowed for ${request.path}`, 405)
         : fail('not_found', `Route not found: ${request.method} ${request.path}`, 404);
+    }
+
+    const routeDefinition = apiRoutes.find((candidate) => candidate.path === route.path && candidate.method === route.method);
+    if (routeDefinition?.authRequired && !request.sessionId) {
+      return fail('missing_session', 'Session is required', 401);
     }
 
     if (route.validate) {

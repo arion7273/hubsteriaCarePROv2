@@ -1,7 +1,7 @@
 import { createAuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
 import type { BackendRepositories } from './repositories';
-import { requirePermission } from './access-control';
+import { hasPermission, requirePermission, rolePermissions } from './access-control';
 import type {
   AccessContext,
   AdlEntry,
@@ -904,6 +904,7 @@ export class BackendFoundationService {
   ): Promise<User> {
     const decision = requirePermission(context, userManagementScope(input.organizationId), userManagementPermission(input.organizationId));
     assertAllowed(decision);
+    assertUserAssignmentAllowed(context, input);
 
     const user: User = {
       id: this.createId(),
@@ -950,6 +951,7 @@ export class BackendFoundationService {
 
     const decision = requirePermission(context, userManagementScope(existing.organizationId), userManagementPermission(existing.organizationId));
     assertAllowed(decision);
+    assertUserUpdateAllowed(context, existing, updates);
 
     const saved = await this.repositories.users.save({
       ...existing,
@@ -1106,4 +1108,43 @@ function userManagementScope(organizationId: UUID | undefined) {
 
 function userManagementPermission(organizationId: UUID | undefined) {
   return organizationId ? 'organization:manage' : 'platform:manage';
+}
+
+function assertUserAssignmentAllowed(context: AccessContext, input: Pick<User, 'roleTier' | 'permissions' | 'organizationId'>): void {
+  if (context.user.roleTier === 'T1') return;
+
+  if (['T1', 'T2', 'T2_5'].includes(input.roleTier)) {
+    throw new Error('Only T1 can assign administrator role tiers');
+  }
+
+  for (const permission of input.permissions) {
+    if (!hasPermission(context, permission)) {
+      throw new Error(`Cannot grant permission not held by actor: ${permission}`);
+    }
+  }
+}
+
+function assertUserUpdateAllowed(
+  context: AccessContext,
+  existing: User,
+  updates: Partial<Omit<User, 'id'>>
+): void {
+  if (context.user.roleTier === 'T1') return;
+
+  if (updates.organizationId !== undefined && updates.organizationId !== existing.organizationId) {
+    throw new Error('Only T1 can move users across organizations');
+  }
+
+  if (updates.roleTier !== undefined && updates.roleTier !== existing.roleTier) {
+    throw new Error('Only T1 can change role tiers');
+  }
+
+  if (updates.permissions !== undefined) {
+    const actorPermissions = new Set([...rolePermissions(context.user.roleTier), ...context.user.permissions]);
+    for (const permission of updates.permissions) {
+      if (!actorPermissions.has(permission)) {
+        throw new Error(`Cannot grant permission not held by actor: ${permission}`);
+      }
+    }
+  }
 }

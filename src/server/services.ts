@@ -4,7 +4,10 @@ import {
   AuthService,
   BackendFoundationService,
   RepositoryPasswordVerifier,
+  TotpMfaProvider,
+  UnconfiguredMfaProvider,
   createInMemoryBackendRepositories,
+  type MfaProvider,
   type BackendRepositories,
   type User
 } from '../domain';
@@ -16,6 +19,10 @@ export type RuntimeServices = ApiServices & {
 };
 
 export function createRuntimeServices(config: ServerConfig = readServerConfig()): RuntimeServices {
+  if ((config.demoPassword || config.demoMfaCode) && !config.allowDemoAuth) {
+    throw new Error('Demo authentication is disabled for deployable runtime. Set ALLOW_DEMO_AUTH=true only for local development.');
+  }
+
   const runtime = createRepositories(config);
   const passwordVerifier = config.demoPassword
     ? {
@@ -24,18 +31,11 @@ export function createRuntimeServices(config: ServerConfig = readServerConfig())
         }
       }
     : new RepositoryPasswordVerifier(runtime.repositories);
+  const mfaProvider = createMfaProvider(config);
   const auth = new AuthService(
     runtime.repositories,
     passwordVerifier,
-    {
-      async verify({ code }) {
-        if (!config.demoMfaCode) {
-          throw new Error('MFA verifier is not configured');
-        }
-
-        return code === config.demoMfaCode;
-      }
-    },
+    mfaProvider,
     randomUUID
   );
   const backend = new BackendFoundationService(runtime.repositories, randomUUID);
@@ -47,6 +47,22 @@ export function createRuntimeServices(config: ServerConfig = readServerConfig())
     now: () => new Date(),
     close: runtime.close
   };
+}
+
+function createMfaProvider(config: ServerConfig): MfaProvider {
+  if (config.demoMfaCode && config.allowDemoAuth) {
+    return {
+      async verify({ code }) {
+        return code === config.demoMfaCode;
+      }
+    };
+  }
+
+  if (Object.keys(config.totpSecrets).length > 0) {
+    return new TotpMfaProvider((userId) => config.totpSecrets[userId]);
+  }
+
+  return new UnconfiguredMfaProvider();
 }
 
 export async function seedDemoMasterAdmin(services: RuntimeServices): Promise<User> {

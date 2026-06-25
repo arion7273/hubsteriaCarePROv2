@@ -6,6 +6,7 @@ export * from './backend-service';
 export * from './credential-service';
 export * from './feature-registry';
 export * from './in-memory-repositories';
+export * from './mfa-provider';
 export * from './password-hashing';
 export * from './repositories';
 export * from './types';
