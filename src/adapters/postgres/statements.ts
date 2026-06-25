@@ -391,10 +391,42 @@ export const medicationAdministrationStatements = {
   listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM medication_administrations WHERE resident_id = $1 ORDER BY administered_at DESC', values: [residentId] }; },
   insert(administration: MedicationAdministration): SqlStatement {
     return { text: `
-      INSERT INTO medication_administrations (id, organization_id, facility_id, resident_id, medication_order_id, action, reason, outcome, administered_at, administered_by)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      INSERT INTO medication_administrations (
+        id,
+        organization_id,
+        facility_id,
+        resident_id,
+        medication_order_id,
+        action,
+        reason,
+        outcome,
+        prn_effectiveness,
+        barcode_scanned,
+        barcode_verified,
+        controlled_substance_witness,
+        controlled_substance_count,
+        administered_at,
+        administered_by
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
       RETURNING *
-    `, values: [administration.id, administration.organizationId, administration.facilityId, administration.residentId, administration.medicationOrderId, administration.action, administration.reason ?? null, administration.outcome ?? null, administration.administeredAt, administration.administeredBy] };
+    `, values: [
+      administration.id,
+      administration.organizationId,
+      administration.facilityId,
+      administration.residentId,
+      administration.medicationOrderId,
+      administration.action,
+      administration.reason ?? null,
+      administration.outcome ?? null,
+      administration.prnEffectiveness ?? null,
+      administration.barcodeScanned ?? null,
+      administration.barcodeVerified ?? false,
+      administration.controlledSubstanceWitness ?? null,
+      administration.controlledSubstanceCount ?? null,
+      administration.administeredAt,
+      administration.administeredBy
+    ] };
   }
 };
 

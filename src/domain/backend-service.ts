@@ -722,6 +722,7 @@ export class BackendFoundationService {
   ): Promise<MedicationAdministration> {
     const order = await this.repositories.medicationOrders.getById(input.medicationOrderId);
     if (!order) throw new Error('Medication order not found');
+    validateMedicationAdministrationInput(order, input);
     const decision = requirePermission(
       context,
       { scope: 'resident', organizationId: order.organizationId, facilityId: order.facilityId, residentId: order.residentId },
@@ -1202,5 +1203,28 @@ function assertUserUpdateAllowed(
         throw new Error(`Cannot grant permission not held by actor: ${permission}`);
       }
     }
+function validateMedicationAdministrationInput(
+  order: MedicationOrder,
+  input: Omit<MedicationAdministration, 'id' | 'administeredAt' | 'administeredBy'>
+): void {
+  if (input.residentId !== order.residentId || input.facilityId !== order.facilityId || input.organizationId !== order.organizationId) {
+    throw new Error('Medication administration scope does not match medication order');
+  }
+
+  if (['refused', 'held', 'not_available'].includes(input.action) && !input.reason) {
+    throw new Error('Medication administration reason is required');
+  }
+
+  if (order.status === 'prn' && input.action === 'given' && !input.prnEffectiveness) {
+    throw new Error('PRN effectiveness is required');
+  }
+
+  if (input.barcodeScanned && !input.barcodeVerified) {
+    throw new Error('Barcode verification is required');
+  }
+
+  if ((input.controlledSubstanceCount !== undefined || input.controlledSubstanceWitness) &&
+    (input.controlledSubstanceCount === undefined || !input.controlledSubstanceWitness)) {
+    throw new Error('Controlled substance witness and count are required');
   }
 }

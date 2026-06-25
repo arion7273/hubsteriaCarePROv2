@@ -217,6 +217,40 @@ export class HubsteriaApiClient {
 
   listOperationalRecords(sessionId: string, query: { organizationId: string; facilityId?: string; residentId?: string; module?: string }) {
     return this.request({ method: 'GET', path: '/operational-records', sessionId, query });
+  createMedicationOrder(sessionId: string, body: Record<string, unknown>) {
+    return this.request({
+      method: 'POST',
+      path: '/medication-orders',
+      sessionId,
+      body
+    });
+  }
+
+  listMedicationOrders(sessionId: string, residentId: string) {
+    return this.request({
+      method: 'GET',
+      path: '/medication-orders',
+      sessionId,
+      query: { residentId }
+    });
+  }
+
+  recordMedicationAdministration(sessionId: string, body: Record<string, unknown>) {
+    return this.request({
+      method: 'POST',
+      path: '/medication-administrations',
+      sessionId,
+      body
+    });
+  }
+
+  listMedicationAdministrations(sessionId: string, residentId: string) {
+    return this.request({
+      method: 'GET',
+      path: '/medication-administrations',
+      sessionId,
+      query: { residentId }
+    });
   }
 }
 

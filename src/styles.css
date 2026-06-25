@@ -603,6 +603,7 @@ p {
 
 .clinical-api-scope-grid,
 .live-workflow-grid {
+.clinical-api-scope-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 0.85rem;

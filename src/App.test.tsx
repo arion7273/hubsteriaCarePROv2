@@ -110,6 +110,48 @@ describe('HubsteriaCarePRO foundation', () => {
     });
   });
 
+  it('records real eMAR med pass actions from the UI', async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            ok: true,
+            status: 200,
+            data: {
+              session: { id: 'session-1' },
+              mfaChallenge: { id: 'mfa-1' }
+            }
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        )
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, status: 200, data: { id: 'session-1', mfaVerified: true } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ ok: true, status: 201, data: { id: 'med-admin-1', action: 'given' } }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      );
+
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Login' }));
+    await user.click(await screen.findByRole('button', { name: 'Verify MFA' }));
+    await user.click(screen.getAllByRole('button', { name: 'Given' })[0]);
+
+    expect(await screen.findByText(/Med pass Given: ok 201/)).toBeInTheDocument();
+    const medAdminCall = fetchMock.mock.calls[2] as unknown as [URL, RequestInit];
+    expect(medAdminCall[0].toString()).toBe('http://localhost:3000/medication-administrations');
+    expect(medAdminCall[1].body).toContain('"action":"given"');
+    expect(medAdminCall[1].body).toContain('"barcodeVerified":true');
+    expect(medAdminCall[1].body).toContain('"controlledSubstanceCount":28');
+  });
+
   it('uses form values for admin CRUD API screens and shows errors', async () => {
     const user = userEvent.setup();
     const fetchMock = vi.spyOn(globalThis, 'fetch')

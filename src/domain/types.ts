@@ -223,6 +223,11 @@ export type MedicationAdministration = {
   action: 'given' | 'refused' | 'held' | 'resident_absent' | 'not_available';
   reason?: string;
   outcome?: string;
+  prnEffectiveness?: string;
+  barcodeScanned?: string;
+  barcodeVerified?: boolean;
+  controlledSubstanceWitness?: UUID;
+  controlledSubstanceCount?: number;
   administeredAt: string;
   administeredBy: UUID;
 };
