@@ -154,4 +154,31 @@ describe('HubsteriaApiClient', () => {
     expect((fetchMock.mock.calls[1] as unknown as [URL, RequestInit])[1].body).toContain('"barcodeVerified":true');
     expect((fetchMock.mock.calls[2] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/medication-administrations?residentId=resident-1');
   });
+
+  it('supports clinical workflow requests', async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, status: 200, data: [] }));
+    const client = new HubsteriaApiClient({ baseUrl: 'http://api.example.com', fetchImpl: fetchMock as unknown as typeof fetch });
+
+    await client.listAssessments('session-1', 'resident-1');
+    await client.createCareTask('session-1', {
+      organizationId: 'org-1',
+      facilityId: 'facility-1',
+      residentId: 'resident-1',
+      title: 'Breakfast ADL documentation'
+    });
+    await client.listMedicationOrders('session-1', 'resident-1');
+    await client.createIncident('session-1', {
+      organizationId: 'org-1',
+      facilityId: 'facility-1',
+      residentId: 'resident-1',
+      type: 'fall'
+    });
+    await client.listBillingCharges('session-1', 'resident-1');
+
+    expect((fetchMock.mock.calls[0] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/assessments?residentId=resident-1');
+    expect((fetchMock.mock.calls[1] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/tasks');
+    expect((fetchMock.mock.calls[2] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/medication-orders?residentId=resident-1');
+    expect((fetchMock.mock.calls[3] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/incidents');
+    expect((fetchMock.mock.calls[4] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/billing/charges?residentId=resident-1');
+  });
 });
