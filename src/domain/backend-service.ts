@@ -313,7 +313,7 @@ export class BackendFoundationService {
     return saved;
   }
 
-  async getResident(context: AccessContext, residentId: UUID): Promise<Resident> {
+  async getResident(context: AccessContext, residentId: UUID, auditRead = true): Promise<Resident> {
     const resident = await this.repositories.residents.getById(residentId);
 
     if (!resident) {
@@ -331,6 +331,15 @@ export class BackendFoundationService {
       'resident:read'
     );
     assertAllowed(decision);
+
+    if (auditRead) {
+      await this.auditPhiAccess(context, 'Resident', resident.id, {
+        scope: 'resident',
+        organizationId: resident.organizationId,
+        facilityId: resident.facilityId,
+        residentId: resident.id
+      }, 'read');
+    }
 
     return resident;
   }
@@ -361,7 +370,7 @@ export class BackendFoundationService {
     residentId: UUID,
     updates: Partial<Omit<Resident, 'id' | 'organizationId' | 'facilityId'>>
   ): Promise<Resident> {
-    const existing = await this.getResident(context, residentId);
+    const existing = await this.getResident(context, residentId, false);
     const decision = requirePermission(
       context,
       {
@@ -408,7 +417,7 @@ export class BackendFoundationService {
     input: Omit<BackgroundJob, 'id' | 'status' | 'attempts' | 'createdAt' | 'updatedAt'>
   ): Promise<BackgroundJob> {
     if (input.residentId) {
-      await this.getResident(context, input.residentId);
+      await this.getResident(context, input.residentId, false);
     } else if (input.facilityId && input.organizationId) {
       assertAllowed(requirePermission(context, { scope: 'facility', organizationId: input.organizationId, facilityId: input.facilityId }, 'facility:manage'));
     } else if (input.organizationId) {
@@ -463,7 +472,7 @@ export class BackendFoundationService {
     scope: { organizationId?: UUID; facilityId?: UUID; residentId?: UUID }
   ): Promise<BackgroundJob[]> {
     if (scope.residentId) {
-      await this.getResident(context, scope.residentId);
+      await this.getResident(context, scope.residentId, false);
     } else if (scope.facilityId && scope.organizationId) {
       assertAllowed(requirePermission(context, { scope: 'facility', organizationId: scope.organizationId, facilityId: scope.facilityId }, 'report:read'));
     } else if (scope.organizationId) {
@@ -557,7 +566,7 @@ export class BackendFoundationService {
   }
 
   async createAssessment(context: AccessContext, input: Omit<Assessment, 'id'>): Promise<Assessment> {
-    const resident = await this.getResident(context, input.residentId);
+    const resident = await this.getResident(context, input.residentId, false);
     const decision = requirePermission(
       context,
       { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id },
@@ -587,12 +596,12 @@ export class BackendFoundationService {
   }
 
   async listAssessmentsByResident(context: AccessContext, residentId: UUID): Promise<Assessment[]> {
-    await this.getResident(context, residentId);
+    await this.getResident(context, residentId, false);
     return this.repositories.assessments.listByResident(residentId);
   }
 
   async createCarePlan(context: AccessContext, input: Omit<CarePlan, 'id'>): Promise<CarePlan> {
-    const resident = await this.getResident(context, input.residentId);
+    const resident = await this.getResident(context, input.residentId, false);
     const decision = requirePermission(
       context,
       { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id },
@@ -622,12 +631,12 @@ export class BackendFoundationService {
   }
 
   async listCarePlansByResident(context: AccessContext, residentId: UUID): Promise<CarePlan[]> {
-    await this.getResident(context, residentId);
+    await this.getResident(context, residentId, false);
     return this.repositories.carePlans.listByResident(residentId);
   }
 
   async createCareTask(context: AccessContext, input: Omit<CareTask, 'id'>): Promise<CareTask> {
-    const resident = await this.getResident(context, input.residentId);
+    const resident = await this.getResident(context, input.residentId, false);
     const decision = requirePermission(context, { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id }, 'resident:write');
     assertAllowed(decision);
     const task = await this.repositories.careTasks.save({ id: this.createId(), ...input });
@@ -636,7 +645,7 @@ export class BackendFoundationService {
   }
 
   async listCareTasksByResident(context: AccessContext, residentId: UUID): Promise<CareTask[]> {
-    await this.getResident(context, residentId);
+    await this.getResident(context, residentId, false);
     return this.repositories.careTasks.listByResident(residentId);
   }
 
@@ -651,7 +660,7 @@ export class BackendFoundationService {
   }
 
   async logAdl(context: AccessContext, input: Omit<AdlEntry, 'id' | 'recordedAt' | 'recordedBy'>): Promise<AdlEntry> {
-    const resident = await this.getResident(context, input.residentId);
+    const resident = await this.getResident(context, input.residentId, false);
     const decision = requirePermission(context, { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id }, 'resident:write');
     assertAllowed(decision);
     const entry = await this.repositories.adlEntries.save({ id: this.createId(), recordedAt: this.clock().toISOString(), recordedBy: context.user.id, ...input });
@@ -660,12 +669,12 @@ export class BackendFoundationService {
   }
 
   async listAdlsByResident(context: AccessContext, residentId: UUID): Promise<AdlEntry[]> {
-    await this.getResident(context, residentId);
+    await this.getResident(context, residentId, false);
     return this.repositories.adlEntries.listByResident(residentId);
   }
 
   async createServicePlan(context: AccessContext, input: Omit<ServicePlanRecord, 'id'>): Promise<ServicePlanRecord> {
-    const resident = await this.getResident(context, input.residentId);
+    const resident = await this.getResident(context, input.residentId, false);
     const decision = requirePermission(context, { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id }, 'resident:write');
     assertAllowed(decision);
     const plan = await this.repositories.servicePlans.save({ id: this.createId(), ...input });
@@ -674,12 +683,12 @@ export class BackendFoundationService {
   }
 
   async listServicePlansByResident(context: AccessContext, residentId: UUID): Promise<ServicePlanRecord[]> {
-    await this.getResident(context, residentId);
+    await this.getResident(context, residentId, false);
     return this.repositories.servicePlans.listByResident(residentId);
   }
 
   async createMedicationOrder(context: AccessContext, input: Omit<MedicationOrder, 'id'>): Promise<MedicationOrder> {
-    const resident = await this.getResident(context, input.residentId);
+    const resident = await this.getResident(context, input.residentId, false);
     const decision = requirePermission(
       context,
       { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id },
@@ -697,7 +706,13 @@ export class BackendFoundationService {
   }
 
   async listMedicationOrdersByResident(context: AccessContext, residentId: UUID): Promise<MedicationOrder[]> {
-    await this.getResident(context, residentId);
+    const resident = await this.getResident(context, residentId, false);
+    await this.auditPhiAccess(context, 'MedicationOrder', residentId, {
+      scope: 'resident',
+      organizationId: resident.organizationId,
+      facilityId: resident.facilityId,
+      residentId
+    }, 'medication_access');
     return this.repositories.medicationOrders.listByResident(residentId);
   }
 
@@ -729,12 +744,12 @@ export class BackendFoundationService {
   }
 
   async listMedicationAdministrationsByResident(context: AccessContext, residentId: UUID): Promise<MedicationAdministration[]> {
-    await this.getResident(context, residentId);
+    await this.getResident(context, residentId, false);
     return this.repositories.medicationAdministrations.listByResident(residentId);
   }
 
   async createIncident(context: AccessContext, input: Omit<Incident, 'id'>): Promise<Incident> {
-    const resident = await this.getResident(context, input.residentId);
+    const resident = await this.getResident(context, input.residentId, false);
     const decision = requirePermission(
       context,
       { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id },
@@ -752,7 +767,7 @@ export class BackendFoundationService {
   }
 
   async listIncidentsByResident(context: AccessContext, residentId: UUID): Promise<Incident[]> {
-    await this.getResident(context, residentId);
+    await this.getResident(context, residentId, false);
     return this.repositories.incidents.listByResident(residentId);
   }
 
@@ -801,7 +816,7 @@ export class BackendFoundationService {
   }
 
   async createBillingCharge(context: AccessContext, input: Omit<BillingCharge, 'id'>): Promise<BillingCharge> {
-    const resident = await this.getResident(context, input.residentId);
+    const resident = await this.getResident(context, input.residentId, false);
     const decision = requirePermission(context, { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id }, 'billing:manage');
     assertAllowed(decision);
     const charge = await this.repositories.billingCharges.save({ id: this.createId(), ...input });
@@ -810,12 +825,12 @@ export class BackendFoundationService {
   }
 
   async listBillingChargesByResident(context: AccessContext, residentId: UUID): Promise<BillingCharge[]> {
-    await this.getResident(context, residentId);
+    await this.getResident(context, residentId, false);
     return this.repositories.billingCharges.listByResident(residentId);
   }
 
   async createInvoice(context: AccessContext, input: Omit<Invoice, 'id'>): Promise<Invoice> {
-    const resident = await this.getResident(context, input.residentId);
+    const resident = await this.getResident(context, input.residentId, false);
     const decision = requirePermission(context, { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id }, 'billing:manage');
     assertAllowed(decision);
     const invoice = await this.repositories.invoices.save({ id: this.createId(), ...input });
@@ -824,12 +839,12 @@ export class BackendFoundationService {
   }
 
   async listInvoicesByResident(context: AccessContext, residentId: UUID): Promise<Invoice[]> {
-    await this.getResident(context, residentId);
+    await this.getResident(context, residentId, false);
     return this.repositories.invoices.listByResident(residentId);
   }
 
   async recordPaymentTransaction(context: AccessContext, input: Omit<PaymentTransaction, 'id' | 'postedAt' | 'postedBy'>): Promise<PaymentTransaction> {
-    const resident = await this.getResident(context, input.residentId);
+    const resident = await this.getResident(context, input.residentId, false);
     const decision = requirePermission(context, { scope: 'resident', organizationId: resident.organizationId, facilityId: resident.facilityId, residentId: resident.id }, 'billing:manage');
     assertAllowed(decision);
     const transaction = await this.repositories.paymentTransactions.save({ id: this.createId(), postedAt: this.clock().toISOString(), postedBy: context.user.id, ...input });
@@ -838,7 +853,7 @@ export class BackendFoundationService {
   }
 
   async listPaymentTransactionsByResident(context: AccessContext, residentId: UUID): Promise<PaymentTransaction[]> {
-    await this.getResident(context, residentId);
+    await this.getResident(context, residentId, false);
     return this.repositories.paymentTransactions.listByResident(residentId);
   }
 
@@ -1038,7 +1053,7 @@ export class BackendFoundationService {
     mode: 'read' | 'write'
   ): Promise<void> {
     if (scope.residentId) {
-      const resident = await this.getResident(context, scope.residentId);
+      const resident = await this.getResident(context, scope.residentId, false);
       if (mode === 'write') {
         assertAllowed(
           requirePermission(
@@ -1091,6 +1106,47 @@ export class BackendFoundationService {
       },
       beforeState,
       afterState: record,
+      now: this.clock()
+    }));
+  }
+
+  async auditPhiExport(context: AccessContext, input: { residentId: UUID; entityType: string; entityId: UUID }): Promise<void> {
+    const resident = await this.getResident(context, input.residentId, false);
+    await this.auditPhiAccess(context, input.entityType, input.entityId, {
+      scope: 'resident',
+      organizationId: resident.organizationId,
+      facilityId: resident.facilityId,
+      residentId: resident.id
+    }, 'export');
+  }
+
+  async auditPhiPrint(context: AccessContext, input: { residentId: UUID; entityType: string; entityId: UUID }): Promise<void> {
+    const resident = await this.getResident(context, input.residentId, false);
+    await this.auditPhiAccess(context, input.entityType, input.entityId, {
+      scope: 'resident',
+      organizationId: resident.organizationId,
+      facilityId: resident.facilityId,
+      residentId: resident.id
+    }, 'print');
+  }
+
+  private async auditPhiAccess(
+    context: AccessContext,
+    entityType: string,
+    entityId: UUID,
+    scope: { scope: 'resident'; organizationId: UUID; facilityId: UUID; residentId: UUID },
+    accessType: 'read' | 'export' | 'print' | 'medication_access'
+  ): Promise<void> {
+    await this.repositories.auditLogs.append(createAuditEvent({
+      id: this.createId(),
+      action: accessType === 'export' ? 'export' : 'read',
+      actorUserId: context.user.id,
+      actorRole: context.user.roleTier,
+      entityType,
+      entityId,
+      scope,
+      beforeState: null,
+      afterState: { accessType, phi: true },
       now: this.clock()
     }));
   }

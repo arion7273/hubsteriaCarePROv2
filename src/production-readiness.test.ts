@@ -60,6 +60,7 @@ describe('production readiness workflow', () => {
     const postgresIntegration = readFileSync('docs/postgres-integration-tests.md', 'utf8');
     const observability = readFileSync('docs/observability-operations.md', 'utf8');
     const hipaa = readFileSync('docs/hipaa-security-readiness.md', 'utf8');
+    const hipaaArchitecture = readFileSync('docs/hipaa-architecture-decisions.md', 'utf8');
     const sessionStrategy = readFileSync('docs/session-token-strategy.md', 'utf8');
     const goLive = readFileSync('docs/go-live-checklist.md', 'utf8');
     const runbook = readFileSync('docs/operational-runbook.md', 'utf8');
@@ -152,6 +153,12 @@ describe('production readiness workflow', () => {
     expect(postgresIntegration).toContain('seeds the role rows');
     expect(hipaa).toContain('Administrative safeguards');
     expect(hipaa).toContain('Technical safeguards');
+    expect(hipaa).toContain('resident-level authorization');
+    expect(hipaa).toContain('Audit PHI read, export, print, and medication access');
+    expect(hipaaArchitecture).toContain('PHI storage');
+    expect(hipaaArchitecture).toContain('PHI access auditing');
+    expect(hipaaArchitecture).toContain('Resident-level authorization');
+    expect(hipaaArchitecture).toContain('audit_retention_policies');
     expect(goLive).toContain('Tenant isolation tests completed');
     expect(goLive).toContain('Go-live readiness certification signed');
     expect(runbook).toContain('Standard deployment');
