@@ -128,6 +128,8 @@ describe('HubsteriaApiClient', () => {
     expect((fetchMock.mock.calls[4] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/billing/charges?residentId=resident-1');
     expect((fetchMock.mock.calls[5] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/background-jobs?organizationId=org-1&facilityId=facility-1&residentId=resident-1');
     expect((fetchMock.mock.calls[6] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/operational-records?organizationId=org-1&facilityId=facility-1&residentId=resident-1');
+  });
+
   it('supports connected eMAR administration requests', async () => {
     const fetchMock = vi.fn(async () => jsonResponse({ ok: true, status: 201, data: {} }));
     const client = new HubsteriaApiClient({ baseUrl: 'http://api.example.com', fetchImpl: fetchMock as unknown as typeof fetch });

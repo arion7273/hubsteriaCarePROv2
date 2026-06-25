@@ -3565,6 +3565,8 @@ function LiveWorkflowRecords({
       )}
     </div>
   );
+}
+
 function normalizeMedPassAction(action: string) {
   const normalized = action.toLowerCase();
   if (normalized.includes('refuse')) return 'refused';

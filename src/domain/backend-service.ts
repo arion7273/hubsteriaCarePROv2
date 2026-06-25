@@ -1203,6 +1203,9 @@ function assertUserUpdateAllowed(
         throw new Error(`Cannot grant permission not held by actor: ${permission}`);
       }
     }
+  }
+}
+
 function validateMedicationAdministrationInput(
   order: MedicationOrder,
   input: Omit<MedicationAdministration, 'id' | 'administeredAt' | 'administeredBy'>
