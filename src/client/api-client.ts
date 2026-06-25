@@ -161,6 +161,15 @@ export class HubsteriaApiClient {
       body
     });
   }
+
+  recordMedicationAdministration(sessionId: string, body: Record<string, unknown>) {
+    return this.request({
+      method: 'POST',
+      path: '/medication-administrations',
+      sessionId,
+      body
+    });
+  }
 }
 
 export function getConfiguredApiBaseUrl(): string {

@@ -178,6 +178,7 @@ import { createConfiguredApiClient, getConfiguredApiBaseUrl } from './client/api
 import { residentCommandCenter } from './data/resident';
 
 type DashboardScope = 'T1 Master' | 'T2 Organization' | 'T3 Facility';
+type ActiveModule = 'overview' | 'resident' | 'clinical' | 'emar' | 'operations' | 'production';
 
 const scopeMetrics: Record<DashboardScope, DashboardMetric[]> = {
   'T1 Master': masterConsoleMetrics,
@@ -207,6 +208,7 @@ const connectedApiEndpoints = [
 
 function App() {
   const [scope, setScope] = useState<DashboardScope>('T1 Master');
+  const [activeModule, setActiveModule] = useState<ActiveModule>('overview');
   const [query, setQuery] = useState('');
   const [darkMode, setDarkMode] = useState(false);
   const [apiHealthStatus, setApiHealthStatus] = useState('Not checked');
@@ -228,6 +230,7 @@ function App() {
   const [userOrganizationId, setUserOrganizationId] = useState('org-1');
   const [userEmail, setUserEmail] = useState('caregiver@example.com');
   const [userRoleTier, setUserRoleTier] = useState('EMPLOYEE');
+  const [medicationOrderId, setMedicationOrderId] = useState('med-order-1');
   const [apiWorkflowLog, setApiWorkflowLog] = useState<string[]>(['No API workflow actions run yet.']);
   const globalSearchRef = useRef<HTMLInputElement>(null);
   const apiBaseUrl = getConfiguredApiBaseUrl();
@@ -275,6 +278,9 @@ function App() {
   }, [query]);
 
   const activePersonalizedDashboard = personalizedDashboards.find((dashboard) => dashboard.role === scope);
+  const isProtectedClinicalModule = activeModule !== 'overview' && activeModule !== 'production';
+  const protectedRouteLocked = isProtectedClinicalModule && !apiSessionId;
+  const routeClass = (module: ActiveModule) => (activeModule === 'overview' || activeModule === module ? '' : ' route-hidden') + (protectedRouteLocked ? ' route-hidden' : '');
 
   const checkApiHealth = async () => {
     setApiHealthStatus('Checking...');
@@ -371,6 +377,22 @@ function App() {
     return apiSessionId;
   };
 
+  const recordMedPassAction = async (action: string) => {
+    await runApiAction(`Med pass ${action}`, (client) =>
+      client.recordMedicationAdministration(requireDemoSession(), {
+        organizationId: residentOrganizationId,
+        facilityId: residentFacilityId,
+        residentId: 'resident-1',
+        medicationOrderId,
+        action: normalizeMedPassAction(action),
+        reason: action === 'Given' ? undefined : `${action} selected during med pass`,
+        outcome: action === 'Given' ? 'No adverse reaction observed' : undefined,
+        barcodeScanned: 'NDC-0000-0000',
+        barcodeVerified: true
+      })
+    );
+  };
+
   return (
     <div className={`app-shell ${darkMode ? 'dark-mode' : ''}`}>
       <aside className="sidebar" aria-label="HubsteriaCarePRO navigation">
@@ -464,6 +486,45 @@ function App() {
       </aside>
 
       <main className="main-content">
+        <section className="content-card route-module-switcher" aria-label="Production module navigation">
+          <div className="card-heading">
+            <span>Production route modules</span>
+            <strong>{isProtectedClinicalModule && !apiSessionId ? 'Login required for protected clinical modules' : 'Select a production module'}</strong>
+          </div>
+          <div className="api-mini-actions">
+            {[
+              ['overview', 'Overview'],
+              ['resident', 'Resident Command Center'],
+              ['clinical', 'Clinical workflows'],
+              ['emar', 'Mobile eMAR'],
+              ['operations', 'Operations'],
+              ['production', 'Production readiness']
+            ].map(([module, label]) => (
+              <button
+                type="button"
+                className={activeModule === module ? 'active-route' : ''}
+                key={module}
+                onClick={() => setActiveModule(module as ActiveModule)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {isProtectedClinicalModule && !apiSessionId ? (
+          <section className="content-card protected-route-empty" aria-label="Protected route empty state">
+            <p className="eyebrow">Protected route</p>
+            <h2>Login required</h2>
+            <p>Clinical, resident, eMAR, and operations modules are hidden until the API session is active.</p>
+            <a className="button primary" href="#api-connection-center">
+              Open API login
+            </a>
+          </section>
+        ) : null}
+
+        {activeModule === 'overview' ? (
+          <>
         <section className="hero-panel">
           <div className="hero-copy">
             <p className="eyebrow">Mobile-first clinical and operations platform</p>
@@ -564,7 +625,10 @@ function App() {
             ))}
           </div>
         </section>
+          </>
+        ) : null}
 
+        {activeModule === 'overview' || activeModule === 'production' ? (
         <section className="command-panel" id="command" aria-labelledby="command-title">
           <div>
             <p className="eyebrow">Ctrl + K ready</p>
@@ -610,6 +674,7 @@ function App() {
             </div>
           </div>
         </section>
+        ) : null}
 
         <section className="content-card api-connection-center" id="api-connection-center" aria-labelledby="api-connection-title">
           <div className="section-header">
@@ -1212,7 +1277,7 @@ function App() {
           </div>
         </section>
 
-        <section className="content-card assessments-center" id="assessments-care-plans" aria-labelledby="assessments-title">
+        <section className={`content-card assessments-center${routeClass('clinical')}`} id="assessments-care-plans" aria-labelledby="assessments-title">
           <div className="section-header">
             <div>
               <p className="eyebrow">Phase 6</p>
@@ -1369,7 +1434,7 @@ function App() {
           </div>
         </section>
 
-        <section className="content-card tasks-center" id="tasks-adls-services" aria-labelledby="tasks-title">
+        <section className={`content-card tasks-center${routeClass('clinical')}`} id="tasks-adls-services" aria-labelledby="tasks-title">
           <div className="section-header">
             <div>
               <p className="eyebrow">Phase 7</p>
@@ -1500,7 +1565,7 @@ function App() {
           </div>
         </section>
 
-        <section className="content-card medication-center" id="emar-medication-management" aria-labelledby="medication-title">
+        <section className={`content-card medication-center${routeClass('emar')}`} id="emar-medication-management" aria-labelledby="medication-title">
           <div className="section-header">
             <div>
               <p className="eyebrow">Phase 8</p>
@@ -1577,6 +1642,30 @@ function App() {
                   </article>
                 ))}
               </div>
+            </div>
+          </div>
+
+          <div className="medication-panel mobile-med-pass-card">
+            <div className="card-heading">
+              <span>Mobile eMAR workflow</span>
+              <strong>Barcode-ready administration actions</strong>
+            </div>
+            <p>
+              The same med-pass actions below post to the medication administration API with barcode verification,
+              PRN effectiveness, and controlled-substance witness/count metadata.
+            </p>
+            <label className="clinical-api-scope-grid">
+              <span>
+                Medication order ID
+                <input value={medicationOrderId} onChange={(event) => setMedicationOrderId(event.target.value)} />
+              </span>
+            </label>
+            <div className="api-mini-actions">
+              {['Given', 'Refused', 'Held'].map((action) => (
+                <button type="button" key={action} onClick={() => recordMedPassAction(action)} disabled={!apiSessionId}>
+                  {action}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -1817,7 +1906,7 @@ function App() {
           </div>
         </section>
 
-        <section className="content-card incidents-center" id="incidents-compliance-center" aria-labelledby="incidents-title">
+        <section className={`content-card incidents-center${routeClass('clinical')}`} id="incidents-compliance-center" aria-labelledby="incidents-title">
           <div className="section-header">
             <div>
               <p className="eyebrow">Phase 10</p>
@@ -2154,7 +2243,7 @@ function App() {
           </div>
         </section>
 
-        <section className="content-card billing-center" id="billing-center" aria-labelledby="billing-title">
+        <section className={`content-card billing-center${routeClass('clinical')}`} id="billing-center" aria-labelledby="billing-title">
           <div className="section-header">
             <div>
               <p className="eyebrow">Phase 13</p>
@@ -2288,7 +2377,7 @@ function App() {
           </div>
         </section>
 
-        <section className="content-card workflow-center" id="workflow-automation-engine" aria-labelledby="workflow-title">
+        <section className={`content-card workflow-center${routeClass('operations')}`} id="workflow-automation-engine" aria-labelledby="workflow-title">
           <div className="section-header">
             <div>
               <p className="eyebrow">Phase 14</p>
@@ -2925,7 +3014,7 @@ function App() {
           </div>
         </section>
 
-        <section className="content-card production-center" id="production-hardening" aria-labelledby="production-title">
+        <section className={`content-card production-center${routeClass('production')}`} id="production-hardening" aria-labelledby="production-title">
           <div className="section-header">
             <div>
               <p className="eyebrow">Phase 20</p>
@@ -3086,7 +3175,7 @@ function App() {
           </div>
         </section>
 
-        <section className="content-card resident-command-center" id="resident-command-center" aria-labelledby="resident-title">
+        <section className={`content-card resident-command-center${routeClass('resident')}`} id="resident-command-center" aria-labelledby="resident-title">
           <div className="section-header">
             <div>
               <p className="eyebrow">Phase 2</p>
@@ -3339,6 +3428,15 @@ function summarizeApiResult(result: unknown): string {
   }
 
   return `ok ${response.status ?? 200}`;
+}
+
+function normalizeMedPassAction(action: string) {
+  const normalized = action.toLowerCase();
+  if (normalized.includes('refuse')) return 'refused';
+  if (normalized.includes('hold')) return 'held';
+  if (normalized.includes('absent')) return 'resident_absent';
+  if (normalized.includes('available')) return 'not_available';
+  return 'given';
 }
 
 export default App;
