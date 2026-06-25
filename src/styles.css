@@ -610,6 +610,7 @@ p {
 }
 
 .clinical-api-scope-grid label {
+.clinical-api-scope-grid span {
   display: grid;
   gap: 0.35rem;
   color: var(--muted);
@@ -655,6 +656,17 @@ p {
 
 .live-workflow-list strong {
   color: var(--primary-strong);
+.route-hidden {
+  display: none !important;
+}
+
+.route-module-switcher .active-route {
+  background: var(--primary-strong);
+}
+
+.protected-route-empty {
+  display: grid;
+  gap: 0.75rem;
 }
 
 .api-endpoint-grid span {
