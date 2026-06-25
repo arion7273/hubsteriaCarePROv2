@@ -223,6 +223,11 @@ export type MedicationAdministration = {
   action: 'given' | 'refused' | 'held' | 'resident_absent' | 'not_available';
   reason?: string;
   outcome?: string;
+  prnEffectiveness?: string;
+  barcodeScanned?: string;
+  barcodeVerified?: boolean;
+  controlledSubstanceWitness?: UUID;
+  controlledSubstanceCount?: number;
   administeredAt: string;
   administeredBy: UUID;
 };
@@ -254,12 +259,27 @@ export type ComplianceIssue = {
   resolutionLink: string;
 };
 
+export type OperationalRecord = {
+  id: UUID;
+  organizationId: UUID;
+  facilityId?: UUID;
+  residentId?: UUID;
+  module: 'notifications' | 'print' | 'digitalrx' | 'workflow' | 'ai' | 'communication' | 'family' | 'support' | 'integrations';
+  recordType: string;
+  status: 'draft' | 'active' | 'queued' | 'processing' | 'completed' | 'failed' | 'archived';
+  title: string;
+  payload: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type User = {
   id: UUID;
   email: string;
   roleTier: RoleTier;
   organizationId?: UUID;
   facilityIds: UUID[];
+  residentIds?: UUID[];
   permissions: Permission[];
   status: 'active' | 'inactive';
 };
@@ -311,6 +331,14 @@ export type PasswordResetRequest = {
   createdAt: string;
   expiresAt: string;
   usedAt?: string;
+};
+
+export type AccountSecurityState = {
+  userId: UUID;
+  failedLoginAttempts: number;
+  lockedUntil?: string;
+  lastFailedAt?: string;
+  updatedAt: string;
 };
 
 export const masterAdminBootstrap = {

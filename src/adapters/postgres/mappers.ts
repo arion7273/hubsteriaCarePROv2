@@ -1,6 +1,7 @@
 import type { RegisteredFeature } from '../../domain';
 import type { AuditEvent } from '../../domain/audit';
 import type {
+  AccountSecurityState,
   Assessment,
   AuthSession,
   BackgroundJob,
@@ -14,6 +15,7 @@ import type {
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
+  OperationalRecord,
   Organization,
   PaymentTransaction,
   PasswordResetRequest,
@@ -185,6 +187,11 @@ export function mapMedicationAdministrationRow(row: PostgresRow): MedicationAdmi
     action: String(row.action) as MedicationAdministration['action'],
     reason: row.reason ? String(row.reason) : undefined,
     outcome: row.outcome ? String(row.outcome) : undefined,
+    prnEffectiveness: row.prn_effectiveness ? String(row.prn_effectiveness) : undefined,
+    barcodeScanned: row.barcode_scanned ? String(row.barcode_scanned) : undefined,
+    barcodeVerified: Boolean(row.barcode_verified),
+    controlledSubstanceWitness: row.controlled_substance_witness ? String(row.controlled_substance_witness) : undefined,
+    controlledSubstanceCount: row.controlled_substance_count === null || row.controlled_substance_count === undefined ? undefined : Number(row.controlled_substance_count),
     administeredAt: String(row.administered_at),
     administeredBy: String(row.administered_by)
   };
@@ -242,6 +249,22 @@ export function mapPaymentTransactionRow(row: PostgresRow): PaymentTransaction {
     id: String(row.id), organizationId: String(row.organization_id), facilityId: String(row.facility_id), residentId: String(row.resident_id),
     invoiceId: row.invoice_id ? String(row.invoice_id) : undefined, type: String(row.type) as PaymentTransaction['type'],
     amountCents: Number(row.amount_cents), method: String(row.method), postedAt: String(row.posted_at), postedBy: String(row.posted_by)
+  };
+}
+
+export function mapOperationalRecordRow(row: PostgresRow): OperationalRecord {
+  return {
+    id: String(row.id),
+    organizationId: String(row.organization_id),
+    facilityId: row.facility_id ? String(row.facility_id) : undefined,
+    residentId: row.resident_id ? String(row.resident_id) : undefined,
+    module: String(row.module) as OperationalRecord['module'],
+    recordType: String(row.record_type),
+    status: String(row.status) as OperationalRecord['status'],
+    title: String(row.title),
+    payload: typeof row.payload === 'object' && row.payload !== null ? (row.payload as Record<string, unknown>) : {},
+    createdAt: String(row.created_at),
+    updatedAt: String(row.updated_at)
   };
 }
 
@@ -307,6 +330,16 @@ export function mapUserCredentialRow(row: PostgresRow): UserCredential {
   return {
     userId: String(row.user_id),
     passwordHash: String(row.password_hash),
+    updatedAt: toIsoString(row.updated_at)
+  };
+}
+
+export function mapAccountSecurityStateRow(row: PostgresRow): AccountSecurityState {
+  return {
+    userId: String(row.user_id),
+    failedLoginAttempts: Number(row.failed_login_attempts),
+    lockedUntil: row.locked_until ? toIsoString(row.locked_until) : undefined,
+    lastFailedAt: row.last_failed_at ? toIsoString(row.last_failed_at) : undefined,
     updatedAt: toIsoString(row.updated_at)
   };
 }

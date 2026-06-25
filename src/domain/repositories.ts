@@ -1,6 +1,7 @@
 import type { AuditEvent } from './audit';
 import type { RegisteredFeature } from './feature-registry';
 import type {
+  AccountSecurityState,
   AdlEntry,
   Assessment,
   AuthSession,
@@ -15,6 +16,7 @@ import type {
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
+  OperationalRecord,
   Organization,
   PaymentTransaction,
   PasswordResetRequest,
@@ -129,6 +131,12 @@ export interface PaymentTransactionRepository {
   save(transaction: PaymentTransaction): Promise<PaymentTransaction>;
 }
 
+export interface OperationalRecordRepository {
+  getById(id: UUID): Promise<OperationalRecord | null>;
+  listByScope(scope: { organizationId: UUID; facilityId?: UUID; residentId?: UUID; module?: OperationalRecord['module'] }): Promise<OperationalRecord[]>;
+  save(record: OperationalRecord): Promise<OperationalRecord>;
+}
+
 export interface AuditLogRepository {
   append(event: AuditEvent): Promise<void>;
   listByEntity(entityType: string, entityId: UUID): Promise<AuditEvent[]>;
@@ -155,6 +163,11 @@ export interface PasswordResetRepository {
   save(request: PasswordResetRequest): Promise<PasswordResetRequest>;
 }
 
+export interface AccountSecurityRepository {
+  getByUserId(userId: UUID): Promise<AccountSecurityState | null>;
+  save(state: AccountSecurityState): Promise<AccountSecurityState>;
+}
+
 export type BackendRepositories = {
   organizations: OrganizationRepository;
   facilities: FacilityRepository;
@@ -174,9 +187,11 @@ export type BackendRepositories = {
   billingCharges: BillingChargeRepository;
   invoices: InvoiceRepository;
   paymentTransactions: PaymentTransactionRepository;
+  operationalRecords: OperationalRecordRepository;
   auditLogs: AuditLogRepository;
   featureRegistry: FeatureRegistryRepository;
   authSessions: AuthSessionRepository;
   mfaChallenges: MfaChallengeRepository;
   passwordResets: PasswordResetRepository;
+  accountSecurity: AccountSecurityRepository;
 };

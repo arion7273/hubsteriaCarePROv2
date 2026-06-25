@@ -1,5 +1,6 @@
 import { assertFeatureRegistration, type AuditEvent, type RegisteredFeature } from '../../domain';
 import type {
+  AccountSecurityRepository,
   AdlEntryRepository,
   AuditLogRepository,
   AssessmentRepository,
@@ -16,6 +17,7 @@ import type {
   IncidentRepository,
   InvoiceRepository,
   MfaChallengeRepository,
+  OperationalRecordRepository,
   OrganizationRepository,
   PasswordResetRepository,
   PaymentTransactionRepository,
@@ -25,6 +27,7 @@ import type {
   UserRepository
 } from '../../domain/repositories';
 import type {
+  AccountSecurityState,
   AdlEntry,
   Assessment,
   AuthSession,
@@ -39,6 +42,7 @@ import type {
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
+  OperationalRecord,
   Organization,
   PaymentTransaction,
   PasswordResetRequest,
@@ -50,6 +54,7 @@ import type {
   UUID
 } from '../../domain/types';
 import {
+  accountSecurityStatements,
   assessmentStatements,
   adlEntryStatements,
   auditLogStatements,
@@ -66,6 +71,7 @@ import {
   billingChargeStatements,
   invoiceStatements,
   mfaChallengeStatements,
+  operationalRecordStatements,
   organizationStatements,
   passwordResetStatements,
   paymentTransactionStatements,
@@ -75,6 +81,7 @@ import {
   userStatements
 } from './statements';
 import {
+  mapAccountSecurityStateRow,
   mapAssessmentRow,
   mapAdlEntryRow,
   mapAuditRow,
@@ -91,6 +98,7 @@ import {
   mapBillingChargeRow,
   mapInvoiceRow,
   mapMfaChallengeRow,
+  mapOperationalRecordRow,
   mapOrganizationRow,
   mapPasswordResetRequestRow,
   mapPaymentTransactionRow,
@@ -296,6 +304,23 @@ export class PostgresPaymentTransactionRepository implements PaymentTransactionR
   async save(transaction: PaymentTransaction): Promise<PaymentTransaction> { return requiredFirst(await this.client.query(paymentTransactionStatements.insert(transaction)), mapPaymentTransactionRow); }
 }
 
+export class PostgresOperationalRecordRepository implements OperationalRecordRepository {
+  constructor(private readonly client: PostgresClient) {}
+
+  async getById(id: UUID): Promise<OperationalRecord | null> {
+    return first(await this.client.query(operationalRecordStatements.selectById(id)), mapOperationalRecordRow);
+  }
+
+  async listByScope(scope: { organizationId: UUID; facilityId?: UUID; residentId?: UUID; module?: OperationalRecord['module'] }): Promise<OperationalRecord[]> {
+    const result = await this.client.query(operationalRecordStatements.listByScope(scope));
+    return result.rows.map(mapOperationalRecordRow);
+  }
+
+  async save(record: OperationalRecord): Promise<OperationalRecord> {
+    return requiredFirst(await this.client.query(operationalRecordStatements.upsert(record)), mapOperationalRecordRow);
+  }
+}
+
 export class PostgresAuditLogRepository implements AuditLogRepository {
   constructor(private readonly client: PostgresClient) {}
 
@@ -375,6 +400,18 @@ export class PostgresUserCredentialRepository implements UserCredentialRepositor
 
   async save(credential: UserCredential): Promise<UserCredential> {
     return requiredFirst(await this.client.query(userCredentialStatements.upsert(credential)), mapUserCredentialRow);
+  }
+}
+
+export class PostgresAccountSecurityRepository implements AccountSecurityRepository {
+  constructor(private readonly client: PostgresClient) {}
+
+  async getByUserId(userId: UUID): Promise<AccountSecurityState | null> {
+    return first(await this.client.query(accountSecurityStatements.selectByUserId(userId)), mapAccountSecurityStateRow);
+  }
+
+  async save(state: AccountSecurityState): Promise<AccountSecurityState> {
+    return requiredFirst(await this.client.query(accountSecurityStatements.upsert(state)), mapAccountSecurityStateRow);
   }
 }
 

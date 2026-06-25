@@ -1,10 +1,32 @@
 import { createNodeApiServer } from '../api';
+import { createAuthRateLimitMiddleware } from '../api/middleware';
 import { readServerConfig } from './config';
+import { createRuntimeObservability } from './observability';
 import { createRuntimeServices, seedDemoMasterAdmin } from './services';
 
 const config = readServerConfig();
+const observability = createRuntimeObservability(config);
 const services = createRuntimeServices(config);
-const server = createNodeApiServer(services);
+const server = createNodeApiServer(services, {
+  metrics: observability.metrics,
+  structuredLogger: observability.structuredLogger,
+  errorTracker: observability.errorTracker,
+  corsAllowedOrigins: config.corsAllowedOrigins,
+  maxBodyBytes: config.maxRequestBodyBytes,
+  secureCookies: config.secureCookies,
+  middlewares: [
+    createAuthRateLimitMiddleware({ limit: config.authRateLimit })
+  ],
+  readiness: async () => ({
+    ok: true,
+    checks: {
+      api: true,
+      repositoryMode: config.repositoryMode,
+      monitoringConfigured: String(observability.status.monitoringConfigured),
+      errorTrackingConfigured: String(observability.status.errorTrackingConfigured)
+    }
+  })
+});
 
 if (config.repositoryMode === 'memory') {
   await seedDemoMasterAdmin(services);

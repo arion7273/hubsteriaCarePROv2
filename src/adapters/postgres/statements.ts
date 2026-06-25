@@ -1,4 +1,5 @@
 import type {
+  AccountSecurityState,
   AdlEntry,
   Assessment,
   AuditEvent,
@@ -14,6 +15,7 @@ import type {
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
+  OperationalRecord,
   Organization,
   PaymentTransaction,
   PasswordResetRequest,
@@ -389,10 +391,42 @@ export const medicationAdministrationStatements = {
   listByResident(residentId: UUID): SqlStatement { return { text: 'SELECT * FROM medication_administrations WHERE resident_id = $1 ORDER BY administered_at DESC', values: [residentId] }; },
   insert(administration: MedicationAdministration): SqlStatement {
     return { text: `
-      INSERT INTO medication_administrations (id, organization_id, facility_id, resident_id, medication_order_id, action, reason, outcome, administered_at, administered_by)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+      INSERT INTO medication_administrations (
+        id,
+        organization_id,
+        facility_id,
+        resident_id,
+        medication_order_id,
+        action,
+        reason,
+        outcome,
+        prn_effectiveness,
+        barcode_scanned,
+        barcode_verified,
+        controlled_substance_witness,
+        controlled_substance_count,
+        administered_at,
+        administered_by
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
       RETURNING *
-    `, values: [administration.id, administration.organizationId, administration.facilityId, administration.residentId, administration.medicationOrderId, administration.action, administration.reason ?? null, administration.outcome ?? null, administration.administeredAt, administration.administeredBy] };
+    `, values: [
+      administration.id,
+      administration.organizationId,
+      administration.facilityId,
+      administration.residentId,
+      administration.medicationOrderId,
+      administration.action,
+      administration.reason ?? null,
+      administration.outcome ?? null,
+      administration.prnEffectiveness ?? null,
+      administration.barcodeScanned ?? null,
+      administration.barcodeVerified ?? false,
+      administration.controlledSubstanceWitness ?? null,
+      administration.controlledSubstanceCount ?? null,
+      administration.administeredAt,
+      administration.administeredBy
+    ] };
   }
 };
 
@@ -444,6 +478,79 @@ export const paymentTransactionStatements = {
   insert(transaction: PaymentTransaction): SqlStatement {
     return { text: `INSERT INTO payment_transactions (id, organization_id, facility_id, resident_id, invoice_id, type, amount_cents, method, posted_at, posted_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
       values: [transaction.id, transaction.organizationId, transaction.facilityId, transaction.residentId, transaction.invoiceId ?? null, transaction.type, transaction.amountCents, transaction.method, transaction.postedAt, transaction.postedBy] };
+  }
+};
+
+export const operationalRecordStatements = {
+  selectById(id: UUID): SqlStatement {
+    return { text: 'SELECT * FROM operational_records WHERE id = $1', values: [id] };
+  },
+
+  listByScope(scope: { organizationId: UUID; facilityId?: UUID; residentId?: UUID; module?: OperationalRecord['module'] }): SqlStatement {
+    const values: unknown[] = [scope.organizationId];
+    const clauses = ['organization_id = $1'];
+
+    if (scope.facilityId) {
+      values.push(scope.facilityId);
+      clauses.push(`facility_id = $${values.length}`);
+    }
+
+    if (scope.residentId) {
+      values.push(scope.residentId);
+      clauses.push(`resident_id = $${values.length}`);
+    }
+
+    if (scope.module) {
+      values.push(scope.module);
+      clauses.push(`module = $${values.length}`);
+    }
+
+    return {
+      text: `SELECT * FROM operational_records WHERE ${clauses.join(' AND ')} ORDER BY created_at DESC`,
+      values
+    };
+  },
+
+  upsert(record: OperationalRecord): SqlStatement {
+    return {
+      text: `
+        INSERT INTO operational_records (
+          id,
+          organization_id,
+          facility_id,
+          resident_id,
+          module,
+          record_type,
+          status,
+          title,
+          payload,
+          created_at,
+          updated_at
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10, $11)
+        ON CONFLICT (id) DO UPDATE
+        SET module = EXCLUDED.module,
+            record_type = EXCLUDED.record_type,
+            status = EXCLUDED.status,
+            title = EXCLUDED.title,
+            payload = EXCLUDED.payload,
+            updated_at = EXCLUDED.updated_at
+        RETURNING *
+      `,
+      values: [
+        record.id,
+        record.organizationId,
+        record.facilityId ?? null,
+        record.residentId ?? null,
+        record.module,
+        record.recordType,
+        record.status,
+        record.title,
+        JSON.stringify(record.payload),
+        record.createdAt,
+        record.updatedAt
+      ]
+    };
   }
 };
 
@@ -622,6 +729,31 @@ export const userCredentialStatements = {
         RETURNING user_id, password_hash, updated_at
       `,
       values: [credential.userId, credential.passwordHash, credential.updatedAt]
+    };
+  }
+};
+
+export const accountSecurityStatements = {
+  selectByUserId(userId: UUID): SqlStatement {
+    return {
+      text: 'SELECT user_id, failed_login_attempts, locked_until, last_failed_at, updated_at FROM account_security_states WHERE user_id = $1',
+      values: [userId]
+    };
+  },
+
+  upsert(state: AccountSecurityState): SqlStatement {
+    return {
+      text: `
+        INSERT INTO account_security_states (user_id, failed_login_attempts, locked_until, last_failed_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (user_id) DO UPDATE
+        SET failed_login_attempts = EXCLUDED.failed_login_attempts,
+            locked_until = EXCLUDED.locked_until,
+            last_failed_at = EXCLUDED.last_failed_at,
+            updated_at = EXCLUDED.updated_at
+        RETURNING user_id, failed_login_attempts, locked_until, last_failed_at, updated_at
+      `,
+      values: [state.userId, state.failedLoginAttempts, state.lockedUntil ?? null, state.lastFailedAt ?? null, state.updatedAt]
     };
   }
 };

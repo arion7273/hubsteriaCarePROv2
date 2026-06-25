@@ -23,6 +23,10 @@ HubsteriaCarePRO must complete these controls before production use with PHI.
 - Maintain immutable audit logs.
 - Add automatic logoff/session expiration.
 - Add integrity controls for clinical and financial records.
+- Enforce resident-level authorization for family and resident portal users.
+- Audit PHI read, export, print, and medication access.
+- Use managed key material through the PHI encryption abstraction.
+- Use a managed secret provider for PHI keys and integration credentials.
 
 ## Physical and operational safeguards
 

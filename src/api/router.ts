@@ -1,5 +1,7 @@
 import {
   completeBackgroundJobHandler,
+  completePasswordResetHandler,
+  createOperationalRecordHandler,
   createFacilityHandler,
   enqueueBackgroundJobHandler,
   enqueueAiGenerationJobHandler,
@@ -22,6 +24,7 @@ import {
   createUserHandler,
   createServicePlanHandler,
   getFacilityHandler,
+  getOperationalRecordHandler,
   getOrganizationHandler,
   getResidentHandler,
   listFeaturesHandler,
@@ -31,6 +34,7 @@ import {
   listFacilitiesHandler,
   listIncidentsHandler,
   listOrganizationsHandler,
+  listOperationalRecordsHandler,
   listResidentsHandler,
   listUsersHandler,
   leaseBackgroundJobsHandler,
@@ -52,6 +56,7 @@ import {
   updateIncidentHandler,
   recordPaymentHandler,
   updateFacilityHandler,
+  updateOperationalRecordHandler,
   updateOrganizationHandler,
   updateResidentHandler,
   updateUserHandler,
@@ -64,7 +69,9 @@ import { composeMiddleware, type ApiMiddleware } from './middleware';
 import { apiRoutes } from './routes';
 import {
   isCompleteBackgroundJobBody,
+  isCompletePasswordResetBody,
   isCreateFacilityBody,
+  isCreateOperationalRecordBody,
   isEnqueueBackgroundJobBody,
   isEnqueueAiGenerationJobBody,
   isEnqueueDigitalRxSyncJobBody,
@@ -88,6 +95,7 @@ import {
   isLogAdlBody,
   isUpdateFacilityBody,
   isUpdateIncidentBody,
+  isUpdateOperationalRecordBody,
   isUpdateOrganizationBody,
   isLoginBody,
   isPasswordResetBody,
@@ -132,6 +140,12 @@ const routeConfigs: RouteConfig[] = [
     path: '/auth/password-reset',
     validate: isPasswordResetBody,
     handler: passwordResetHandler as RouteHandler
+  },
+  {
+    method: 'POST',
+    path: '/auth/password-reset/complete',
+    validate: isCompletePasswordResetBody,
+    handler: completePasswordResetHandler as RouteHandler
   },
   {
     method: 'POST',
@@ -280,7 +294,11 @@ const routeConfigs: RouteConfig[] = [
   { method: 'POST', path: '/billing/invoices', validate: isCreateInvoiceBody, handler: createInvoiceHandler as RouteHandler },
   { method: 'GET', path: '/billing/invoices', handler: listInvoicesHandler },
   { method: 'POST', path: '/billing/payments', validate: isRecordPaymentBody, handler: recordPaymentHandler as RouteHandler },
-  { method: 'GET', path: '/billing/payments', handler: listPaymentsHandler }
+  { method: 'GET', path: '/billing/payments', handler: listPaymentsHandler },
+  { method: 'POST', path: '/operational-records', validate: isCreateOperationalRecordBody, handler: createOperationalRecordHandler as RouteHandler },
+  { method: 'GET', path: '/operational-records', handler: listOperationalRecordsHandler },
+  { method: 'GET', path: '/operational-records/get', handler: getOperationalRecordHandler },
+  { method: 'PATCH', path: '/operational-records', validate: isUpdateOperationalRecordBody, handler: updateOperationalRecordHandler as RouteHandler }
 ];
 
 export function createApiRouter(services: ApiServices, middlewares: ApiMiddleware[] = []) {
@@ -292,6 +310,11 @@ export function createApiRouter(services: ApiServices, middlewares: ApiMiddlewar
       return pathExists
         ? fail('method_not_allowed', `Method ${request.method} is not allowed for ${request.path}`, 405)
         : fail('not_found', `Route not found: ${request.method} ${request.path}`, 404);
+    }
+
+    const routeDefinition = apiRoutes.find((candidate) => candidate.path === route.path && candidate.method === route.method);
+    if (routeDefinition?.authRequired && !request.sessionId) {
+      return fail('missing_session', 'Session is required', 401);
     }
 
     if (route.validate) {

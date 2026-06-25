@@ -52,6 +52,18 @@ export const openApiDocument = {
         }
       }
     },
+    '/auth/password-reset/complete': {
+      post: {
+        summary: 'Complete password reset',
+        requestBody: {
+          required: true
+        },
+        responses: {
+          '200': { description: 'Password reset completed' },
+          '400': { description: 'Invalid reset request' }
+        }
+      }
+    },
     '/organizations': {
       get: {
         summary: 'List organizations',
@@ -250,6 +262,84 @@ export const openApiDocument = {
         responses: {
           '201': { description: 'Care plan created' },
           '403': { description: 'Insufficient permissions or tenant mismatch' }
+        }
+      }
+    },
+    '/jobs/notifications': {
+      post: {
+        summary: 'Enqueue notification job',
+        security: [{ session: [] }],
+        responses: {
+          '201': { description: 'Notification job queued' }
+        }
+      }
+    },
+    '/jobs/print': {
+      post: {
+        summary: 'Enqueue print job',
+        security: [{ session: [] }],
+        responses: {
+          '201': { description: 'Print job queued' }
+        }
+      }
+    },
+    '/jobs/digitalrx': {
+      post: {
+        summary: 'Enqueue DigitalRX sync job',
+        security: [{ session: [] }],
+        responses: {
+          '201': { description: 'DigitalRX sync job queued' }
+        }
+      }
+    },
+    '/jobs/ai': {
+      post: {
+        summary: 'Enqueue AI generation job',
+        security: [{ session: [] }],
+        responses: {
+          '201': { description: 'AI generation job queued' }
+        }
+      }
+    },
+    '/jobs/workflow-actions': {
+      post: {
+        summary: 'Enqueue workflow action job',
+        security: [{ session: [] }],
+        responses: {
+          '201': { description: 'Workflow action job queued' }
+        }
+      }
+    },
+    '/operational-records': {
+      get: {
+        summary: 'List operational records by scope',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'Operational record list' }
+        }
+      },
+      post: {
+        summary: 'Create operational record',
+        security: [{ session: [] }],
+        responses: {
+          '201': { description: 'Operational record created' }
+        }
+      },
+      patch: {
+        summary: 'Update operational record',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'Operational record updated' }
+        }
+      }
+    },
+    '/operational-records/get': {
+      get: {
+        summary: 'Get operational record',
+        security: [{ session: [] }],
+        responses: {
+          '200': { description: 'Operational record' },
+          '404': { description: 'Operational record not found' }
         }
       }
     }

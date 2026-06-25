@@ -7,15 +7,21 @@ describe('production readiness workflow', () => {
 
     expect(workflow).toContain('npm ci');
     expect(workflow).toContain('npm test');
+    expect(workflow).toContain('postgres:16');
+    expect(workflow).toContain('npm run db:migrate');
+    expect(workflow).toContain('npm run test:postgres');
     expect(workflow).toContain('npm run build');
   });
 
   it('defines a static production container with health checks', () => {
     const dockerfile = readFileSync('Dockerfile', 'utf8');
     const nginxConfig = readFileSync('nginx.conf', 'utf8');
+    const compose = readFileSync('compose.staging.yml', 'utf8');
 
     expect(dockerfile).toContain('FROM node:22-alpine AS build');
     expect(dockerfile).toContain('FROM nginx:1.27-alpine AS runtime');
+    expect(dockerfile).toContain('FROM node:22-alpine AS api-runtime');
+    expect(dockerfile).toContain('"api:start"');
     expect(dockerfile).toContain('HEALTHCHECK');
     expect(dockerfile).toContain('/healthz');
 
@@ -23,6 +29,13 @@ describe('production readiness workflow', () => {
     expect(nginxConfig).toContain('try_files $uri $uri/ /index.html');
     expect(nginxConfig).toContain('X-Frame-Options "DENY"');
     expect(nginxConfig).toContain('X-Content-Type-Options "nosniff"');
+
+    expect(compose).toContain('postgres:16-alpine');
+    expect(compose).toContain('target: api-runtime');
+    expect(compose).toContain('target: runtime');
+    expect(compose).toContain('"db:migrate"');
+    expect(compose).toContain('MONITORING_ENDPOINT');
+    expect(compose).toContain('ERROR_TRACKING_DSN');
   });
 
   it('documents production deployment and remaining launch requirements', () => {
@@ -30,7 +43,9 @@ describe('production readiness workflow', () => {
 
     expect(guide).toContain('npm run verify');
     expect(guide).toContain('docker build');
+    expect(guide).toContain('compose.staging.yml');
     expect(guide).toContain('/healthz');
+    expect(guide).toContain('Monitoring and error tracking placeholders');
     expect(guide).toContain('HIPAA security review');
     expect(guide).toContain('Server-side tenant isolation');
   });
@@ -42,7 +57,11 @@ describe('production readiness workflow', () => {
     const auth = readFileSync('docs/authentication-foundation.md', 'utf8');
     const database = readFileSync('docs/database-foundation.md', 'utf8');
     const postgresAdapters = readFileSync('docs/postgres-adapters.md', 'utf8');
+    const postgresIntegration = readFileSync('docs/postgres-integration-tests.md', 'utf8');
+    const observability = readFileSync('docs/observability-operations.md', 'utf8');
     const hipaa = readFileSync('docs/hipaa-security-readiness.md', 'utf8');
+    const hipaaArchitecture = readFileSync('docs/hipaa-architecture-decisions.md', 'utf8');
+    const sessionStrategy = readFileSync('docs/session-token-strategy.md', 'utf8');
     const goLive = readFileSync('docs/go-live-checklist.md', 'utf8');
     const runbook = readFileSync('docs/operational-runbook.md', 'utf8');
 
@@ -62,11 +81,13 @@ describe('production readiness workflow', () => {
     expect(api).toContain('POST /background-jobs');
     expect(api).toContain('POST /jobs/notifications');
     expect(api).toContain('POST /jobs/digitalrx');
+    expect(api).toContain('POST /operational-records');
     expect(api).toContain('Protected routes require a valid session');
     expect(api).toContain('Resident APIs must enforce organization and facility scope');
     expect(api).toContain('User APIs must enforce organization scope');
     expect(api).toContain('Background job APIs must enforce platform or tenant scope');
     expect(api).toContain('Typed job producer APIs enqueue notification, print, DigitalRX, AI, and workflow work');
+    expect(api).toContain('Operational record APIs provide a tenant-scoped ledger');
     expect(api).toContain('Background job processors must register handlers per job type');
     expect(api).toContain('POST /tasks');
     expect(api).toContain('POST /adls');
@@ -102,24 +123,48 @@ describe('production readiness workflow', () => {
     expect(api).toContain('Node HTTP runtime adapter');
     expect(api).toContain('/openapi.json');
     expect(api).toContain('npm run api:dev');
+    expect(observability).toContain('/readyz');
+    expect(observability).toContain('/metrics');
+    expect(observability).toContain('Structured API logs');
+    expect(observability).toContain('background jobs queued');
+    expect(observability).toContain('staging dashboard');
     expect(auth).toContain('MFA verification');
+    expect(auth).toContain('Password reset completion');
+    expect(auth).toContain('Account lockout');
+    expect(auth).toContain('TOTP-ready MFA provider abstraction');
     expect(auth).toContain('PBKDF2-SHA512 password hashing');
     expect(auth).toContain('Plain-text passwords must never be stored');
     expect(auth).toContain('Sessions must expire and be revocable');
+    expect(auth).toContain('Deployable runtimes must reject demo password/MFA');
+    expect(sessionStrategy).toContain('HttpOnly SameSite session cookie');
+    expect(sessionStrategy).toContain('must not persist session IDs in localStorage');
     expect(database).toContain('PostgreSQL');
     expect(database).toContain('Tenant isolation rules');
     expect(database).toContain('`audit_logs` is append-only');
     expect(database).toContain('user credential hashes');
+    expect(database).toContain('operational records');
+    expect(database).toContain('account security state');
     expect(database).toContain('npm run db:migrate');
     expect(database).toContain('schema_migrations');
     expect(postgresAdapters).toContain('parameterized SQL builders');
     expect(postgresAdapters).toContain('row-to-domain mappers');
+    expect(postgresIntegration).toContain('PostgreSQL integration tests');
+    expect(postgresIntegration).toContain('npm run test:postgres');
+    expect(postgresIntegration).toContain('seeds the role rows');
     expect(hipaa).toContain('Administrative safeguards');
     expect(hipaa).toContain('Technical safeguards');
+    expect(hipaa).toContain('resident-level authorization');
+    expect(hipaa).toContain('Audit PHI read, export, print, and medication access');
+    expect(hipaaArchitecture).toContain('PHI storage');
+    expect(hipaaArchitecture).toContain('PHI access auditing');
+    expect(hipaaArchitecture).toContain('Resident-level authorization');
+    expect(hipaaArchitecture).toContain('audit_retention_policies');
     expect(goLive).toContain('Tenant isolation tests completed');
     expect(goLive).toContain('Go-live readiness certification signed');
     expect(runbook).toContain('Standard deployment');
     expect(runbook).toContain('Rollback');
+    expect(runbook).toContain('Alert routing');
+    expect(runbook).toContain('X-Request-Id');
   });
 
   it('provides environment and ownership templates without secrets', () => {
@@ -129,7 +174,19 @@ describe('production readiness workflow', () => {
 
     expect(envExample).toContain('VITE_APP_ENV=production');
     expect(envExample).toContain('VITE_APP_SUPPORT_EMAIL=');
-    expect(envExample).toContain('DEMO_AUTH_PASSWORD=change-me-for-local-demo-only');
+    expect(envExample).toContain('VITE_ERROR_TRACKING_DSN=');
+    expect(envExample).toContain('ALLOW_DEMO_AUTH=false');
+    expect(envExample).toContain('DEMO_AUTH_PASSWORD=');
+    expect(envExample).toContain('MFA_TOTP_SECRETS_JSON={}');
+    expect(envExample).toContain('SECURE_COOKIES=true');
+    expect(envExample).toContain('CORS_ALLOWED_ORIGINS=');
+    expect(envExample).toContain('MAX_REQUEST_BODY_BYTES=1000000');
+    expect(envExample).toContain('AUTH_RATE_LIMIT=10');
+    expect(envExample).toContain('TEST_DATABASE_URL=');
+    expect(envExample).toContain('RUN_POSTGRES_INTEGRATION=false');
+    expect(envExample).toContain('MONITORING_ENDPOINT=');
+    expect(envExample).toContain('ERROR_TRACKING_DSN=');
+    expect(envExample).toContain('RELEASE_VERSION=local-dev');
     expect(envExample).not.toContain('Ariana');
     expect(envExample).not.toContain('sk_');
     expect(codeowners).toContain('@arion7273');

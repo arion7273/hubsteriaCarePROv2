@@ -1,5 +1,6 @@
 import type { BackendRepositories, RoleTier, UUID } from '../../domain';
 import {
+  PostgresAccountSecurityRepository,
   PostgresAuditLogRepository,
   PostgresBackgroundJobRepository,
   PostgresAssessmentRepository,
@@ -16,6 +17,7 @@ import {
   PostgresBillingChargeRepository,
   PostgresInvoiceRepository,
   PostgresMfaChallengeRepository,
+  PostgresOperationalRecordRepository,
   PostgresOrganizationRepository,
   PostgresPasswordResetRepository,
   PostgresPaymentTransactionRepository,
@@ -54,10 +56,12 @@ export function createPostgresBackendRepositories(
     billingCharges: new PostgresBillingChargeRepository(client),
     invoices: new PostgresInvoiceRepository(client),
     paymentTransactions: new PostgresPaymentTransactionRepository(client),
+    operationalRecords: new PostgresOperationalRecordRepository(client),
     auditLogs: new PostgresAuditLogRepository(client),
     featureRegistry: new PostgresFeatureRegistryRepository(client, options.createId),
     authSessions: new PostgresAuthSessionRepository(client),
     mfaChallenges: new PostgresMfaChallengeRepository(client),
-    passwordResets: new PostgresPasswordResetRepository(client)
+    passwordResets: new PostgresPasswordResetRepository(client),
+    accountSecurity: new PostgresAccountSecurityRepository(client)
   };
 }

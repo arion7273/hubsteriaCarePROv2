@@ -83,6 +83,7 @@ describe('HubsteriaApiClient', () => {
       facilityIds: ['facility-1'],
       permissions: ['resident:read']
     });
+    await client.logout('session-1');
 
     expect((fetchMock.mock.calls[0] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/auth/mfa/verify');
     expect((fetchMock.mock.calls[1] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/organizations');
@@ -98,6 +99,60 @@ describe('HubsteriaApiClient', () => {
         permissions: ['resident:read']
       })
     );
+    expect((fetchMock.mock.calls[7] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/auth/logout');
+    expect((fetchMock.mock.calls[7] as unknown as [URL, RequestInit])[1]).toMatchObject({
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-session-id': 'session-1'
+      }
+    });
+  });
+
+  it('supports high-value clinical job and operational history workflow requests', async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, status: 200, data: [] }));
+    const client = new HubsteriaApiClient({ baseUrl: 'http://api.example.com', fetchImpl: fetchMock as unknown as typeof fetch });
+
+    await client.listAssessments('session-1', 'resident-1');
+    await client.createCareTask('session-1', { residentId: 'resident-1', title: 'Follow up' });
+    await client.listMedicationOrders('session-1', 'resident-1');
+    await client.createIncident('session-1', { residentId: 'resident-1', type: 'fall' });
+    await client.listBillingCharges('session-1', 'resident-1');
+    await client.listBackgroundJobs('session-1', { organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1' });
+    await client.listOperationalRecords('session-1', { organizationId: 'org-1', facilityId: 'facility-1', residentId: 'resident-1' });
+
+    expect((fetchMock.mock.calls[0] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/assessments?residentId=resident-1');
+    expect((fetchMock.mock.calls[1] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/tasks');
+    expect((fetchMock.mock.calls[2] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/medication-orders?residentId=resident-1');
+    expect((fetchMock.mock.calls[3] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/incidents');
+    expect((fetchMock.mock.calls[4] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/billing/charges?residentId=resident-1');
+    expect((fetchMock.mock.calls[5] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/background-jobs?organizationId=org-1&facilityId=facility-1&residentId=resident-1');
+    expect((fetchMock.mock.calls[6] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/operational-records?organizationId=org-1&facilityId=facility-1&residentId=resident-1');
+  });
+
+  it('supports connected eMAR administration requests', async () => {
+    const fetchMock = vi.fn(async () => jsonResponse({ ok: true, status: 201, data: {} }));
+    const client = new HubsteriaApiClient({ baseUrl: 'http://api.example.com', fetchImpl: fetchMock as unknown as typeof fetch });
+
+    await client.createMedicationOrder('session-1', { residentId: 'resident-1', medication: 'Lisinopril' });
+    await client.recordMedicationAdministration('session-1', {
+      organizationId: 'org-1',
+      facilityId: 'facility-1',
+      residentId: 'resident-1',
+      medicationOrderId: 'med-order-1',
+      action: 'given',
+      prnEffectiveness: 'Effective',
+      barcodeScanned: 'NDC-1',
+      barcodeVerified: true,
+      controlledSubstanceWitness: 'witness-1',
+      controlledSubstanceCount: 28
+    });
+    await client.listMedicationAdministrations('session-1', 'resident-1');
+
+    expect((fetchMock.mock.calls[0] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/medication-orders');
+    expect((fetchMock.mock.calls[1] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/medication-administrations');
+    expect((fetchMock.mock.calls[1] as unknown as [URL, RequestInit])[1].body).toContain('"barcodeVerified":true');
+    expect((fetchMock.mock.calls[2] as unknown as [URL, RequestInit])[0].toString()).toBe('http://api.example.com/medication-administrations?residentId=resident-1');
   });
 
   it('supports clinical workflow requests', async () => {

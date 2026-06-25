@@ -50,6 +50,18 @@ export function canAccessScope(context: AccessContext, resource: ResourceScope):
     return deny('Only T1/T2 can access organization scope');
   }
 
+  if (user.roleTier === 'FAMILY' || user.roleTier === 'RESIDENT') {
+    if (resource.scope !== 'resident' || !resource.residentId) {
+      return deny('Resident-specific access required');
+    }
+
+    if (!user.residentIds?.includes(resource.residentId)) {
+      return deny('Cross-resident access denied');
+    }
+
+    return allow('Resident-scoped portal access');
+  }
+
   if (!resource.facilityId) {
     return deny('Resource facility is required');
   }

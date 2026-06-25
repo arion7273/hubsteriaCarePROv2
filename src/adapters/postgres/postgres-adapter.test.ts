@@ -2,16 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { createAuditEvent } from '../../domain';
 import {
   auditLogStatements,
+  accountSecurityStatements,
   facilityStatements,
   featureRegistryStatements,
   mapAuditRow,
+  mapAccountSecurityStateRow,
   mapFacilityRow,
   mapFeatureRow,
+  mapOperationalRecordRow,
   mapOrganizationRow,
   mapResidentRow,
   mapUserCredentialRow,
   mapUserRow,
   organizationStatements,
+  operationalRecordStatements,
   residentStatements,
   userCredentialStatements,
   userStatements
@@ -100,6 +104,51 @@ describe('Postgres statement builders', () => {
     expect(audit.text).not.toMatch(/\bUPDATE\b|\bDELETE\b/i);
     expect(audit.values[9]).toBe(JSON.stringify({ room: '214A' }));
     expect(audit.values[10]).toBe(JSON.stringify({ room: '214B' }));
+  });
+
+  it('uses scoped operational record statements and serializes payload JSON', () => {
+    const upsert = operationalRecordStatements.upsert({
+      id: 'record-1',
+      organizationId: 'org-1',
+      facilityId: 'facility-1',
+      residentId: 'resident-1',
+      module: 'digitalrx',
+      recordType: 'pharmacy_sync',
+      status: 'queued',
+      title: 'DigitalRX refill sync',
+      payload: { refillId: 'refill-1' },
+      createdAt: '2026-06-24T01:00:00.000Z',
+      updatedAt: '2026-06-24T01:00:00.000Z'
+    });
+
+    expect(upsert.text).toContain('INSERT INTO operational_records');
+    expect(upsert.text).toContain('$9::jsonb');
+    expect(upsert.values[8]).toBe(JSON.stringify({ refillId: 'refill-1' }));
+
+    const list = operationalRecordStatements.listByScope({ organizationId: 'org-1', facilityId: 'facility-1', module: 'digitalrx' });
+    expect(list.text).toContain('organization_id = $1');
+    expect(list.text).toContain('facility_id = $2');
+    expect(list.text).toContain('module = $3');
+    expect(list.values).toEqual(['org-1', 'facility-1', 'digitalrx']);
+  });
+
+  it('builds account security lockout statements', () => {
+    const statement = accountSecurityStatements.upsert({
+      userId: 'user-1',
+      failedLoginAttempts: 5,
+      lockedUntil: '2026-06-24T01:15:00.000Z',
+      lastFailedAt: '2026-06-24T01:00:00.000Z',
+      updatedAt: '2026-06-24T01:00:00.000Z'
+    });
+
+    expect(statement.text).toContain('INSERT INTO account_security_states');
+    expect(statement.values).toEqual([
+      'user-1',
+      5,
+      '2026-06-24T01:15:00.000Z',
+      '2026-06-24T01:00:00.000Z',
+      '2026-06-24T01:00:00.000Z'
+    ]);
   });
 });
 
@@ -212,5 +261,53 @@ describe('Postgres row mappers', () => {
       afterState: { room: '214B' }
     });
     expect(Object.isFrozen(audit)).toBe(true);
+  });
+
+  it('maps operational record rows', () => {
+    expect(
+      mapOperationalRecordRow({
+        id: 'record-1',
+        organization_id: 'org-1',
+        facility_id: 'facility-1',
+        resident_id: 'resident-1',
+        module: 'workflow',
+        record_type: 'automation_run',
+        status: 'completed',
+        title: 'Workflow automation completed',
+        payload: { workflowId: 'workflow-1' },
+        created_at: '2026-06-24T01:00:00.000Z',
+        updated_at: '2026-06-24T01:00:00.000Z'
+      })
+    ).toEqual({
+      id: 'record-1',
+      organizationId: 'org-1',
+      facilityId: 'facility-1',
+      residentId: 'resident-1',
+      module: 'workflow',
+      recordType: 'automation_run',
+      status: 'completed',
+      title: 'Workflow automation completed',
+      payload: { workflowId: 'workflow-1' },
+      createdAt: '2026-06-24T01:00:00.000Z',
+      updatedAt: '2026-06-24T01:00:00.000Z'
+    });
+  });
+
+  it('maps account security rows', () => {
+    expect(
+      mapAccountSecurityStateRow({
+        user_id: 'user-1',
+        failed_login_attempts: 5,
+        locked_until: '2026-06-24T01:15:00.000Z',
+        last_failed_at: '2026-06-24T01:00:00.000Z',
+        updated_at: '2026-06-24T01:00:00.000Z'
+      })
+    ).toEqual({
+      userId: 'user-1',
+      failedLoginAttempts: 5,
+      lockedUntil: '2026-06-24T01:15:00.000Z',
+      lastFailedAt: '2026-06-24T01:00:00.000Z',
+      updatedAt: '2026-06-24T01:00:00.000Z'
+    });
   });
 });

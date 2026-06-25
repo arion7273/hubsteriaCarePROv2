@@ -5,6 +5,8 @@ const schema = readFileSync('database/migrations/0001_multitenant_foundation.sql
 const seed = readFileSync('database/migrations/0002_seed_permissions.sql', 'utf8');
 const authSchema = readFileSync('database/migrations/0003_auth_sessions.sql', 'utf8');
 const credentialSchema = readFileSync('database/migrations/0004_user_credentials.sql', 'utf8');
+const authHardeningSchema = readFileSync('database/migrations/0012_auth_hardening.sql', 'utf8');
+const hipaaSchema = readFileSync('database/migrations/0013_hipaa_readiness.sql', 'utf8');
 const docs = readFileSync('docs/database-foundation.md', 'utf8');
 
 describe('database foundation migrations', () => {
@@ -23,9 +25,11 @@ describe('database foundation migrations', () => {
       'CREATE TABLE auth_sessions',
       'CREATE TABLE mfa_challenges',
       'CREATE TABLE password_reset_requests',
-      'CREATE TABLE user_credentials'
+      'CREATE TABLE user_credentials',
+      'CREATE TABLE IF NOT EXISTS account_security_states',
+      'CREATE TABLE IF NOT EXISTS audit_retention_policies'
     ].forEach((statement) => {
-      expect(`${schema}\n${authSchema}\n${credentialSchema}`).toContain(statement);
+      expect(`${schema}\n${authSchema}\n${credentialSchema}\n${authHardeningSchema}\n${hipaaSchema}`).toContain(statement);
     });
   });
 
@@ -36,10 +40,14 @@ describe('database foundation migrations', () => {
     expect(schema).toContain('CREATE INDEX idx_audit_logs_tenant');
     expect(schema).toContain('CREATE INDEX idx_feature_registry_module');
     expect(credentialSchema).toContain('CREATE INDEX idx_user_credentials_updated_at');
+    expect(authHardeningSchema).toContain('idx_account_security_locked_until');
   });
 
   it('documents append-only audit log expectations', () => {
     expect(schema).toContain('No UPDATE/DELETE paths should be granted for audit_logs in production.');
+    expect(hipaaSchema).toContain('prevent_audit_log_mutation');
+    expect(hipaaSchema).toContain('BEFORE UPDATE ON audit_logs');
+    expect(hipaaSchema).toContain('BEFORE DELETE ON audit_logs');
     expect(docs).toContain('`audit_logs` is append-only');
     expect(docs).toContain('Production database roles must not receive `UPDATE` or `DELETE` grants');
   });

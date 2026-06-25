@@ -1,6 +1,7 @@
 import type { AuditEvent } from './audit';
 import { assertFeatureRegistration, type RegisteredFeature } from './feature-registry';
 import type {
+  AccountSecurityRepository,
   AdlEntryRepository,
   AuditLogRepository,
   AssessmentRepository,
@@ -18,6 +19,7 @@ import type {
   IncidentRepository,
   InvoiceRepository,
   MfaChallengeRepository,
+  OperationalRecordRepository,
   OrganizationRepository,
   PasswordResetRepository,
   PaymentTransactionRepository,
@@ -27,6 +29,7 @@ import type {
   UserRepository
 } from './repositories';
 import type {
+  AccountSecurityState,
   Assessment,
   AdlEntry,
   AuthSession,
@@ -41,6 +44,7 @@ import type {
   MedicationAdministration,
   MedicationOrder,
   MfaChallenge,
+  OperationalRecord,
   Organization,
   PaymentTransaction,
   PasswordResetRequest,
@@ -322,6 +326,31 @@ export class InMemoryPaymentTransactionRepository implements PaymentTransactionR
   }
 }
 
+export class InMemoryOperationalRecordRepository implements OperationalRecordRepository {
+  private readonly records = new Map<UUID, OperationalRecord>();
+
+  async getById(id: UUID): Promise<OperationalRecord | null> {
+    return this.records.get(id) ?? null;
+  }
+
+  async listByScope(scope: { organizationId: UUID; facilityId?: UUID; residentId?: UUID; module?: OperationalRecord['module'] }): Promise<OperationalRecord[]> {
+    return [...this.records.values()]
+      .filter(
+        (record) =>
+          record.organizationId === scope.organizationId &&
+          (!scope.facilityId || record.facilityId === scope.facilityId) &&
+          (!scope.residentId || record.residentId === scope.residentId) &&
+          (!scope.module || record.module === scope.module)
+      )
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  async save(record: OperationalRecord): Promise<OperationalRecord> {
+    this.records.set(record.id, record);
+    return record;
+  }
+}
+
 export class InMemoryAuditLogRepository implements AuditLogRepository {
   private readonly events: AuditEvent[] = [];
 
@@ -403,6 +432,19 @@ export class InMemoryPasswordResetRepository implements PasswordResetRepository 
   }
 }
 
+export class InMemoryAccountSecurityRepository implements AccountSecurityRepository {
+  private readonly states = new Map<UUID, AccountSecurityState>();
+
+  async getByUserId(userId: UUID): Promise<AccountSecurityState | null> {
+    return this.states.get(userId) ?? null;
+  }
+
+  async save(state: AccountSecurityState): Promise<AccountSecurityState> {
+    this.states.set(state.userId, state);
+    return state;
+  }
+}
+
 export function createInMemoryBackendRepositories(): BackendRepositories & {
   auditLogs: InMemoryAuditLogRepository;
 } {
@@ -425,10 +467,12 @@ export function createInMemoryBackendRepositories(): BackendRepositories & {
     billingCharges: new InMemoryBillingChargeRepository(),
     invoices: new InMemoryInvoiceRepository(),
     paymentTransactions: new InMemoryPaymentTransactionRepository(),
+    operationalRecords: new InMemoryOperationalRecordRepository(),
     auditLogs: new InMemoryAuditLogRepository(),
     featureRegistry: new InMemoryFeatureRegistryRepository(),
     authSessions: new InMemoryAuthSessionRepository(),
     mfaChallenges: new InMemoryMfaChallengeRepository(),
-    passwordResets: new InMemoryPasswordResetRepository()
+    passwordResets: new InMemoryPasswordResetRepository(),
+    accountSecurity: new InMemoryAccountSecurityRepository()
   };
 }

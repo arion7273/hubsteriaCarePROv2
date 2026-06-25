@@ -8,6 +8,7 @@ import {
 } from '../domain';
 import {
   apiRoutes,
+  completePasswordResetHandler,
   createApiRouter,
   createCsrfMiddleware,
   createFacilityHandler,
@@ -18,6 +19,7 @@ import {
   listFeaturesHandler,
   loginHandler,
   openApiDocument,
+  passwordResetHandler,
   type ApiRequestLog,
   registerFeatureHandler,
   redactBody,
@@ -46,6 +48,11 @@ function createApiServices(): ApiServices {
     'audit-facility',
     'resident-1',
     'audit-resident',
+    'job-1',
+    'audit-job',
+    'operational-record-1',
+    'audit-operational-record',
+    'audit-operational-record-update',
     'audit-resident-update',
     'audit-feature'
   ];
@@ -116,6 +123,7 @@ describe('API foundation handlers', () => {
     expect(apiRoutes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ method: 'POST', path: '/auth/login', authRequired: false }),
+        expect.objectContaining({ method: 'POST', path: '/auth/password-reset/complete', authRequired: false }),
         expect.objectContaining({ method: 'POST', path: '/organizations', authRequired: true }),
         expect.objectContaining({ method: 'PATCH', path: '/organizations', authRequired: true }),
         expect.objectContaining({ method: 'GET', path: '/facilities', authRequired: true }),
@@ -123,7 +131,10 @@ describe('API foundation handlers', () => {
         expect.objectContaining({ method: 'POST', path: '/residents', authRequired: true }),
         expect.objectContaining({ method: 'PATCH', path: '/residents', authRequired: true }),
         expect.objectContaining({ method: 'POST', path: '/users', authRequired: true }),
-        expect.objectContaining({ method: 'PATCH', path: '/users', authRequired: true })
+        expect.objectContaining({ method: 'PATCH', path: '/users', authRequired: true }),
+        expect.objectContaining({ method: 'POST', path: '/jobs/notifications', authRequired: true }),
+        expect.objectContaining({ method: 'POST', path: '/operational-records', authRequired: true }),
+        expect.objectContaining({ method: 'PATCH', path: '/operational-records', authRequired: true })
       ])
     );
   });
@@ -135,6 +146,8 @@ describe('API foundation handlers', () => {
     expect(openApiDocument.paths).toHaveProperty('/organizations');
     expect(openApiDocument.paths).toHaveProperty('/residents');
     expect(openApiDocument.paths).toHaveProperty('/users');
+    expect(openApiDocument.paths).toHaveProperty('/jobs/notifications');
+    expect(openApiDocument.paths).toHaveProperty('/operational-records');
     expect(openApiDocument.components.securitySchemes.session.name).toBe('X-Session-Id');
   });
 
@@ -153,6 +166,27 @@ describe('API foundation handlers', () => {
       status: 401,
       error: { code: 'invalid_credentials', message: 'Invalid credentials' }
     });
+  });
+
+  it('completes password resets through public handlers', async () => {
+    const services = createApiServices();
+    await services.repositories.users.save(t1User);
+
+    const reset = await passwordResetHandler(services, {
+      method: 'POST',
+      path: '/auth/password-reset',
+      body: { email: t1User.email }
+    });
+    expect(reset).toMatchObject({ ok: true });
+    const requestId = reset.ok ? (reset.data as { id: string }).id : '';
+
+    await expect(
+      completePasswordResetHandler(services, {
+        method: 'POST',
+        path: '/auth/password-reset/complete',
+        body: { requestId, newPassword: 'new-secure-password' }
+      })
+    ).resolves.toMatchObject({ ok: true, data: { completed: true } });
   });
 
   it('creates organizations and facilities through protected handlers', async () => {
@@ -425,6 +459,92 @@ describe('API foundation handlers', () => {
     expect(updated).toMatchObject({ ok: true, data: expect.objectContaining({ status: 'inactive' }) });
   });
 
+  it('enqueues integration jobs and manages operational records through the API router', async () => {
+    const services = createApiServices();
+    const router = createApiRouter(services);
+    const sessionId = await createVerifiedSession(services);
+    await router.handle({
+      method: 'POST',
+      path: '/organizations',
+      sessionId,
+      body: { name: 'Northstar Senior Living' }
+    });
+    await router.handle({
+      method: 'POST',
+      path: '/facilities',
+      sessionId,
+      body: { organizationId: 'org-1', name: 'Cedar Grove' }
+    });
+    await router.handle({
+      method: 'POST',
+      path: '/residents',
+      sessionId,
+      body: {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        firstName: 'Maria',
+        lastName: 'Alvarez'
+      }
+    });
+
+    await expect(
+      router.handle({
+        method: 'POST',
+        path: '/jobs/notifications',
+        sessionId,
+        body: {
+          organizationId: 'org-1',
+          facilityId: 'facility-1',
+          residentId: 'resident-1',
+          channel: 'sms',
+          template: 'Medication Refused',
+          recipient: 'nurse@example.com',
+          payload: { residentId: 'resident-1' }
+        }
+      })
+    ).resolves.toMatchObject({ ok: true, status: 201, data: expect.objectContaining({ type: 'notification' }) });
+
+    const created = await router.handle({
+      method: 'POST',
+      path: '/operational-records',
+      sessionId,
+      body: {
+        organizationId: 'org-1',
+        facilityId: 'facility-1',
+        residentId: 'resident-1',
+        module: 'notifications',
+        recordType: 'delivery_event',
+        status: 'queued',
+        title: 'SMS medication refusal alert',
+        payload: { jobId: 'job-1' }
+      }
+    });
+
+    expect(created).toMatchObject({ ok: true, status: 201, data: expect.objectContaining({ module: 'notifications' }) });
+    const recordId = created.ok ? (created.data as { id: string }).id : '';
+
+    await expect(
+      router.handle({
+        method: 'GET',
+        path: '/operational-records',
+        sessionId,
+        query: { organizationId: 'org-1', facilityId: 'facility-1', module: 'notifications' }
+      })
+    ).resolves.toMatchObject({ ok: true, data: [expect.objectContaining({ id: recordId })] });
+
+    await expect(
+      router.handle({
+        method: 'PATCH',
+        path: '/operational-records',
+        sessionId,
+        body: {
+          recordId,
+          updates: { status: 'completed', payload: { delivered: true } }
+        }
+      })
+    ).resolves.toMatchObject({ ok: true, data: expect.objectContaining({ status: 'completed' }) });
+  });
+
   it('dispatches requests through the API router', async () => {
     const services = createApiServices();
     const router = createApiRouter(services);
@@ -453,6 +573,22 @@ describe('API foundation handlers', () => {
       ok: false,
       status: 400,
       error: { code: 'invalid_request_body' }
+    });
+  });
+
+  it('centrally rejects protected routes before handler execution when session is missing', async () => {
+    const services = createApiServices();
+    const router = createApiRouter(services);
+
+    await expect(
+      router.handle({
+        method: 'GET',
+        path: '/organizations'
+      })
+    ).resolves.toMatchObject({
+      ok: false,
+      status: 401,
+      error: { code: 'missing_session' }
     });
   });
 

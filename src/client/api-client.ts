@@ -43,6 +43,7 @@ export class HubsteriaApiClient {
 
     const response = await this.fetchImpl(url, {
       method: request.method,
+      credentials: 'include',
       headers: {
         'content-type': 'application/json',
         ...(request.sessionId ? { 'x-session-id': request.sessionId } : {})
@@ -66,6 +67,22 @@ export class HubsteriaApiClient {
       method: 'POST',
       path: '/auth/mfa/verify',
       body: { sessionId, challengeId, code }
+    });
+  }
+
+  logout(sessionId: string) {
+    return this.request({
+      method: 'POST',
+      path: '/auth/logout',
+      sessionId
+    });
+  }
+
+  completePasswordReset(requestId: string, newPassword: string) {
+    return this.request({
+      method: 'POST',
+      path: '/auth/password-reset/complete',
+      body: { requestId, newPassword }
     });
   }
 
@@ -154,76 +171,70 @@ export class HubsteriaApiClient {
     });
   }
 
-  createAssessment(sessionId: string, body: Record<string, unknown>) {
-    return this.request({ method: 'POST', path: '/assessments', sessionId, body });
-  }
-
   listAssessments(sessionId: string, residentId: string) {
     return this.request({ method: 'GET', path: '/assessments', sessionId, query: { residentId } });
   }
 
-  createCarePlan(sessionId: string, body: Record<string, unknown>) {
-    return this.request({ method: 'POST', path: '/care-plans', sessionId, body });
-  }
-
-  listCarePlans(sessionId: string, residentId: string) {
-    return this.request({ method: 'GET', path: '/care-plans', sessionId, query: { residentId } });
-  }
-
-  createCareTask(sessionId: string, body: Record<string, unknown>) {
-    return this.request({ method: 'POST', path: '/tasks', sessionId, body });
+  createAssessment(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/assessments', sessionId, body });
   }
 
   listCareTasks(sessionId: string, residentId: string) {
     return this.request({ method: 'GET', path: '/tasks', sessionId, query: { residentId } });
   }
 
-  logAdl(sessionId: string, body: Record<string, unknown>) {
-    return this.request({ method: 'POST', path: '/adls', sessionId, body });
-  }
-
-  listAdls(sessionId: string, residentId: string) {
-    return this.request({ method: 'GET', path: '/adls', sessionId, query: { residentId } });
-  }
-
-  createMedicationOrder(sessionId: string, body: Record<string, unknown>) {
-    return this.request({ method: 'POST', path: '/medication-orders', sessionId, body });
+  createCareTask(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/tasks', sessionId, body });
   }
 
   listMedicationOrders(sessionId: string, residentId: string) {
     return this.request({ method: 'GET', path: '/medication-orders', sessionId, query: { residentId } });
   }
 
-  recordMedicationAdministration(sessionId: string, body: Record<string, unknown>) {
-    return this.request({ method: 'POST', path: '/medication-administrations', sessionId, body });
+  createMedicationOrder(sessionId: string, body: Record<string, unknown>) {
+    return this.request({ method: 'POST', path: '/medication-orders', sessionId, body });
   }
 
-  listMedicationAdministrations(sessionId: string, residentId: string) {
-    return this.request({ method: 'GET', path: '/medication-administrations', sessionId, query: { residentId } });
+  listIncidents(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/incidents', sessionId, query: { residentId } });
   }
 
   createIncident(sessionId: string, body: Record<string, unknown>) {
     return this.request({ method: 'POST', path: '/incidents', sessionId, body });
   }
 
-  listIncidents(sessionId: string, query: { residentId?: string; organizationId?: string; facilityId?: string }) {
-    return this.request({ method: 'GET', path: '/incidents', sessionId, query });
+  listBillingCharges(sessionId: string, residentId: string) {
+    return this.request({ method: 'GET', path: '/billing/charges', sessionId, query: { residentId } });
   }
 
   createBillingCharge(sessionId: string, body: Record<string, unknown>) {
     return this.request({ method: 'POST', path: '/billing/charges', sessionId, body });
   }
 
-  listBillingCharges(sessionId: string, residentId: string) {
-    return this.request({ method: 'GET', path: '/billing/charges', sessionId, query: { residentId } });
+  listBackgroundJobs(sessionId: string, query: { organizationId?: string; facilityId?: string; residentId?: string }) {
+    return this.request({ method: 'GET', path: '/background-jobs', sessionId, query });
   }
 
-  createInvoice(sessionId: string, body: Record<string, unknown>) {
-    return this.request({ method: 'POST', path: '/billing/invoices', sessionId, body });
+  listOperationalRecords(sessionId: string, query: { organizationId: string; facilityId?: string; residentId?: string; module?: string }) {
+    return this.request({ method: 'GET', path: '/operational-records', sessionId, query });
   }
 
-  listInvoices(sessionId: string, residentId: string) {
-    return this.request({ method: 'GET', path: '/billing/invoices', sessionId, query: { residentId } });
+  recordMedicationAdministration(sessionId: string, body: Record<string, unknown>) {
+    return this.request({
+      method: 'POST',
+      path: '/medication-administrations',
+      sessionId,
+      body
+    });
+  }
+
+  listMedicationAdministrations(sessionId: string, residentId: string) {
+    return this.request({
+      method: 'GET',
+      path: '/medication-administrations',
+      sessionId,
+      query: { residentId }
+    });
   }
 }
 

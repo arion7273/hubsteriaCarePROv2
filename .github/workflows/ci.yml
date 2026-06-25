@@ -11,6 +11,25 @@ jobs:
   verify:
     name: Test and build
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: hubsteria
+          POSTGRES_PASSWORD: hubsteria
+          POSTGRES_DB: hubsteria_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hubsteria -d hubsteria_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://hubsteria:hubsteria@localhost:5432/hubsteria_test
+      TEST_DATABASE_URL: postgres://hubsteria:hubsteria@localhost:5432/hubsteria_test
+      BACKEND_REPOSITORY_MODE: postgres
+      RUN_POSTGRES_INTEGRATION: 'true'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,6 +45,12 @@ jobs:
 
       - name: Run regression tests
         run: npm test
+
+      - name: Run database migrations
+        run: npm run db:migrate
+
+      - name: Run PostgreSQL integration tests
+        run: npm run test:postgres
 
       - name: Build production bundle
         run: npm run build

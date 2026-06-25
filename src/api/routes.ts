@@ -34,6 +34,12 @@ export const apiRoutes: ApiRouteDefinition[] = [
   },
   {
     method: 'POST',
+    path: '/auth/password-reset/complete',
+    authRequired: false,
+    description: 'Complete password reset and update credential'
+  },
+  {
+    method: 'POST',
     path: '/organizations',
     authRequired: true,
     description: 'Create organization'
@@ -257,5 +263,9 @@ export const apiRoutes: ApiRouteDefinition[] = [
     path: '/billing/payments',
     authRequired: true,
     description: 'List payments by resident'
-  }
+  },
+  { method: 'POST', path: '/operational-records', authRequired: true, description: 'Create operational integration record' },
+  { method: 'GET', path: '/operational-records', authRequired: true, description: 'List operational records by scope' },
+  { method: 'GET', path: '/operational-records/get', authRequired: true, description: 'Get operational record' },
+  { method: 'PATCH', path: '/operational-records', authRequired: true, description: 'Update operational record' }
 ];

@@ -50,6 +50,19 @@ export function createRateLimitMiddleware(options: {
   };
 }
 
+export function createAuthRateLimitMiddleware(options: {
+  limit: number;
+  store?: RateLimitStore;
+  keyForRequest?: (request: ApiRequest) => string;
+}): ApiMiddleware {
+  const keyForRequest = options.keyForRequest ?? ((request) => `${request.path}:${request.ip ?? 'anonymous'}`);
+  return createRateLimitMiddleware({
+    limit: options.limit,
+    store: options.store,
+    keyForRequest: (request) => (request.path.startsWith('/auth/') ? keyForRequest(request) : `bypass:${request.requestId ?? Math.random()}`)
+  });
+}
+
 export function createCsrfMiddleware(options: {
   protectedMethods?: string[];
   tokenHeader?: string;
@@ -96,7 +109,7 @@ export function redactBody(body: unknown): unknown {
   return Object.fromEntries(
     Object.entries(body as Record<string, unknown>).map(([key, value]) => [
       key,
-      ['password', 'code', 'token', 'apiKey', 'secret'].some((sensitive) => key.toLowerCase().includes(sensitive.toLowerCase()))
+      ['password', 'code', 'token', 'apiKey', 'secret', 'firstName', 'lastName', 'preferredName', 'room', 'diagnosis', 'medication'].some((sensitive) => key.toLowerCase().includes(sensitive.toLowerCase()))
         ? '[REDACTED]'
         : value
     ])

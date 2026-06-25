@@ -3,6 +3,7 @@ import type { ApiRequest, ApiResponse } from './http';
 import { fail } from './http';
 import type {
   CompleteBackgroundJobBody,
+  CompletePasswordResetBody,
   CompleteCareTaskBody,
   CreateAssessmentBody,
   CreateBillingChargeBody,
@@ -13,6 +14,7 @@ import type {
   CreateIncidentBody,
   CreateInvoiceBody,
   CreateMedicationOrderBody,
+  CreateOperationalRecordBody,
   CreateOrganizationBody,
   CreateResidentBody,
   CreateServicePlanBody,
@@ -30,6 +32,7 @@ import type {
   RecordPaymentBody,
   UpdateFacilityBody,
   UpdateIncidentBody,
+  UpdateOperationalRecordBody,
   UpdateOrganizationBody,
   UpdateResidentBody,
   UpdateUserBody,
@@ -78,6 +81,10 @@ export function isVerifyMfaBody(body: unknown): body is VerifyMfaBody {
 
 export function isPasswordResetBody(body: unknown): body is { email: string } {
   return isRecord(body) && isNonEmptyString(body.email);
+}
+
+export function isCompletePasswordResetBody(body: unknown): body is CompletePasswordResetBody {
+  return isRecord(body) && isNonEmptyString(body.requestId) && isNonEmptyString(body.newPassword) && body.newPassword.length >= 12;
 }
 
 export function isCreateOrganizationBody(body: unknown): body is CreateOrganizationBody {
@@ -259,7 +266,21 @@ export function isCreateMedicationOrderBody(body: unknown): body is CreateMedica
 }
 
 export function isRecordMedicationAdministrationBody(body: unknown): body is RecordMedicationAdministrationBody {
-  return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && isNonEmptyString(body.medicationOrderId) && ['given', 'refused', 'held', 'resident_absent', 'not_available'].includes(String(body.action)) && optionalString(body.reason) && optionalString(body.outcome);
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.organizationId) &&
+    isNonEmptyString(body.facilityId) &&
+    isNonEmptyString(body.residentId) &&
+    isNonEmptyString(body.medicationOrderId) &&
+    ['given', 'refused', 'held', 'resident_absent', 'not_available'].includes(String(body.action)) &&
+    optionalString(body.reason) &&
+    optionalString(body.outcome) &&
+    optionalString(body.prnEffectiveness) &&
+    optionalString(body.barcodeScanned) &&
+    (body.barcodeVerified === undefined || typeof body.barcodeVerified === 'boolean') &&
+    optionalString(body.controlledSubstanceWitness) &&
+    (body.controlledSubstanceCount === undefined || typeof body.controlledSubstanceCount === 'number')
+  );
 }
 
 export function isCreateIncidentBody(body: unknown): body is CreateIncidentBody {
@@ -286,6 +307,33 @@ export function isRecordPaymentBody(body: unknown): body is RecordPaymentBody {
   return isRecord(body) && isNonEmptyString(body.organizationId) && isNonEmptyString(body.facilityId) && isNonEmptyString(body.residentId) && (body.invoiceId === undefined || isNonEmptyString(body.invoiceId)) && ['payment', 'credit', 'refund'].includes(String(body.type)) && typeof body.amountCents === 'number' && isNonEmptyString(body.method);
 }
 
+export function isCreateOperationalRecordBody(body: unknown): body is CreateOperationalRecordBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.organizationId) &&
+    optionalString(body.facilityId) &&
+    optionalString(body.residentId) &&
+    isOperationalRecordModule(body.module) &&
+    isNonEmptyString(body.recordType) &&
+    isOperationalRecordStatus(body.status) &&
+    isNonEmptyString(body.title) &&
+    isRecord(body.payload)
+  );
+}
+
+export function isUpdateOperationalRecordBody(body: unknown): body is UpdateOperationalRecordBody {
+  return (
+    isRecord(body) &&
+    isNonEmptyString(body.recordId) &&
+    isRecord(body.updates) &&
+    (body.updates.module === undefined || isOperationalRecordModule(body.updates.module)) &&
+    (body.updates.recordType === undefined || isNonEmptyString(body.updates.recordType)) &&
+    (body.updates.status === undefined || isOperationalRecordStatus(body.updates.status)) &&
+    (body.updates.title === undefined || isNonEmptyString(body.updates.title)) &&
+    (body.updates.payload === undefined || isRecord(body.updates.payload))
+  );
+}
+
 function isRecord(body: unknown): body is Record<string, unknown> {
   return typeof body === 'object' && body !== null && !Array.isArray(body);
 }
@@ -296,4 +344,12 @@ function isNonEmptyString(value: unknown): value is string {
 
 function optionalString(value: unknown): boolean {
   return value === undefined || typeof value === 'string';
+}
+
+function isOperationalRecordModule(value: unknown): boolean {
+  return ['notifications', 'print', 'digitalrx', 'workflow', 'ai', 'communication', 'family', 'support', 'integrations'].includes(String(value));
+}
+
+function isOperationalRecordStatus(value: unknown): boolean {
+  return ['draft', 'active', 'queued', 'processing', 'completed', 'failed', 'archived'].includes(String(value));
 }
